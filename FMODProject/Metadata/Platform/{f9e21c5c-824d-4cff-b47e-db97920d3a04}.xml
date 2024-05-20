@@ -5,10 +5,10 @@
 			<value>0</value>
 		</property>
 		<property name="name">
-			<value>WebGL</value>
+			<value>Desktop</value>
 		</property>
 		<property name="subDirectory">
-			<value>WebGL</value>
+			<value>Desktop</value>
 		</property>
 		<property name="speakerFormat">
 			<value>5</value>

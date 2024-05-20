@@ -1,0 +1,18 @@
+{
+    "name": "FRC.Core.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:1c8b44325a8ed2748ae6a8a316697f65"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
