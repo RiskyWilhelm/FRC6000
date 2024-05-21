@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 6c39f36503264c6f9fb60a61fe618118
+timeCreated: 1617455803
+AssetOrigin:
+  serializedVersion: 1
+  productId: 192827
+  packageName: Tag & Layer Type Generator
+  packageVersion: v3.0.1
+  assetPath: Assets/AlkimeeGames.TagLayerTypeGenerator/Runtime/Attributes/TagAttribute.cs
+  uploadId: 428521

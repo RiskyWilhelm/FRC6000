@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7b1e33555c8fdc34d94ace84eceade76
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 192827
+  packageName: Tag & Layer Type Generator
+  packageVersion: v3.0.1
+  assetPath: Assets/AlkimeeGames.TagLayerTypeGenerator/Editor/AlkimeeGames.TagLayerTypeGenerator.Editor.asmdef
+  uploadId: 428521

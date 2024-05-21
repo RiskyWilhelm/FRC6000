@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 907c2418b40fd0042aba712aabf5d27a
+PackageManifestImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 192827
+  packageName: Tag & Layer Type Generator
+  packageVersion: v3.0.1
+  assetPath: Assets/AlkimeeGames.TagLayerTypeGenerator/package.json
+  uploadId: 428521

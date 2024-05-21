@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: ee721f78df99430c9b3254407c204aa6
+timeCreated: 1617539116
+AssetOrigin:
+  serializedVersion: 1
+  productId: 192827
+  packageName: Tag & Layer Type Generator
+  packageVersion: v3.0.1
+  assetPath: Assets/AlkimeeGames.TagLayerTypeGenerator/Editor/Sync/ISync.cs
+  uploadId: 428521

@@ -1,0 +1,10 @@
+﻿fileFormatVersion: 2
+guid: 3dddb70de40f4945b6354793453da6da
+timeCreated: 1617484190
+AssetOrigin:
+  serializedVersion: 1
+  productId: 192827
+  packageName: Tag & Layer Type Generator
+  packageVersion: v3.0.1
+  assetPath: Assets/AlkimeeGames.TagLayerTypeGenerator/Editor/Settings/TypeGeneratorSettings.cs
+  uploadId: 428521
