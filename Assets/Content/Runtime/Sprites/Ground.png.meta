@@ -160,7 +160,11 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
-    outline: []
+    outline:
+    - - {x: 128, y: 128}
+      - {x: -128, y: 128}
+      - {x: -128, y: -128}
+      - {x: 128, y: -128}
     customData: 
     physicsShape:
     - - {x: -128, y: 128}
