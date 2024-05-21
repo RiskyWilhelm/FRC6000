@@ -1,0 +1,2 @@
+# Fixes an error of "FMOD libraries contain incorrect line endings"
+/[Aa]ssets/Plugins/FMOD/*.bundle text eol=lf
