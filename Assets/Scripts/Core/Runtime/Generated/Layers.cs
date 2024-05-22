@@ -27,6 +27,7 @@ public sealed class Layers
     public const int Ground = 3;
     public const int Water = 4;
     public const int UI = 5;
+    public const int Dynamic = 6;
     /// <summary>
     /// Use this type in place of layer or layer mask values in code / scripts.
     /// </summary>
@@ -45,5 +46,6 @@ public sealed class Layers
         public const int Ground = 8;
         public const int Water = 16;
         public const int UI = 32;
+        public const int Dynamic = 64;
     }
 }
