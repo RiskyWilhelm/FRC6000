@@ -124,6 +124,19 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -270,7 +283,13 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      ChickenJumping-Sheet_0: -7060086420316116691
+      ChickenJumping-Sheet_1: -5585485713377748614
+      ChickenJumping-Sheet_2: 1797691815668250731
+      ChickenJumping-Sheet_3: -8440570070331373156
+      ChickenJumping-Sheet_4: -7487580767756593266
+      ChickenJumping-Sheet_5: -6012735332982111402
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

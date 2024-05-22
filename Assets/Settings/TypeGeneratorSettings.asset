@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Tag:
     AutoGenerate: 1
-    TypeName: Tag
-    FilePath: Scripts/Tag.cs
-    Namespace: FRC
-    AssemblyDefinition: {fileID: 0}
+    TypeName: Tags
+    FilePath: Scripts/Core/Runtime/Generated/Tags.cs
+    Namespace: 
+    AssemblyDefinition: {fileID: 5897886265953266890, guid: 1c8b44325a8ed2748ae6a8a316697f65, type: 3}
   Layer:
     AutoGenerate: 1
-    TypeName: Layer
-    FilePath: Scripts/Layer.cs
-    Namespace: FRC
-    AssemblyDefinition: {fileID: 0}
+    TypeName: Layers
+    FilePath: Scripts/Core/Runtime/Generated/Layers.cs
+    Namespace: 
+    AssemblyDefinition: {fileID: 5897886265953266890, guid: 1c8b44325a8ed2748ae6a8a316697f65, type: 3}

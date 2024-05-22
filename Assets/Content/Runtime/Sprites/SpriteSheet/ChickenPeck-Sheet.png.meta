@@ -130,6 +130,19 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
@@ -320,7 +333,15 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      ChickenPeck-Sheet_0: 1069240280373262905
+      ChickenPeck-Sheet_1: 7077531648879114920
+      ChickenPeck-Sheet_2: 9035381293850507210
+      ChickenPeck-Sheet_3: 1560354117784860992
+      ChickenPeck-Sheet_4: 4797790454231326066
+      ChickenPeck-Sheet_5: 239136018121695336
+      ChickenPeck-Sheet_6: -6664674762192263676
+      ChickenPeck-Sheet_7: 7072854391755519791
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
