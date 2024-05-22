@@ -845,7 +845,36 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      TX FX Torch Flame_0: 4744368493983535487
+      TX FX Torch Flame_1: -6529012941431347850
+      TX FX Torch Flame_10: -8871441193335330624
+      TX FX Torch Flame_11: -5820385976255894674
+      TX FX Torch Flame_12: 9188864214373369665
+      TX FX Torch Flame_13: 2778290036026718263
+      TX FX Torch Flame_14: -6824500130320869030
+      TX FX Torch Flame_15: 1053872055323382048
+      TX FX Torch Flame_16: -7166696545215701473
+      TX FX Torch Flame_17: 7761558546355551639
+      TX FX Torch Flame_18: -2930697932782405
+      TX FX Torch Flame_19: 8907372765292013059
+      TX FX Torch Flame_2: 1709065089254168845
+      TX FX Torch Flame_20: 4717488882461432661
+      TX FX Torch Flame_21: 3538908082794210504
+      TX FX Torch Flame_22: 3812915942445157984
+      TX FX Torch Flame_23: -6504797388010896839
+      TX FX Torch Flame_24: -4410778881561214897
+      TX FX Torch Flame_25: 1911049467421558195
+      TX FX Torch Flame_26: 4768531303893249439
+      TX FX Torch Flame_27: -2674991345714161482
+      TX FX Torch Flame_28: 2840928011893155943
+      TX FX Torch Flame_3: -4147414645671423701
+      TX FX Torch Flame_4: -4956928069609197510
+      TX FX Torch Flame_5: -4607440209126577476
+      TX FX Torch Flame_6: -2850293288758222523
+      TX FX Torch Flame_7: 3594173171764072937
+      TX FX Torch Flame_8: 1835362298822427304
+      TX FX Torch Flame_9: 2916310036386519246
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

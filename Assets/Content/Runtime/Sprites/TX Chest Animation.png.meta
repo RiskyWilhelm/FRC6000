@@ -820,7 +820,35 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      TX Chest Animation_0: -1309413244939661745
+      TX Chest Animation_1: 2628861295414256057
+      TX Chest Animation_10: -7401870491986572264
+      TX Chest Animation_11: -7148347082035780633
+      TX Chest Animation_12: -6398334591226318208
+      TX Chest Animation_13: 6756677616160534888
+      TX Chest Animation_14: 3849778927949640068
+      TX Chest Animation_15: 8901239322130806984
+      TX Chest Animation_16: 1052626010940248532
+      TX Chest Animation_17: 3119438749017079868
+      TX Chest Animation_18: 4918926099135234322
+      TX Chest Animation_19: -881816029012212927
+      TX Chest Animation_2: 7729124679938002231
+      TX Chest Animation_20: 5501649885831989918
+      TX Chest Animation_21: -6929924221510541977
+      TX Chest Animation_22: -8385124645873774784
+      TX Chest Animation_23: -2859092616773691244
+      TX Chest Animation_24: 2094815519824226833
+      TX Chest Animation_25: -2983415483628201805
+      TX Chest Animation_26: 1880024034202856855
+      TX Chest Animation_27: -3888567672798316567
+      TX Chest Animation_3: 6231711225017064468
+      TX Chest Animation_4: 2032627284715886908
+      TX Chest Animation_5: 3186618823931839756
+      TX Chest Animation_6: -1440598482483040155
+      TX Chest Animation_7: 5233871863560122000
+      TX Chest Animation_8: 3278100515923679428
+      TX Chest Animation_9: 8206291628881865982
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

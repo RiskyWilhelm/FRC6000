@@ -520,7 +520,23 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Spritesheet_UI_Flat_Select_01_0: -1733718315099488903
+      Spritesheet_UI_Flat_Select_01_1: 329684364744795781
+      Spritesheet_UI_Flat_Select_01_10: -1289169649035395930
+      Spritesheet_UI_Flat_Select_01_11: -6101946437044649393
+      Spritesheet_UI_Flat_Select_01_12: 6138299980542468143
+      Spritesheet_UI_Flat_Select_01_13: -7553080420063368460
+      Spritesheet_UI_Flat_Select_01_14: 1827243881217977922
+      Spritesheet_UI_Flat_Select_01_15: -3595152155814089872
+      Spritesheet_UI_Flat_Select_01_2: -6644736223230455503
+      Spritesheet_UI_Flat_Select_01_3: -573111052456241620
+      Spritesheet_UI_Flat_Select_01_4: -8788320722325505883
+      Spritesheet_UI_Flat_Select_01_5: 4173232334850981662
+      Spritesheet_UI_Flat_Select_01_6: 3808375741332683509
+      Spritesheet_UI_Flat_Select_01_7: 769016510918503178
+      Spritesheet_UI_Flat_Select_01_8: 6126908560966797293
+      Spritesheet_UI_Flat_Select_01_9: 3356658708468895583
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1470,7 +1470,61 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Spritesheet_UI_Flat_0: -1018132181532940152
+      Spritesheet_UI_Flat_1: -7668206235005084558
+      Spritesheet_UI_Flat_10: -7157184530534870431
+      Spritesheet_UI_Flat_11: -9164137984147211085
+      Spritesheet_UI_Flat_12: 4902622763061223082
+      Spritesheet_UI_Flat_13: 1171555711659858315
+      Spritesheet_UI_Flat_14: -8364214724831624471
+      Spritesheet_UI_Flat_15: 7972595899730549931
+      Spritesheet_UI_Flat_16: -920545650427188294
+      Spritesheet_UI_Flat_17: 1100207591998328351
+      Spritesheet_UI_Flat_18: 4498409011146503304
+      Spritesheet_UI_Flat_19: -3087763956976107755
+      Spritesheet_UI_Flat_2: 9054016722941660879
+      Spritesheet_UI_Flat_20: 6507427311304526117
+      Spritesheet_UI_Flat_21: -1713684164328776296
+      Spritesheet_UI_Flat_22: -4676303838289770478
+      Spritesheet_UI_Flat_23: 488519531200547996
+      Spritesheet_UI_Flat_24: 4011007328891178740
+      Spritesheet_UI_Flat_25: 6451272671063406421
+      Spritesheet_UI_Flat_26: 7230162986129578837
+      Spritesheet_UI_Flat_27: 9116147211369761385
+      Spritesheet_UI_Flat_28: -4249765673028935549
+      Spritesheet_UI_Flat_29: -1293392540698699698
+      Spritesheet_UI_Flat_3: 2307158641521431659
+      Spritesheet_UI_Flat_30: 7104347822976087796
+      Spritesheet_UI_Flat_31: 483623070908246809
+      Spritesheet_UI_Flat_32: 4195210339115901555
+      Spritesheet_UI_Flat_33: 6211178891138201752
+      Spritesheet_UI_Flat_34: -4331449129567448295
+      Spritesheet_UI_Flat_35: -3552945774376967476
+      Spritesheet_UI_Flat_36: 4129785852751042132
+      Spritesheet_UI_Flat_37: -7275649638075753433
+      Spritesheet_UI_Flat_38: 1668450967527028105
+      Spritesheet_UI_Flat_39: -7942960407715832271
+      Spritesheet_UI_Flat_4: 4521429550990316861
+      Spritesheet_UI_Flat_40: 4912179794839147999
+      Spritesheet_UI_Flat_41: -4899332514723057737
+      Spritesheet_UI_Flat_42: 5863525644048545077
+      Spritesheet_UI_Flat_43: -5788458170457039417
+      Spritesheet_UI_Flat_44: 2308926054630789892
+      Spritesheet_UI_Flat_45: 6352521318297674726
+      Spritesheet_UI_Flat_46: -3165445777848438688
+      Spritesheet_UI_Flat_47: -7302559837898397420
+      Spritesheet_UI_Flat_48: 2351649369063786266
+      Spritesheet_UI_Flat_49: -8434996283750400471
+      Spritesheet_UI_Flat_5: -7705558156205416182
+      Spritesheet_UI_Flat_50: 4935083738544561022
+      Spritesheet_UI_Flat_51: 5261102904253863532
+      Spritesheet_UI_Flat_52: 3863808849310736943
+      Spritesheet_UI_Flat_53: 6483999832180774797
+      Spritesheet_UI_Flat_6: 9140197872002511461
+      Spritesheet_UI_Flat_7: -3219269109420786411
+      Spritesheet_UI_Flat_8: -8288581524264450484
+      Spritesheet_UI_Flat_9: -1892398262583543129
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
