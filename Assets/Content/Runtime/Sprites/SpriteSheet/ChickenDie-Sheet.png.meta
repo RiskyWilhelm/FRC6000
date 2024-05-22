@@ -121,10 +121,10 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 1
-        width: 41
+        width: 20
         height: 20
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -141,12 +141,12 @@ TextureImporter:
       name: ChickenDie-Sheet_1
       rect:
         serializedVersion: 2
-        x: 39
+        x: 20
         y: 1
-        width: 41
-        height: 10
+        width: 20
+        height: 20
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -159,11 +159,55 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: ChickenDie-Sheet_2
+      rect:
+        serializedVersion: 2
+        x: 40
+        y: 1
+        width: 20
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2518f74c374d1041ab67ed7157718bc
+      internalID: 2040718401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ChickenDie-Sheet_3
+      rect:
+        serializedVersion: 2
+        x: 60
+        y: 1
+        width: 20
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c14163db2daec3b4f8fe546d37bd9609
+      internalID: 1600666854
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: fce0394aef7ce544587ad7db51a84063
     internalID: 0
     vertices: []
     indices: 
@@ -173,6 +217,8 @@ TextureImporter:
     nameFileIdTable:
       ChickenDie-Sheet_0: 1005035623502814699
       ChickenDie-Sheet_1: 6720448967288450922
+      ChickenDie-Sheet_2: 2040718401
+      ChickenDie-Sheet_3: 1600666854
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
