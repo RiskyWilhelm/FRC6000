@@ -4,7 +4,7 @@ public sealed partial class AITargetDummy : MonoBehaviour, IAITarget
 {
 	public AIBase ownerAI;
 
-	public Vector3 Position => this.transform.position;
+	public Vector2 Position => this.transform.position;
 
 	public float OthersMaxApproachDistance => 0;
 
@@ -20,8 +20,7 @@ public sealed partial class AITargetDummy : MonoBehaviour, IAITarget
 
 	public void OnGotCaughtBy(AIBase chaser)
 	{
-		Debug.LogFormat(chaser, "Dummy caught by {0}", chaser.name);
-		chaser.currentTarget.UnderlyingValue = null;
+		chaser.ClearTarget();
 		AITargetDummyPool.Release(this);
 	}
 }

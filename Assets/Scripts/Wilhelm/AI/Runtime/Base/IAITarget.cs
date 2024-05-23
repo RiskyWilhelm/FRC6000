@@ -2,7 +2,7 @@ using UnityEngine;
 
 public interface IAITarget
 {
-	public Vector3 Position { get; }
+	public Vector2 Position { get; }
 
 	public float OthersMaxApproachDistance { get; }
 
