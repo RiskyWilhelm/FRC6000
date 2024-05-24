@@ -1,27 +1,38 @@
 using UnityEngine;
+using static UnityEngine.InputSystem.InputAction;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public sealed partial class Player : MonoBehaviour
 {
-	[Header("Movement")]
+	private PlayerState _state;
+
 	[SerializeField]
+	[Header("Movement")]
 	private Rigidbody2D selfRigidbody;
 
 	public float movementVelocity;
 
-	private Vector2 inputDirection;
-
 	private FRC_Default_InputActions inputActions;
 
-	public PlayerState State { get; private set; }
+	public PlayerState State
+	{
+		get => _state;
+		set
+		{
+			if (value != _state)
+				StateChanged(value);
+
+			_state = value;
+		}
+	}
 
 
 	// Initialize
 	private void Awake()
 	{
 		inputActions = new FRC_Default_InputActions();
-		inputActions.Player.Move.performed += (ctx) => inputDirection = ctx.ReadValue<Vector2>();
-		inputActions.Player.Move.canceled += (ctx) => inputDirection = Vector2.zero;
+		inputActions.Player.Move.performed += OnMoveByInput;
+		inputActions.Player.Move.canceled += OnMoveByInput;
 	}
 
 	private void OnEnable()
@@ -36,14 +47,9 @@ public sealed partial class Player : MonoBehaviour
 		UpdateState();
 	}
 
-	private void FixedUpdate()
+	private void OnMoveByInput(CallbackContext ctx)
 	{
-		MoveByInputDirectionVelocity();
-	}
-
-	private void MoveByInputDirectionVelocity()
-	{
-		selfRigidbody.velocityX = (movementVelocity * inputDirection.x);
+		selfRigidbody.velocityX = (movementVelocity * ctx.ReadValue<Vector2>().x);
 	}
 
 	private void UpdateState()
@@ -56,6 +62,9 @@ public sealed partial class Player : MonoBehaviour
 
 		// Extendable to the jump, fly, falling or whatever
 	}
+
+	private void StateChanged(PlayerState state)
+	{ }
 
 
 	// Dispose

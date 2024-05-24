@@ -1,112 +1,94 @@
-using AYellowpaper;
 using UnityEngine;
 
-/// <remarks> A collider setup with <see cref="EventBase{EventType}"/> is should be done for <see cref="OnCaughtSomething(UnityEngine.Collider2D)"/>.
+/// <remarks> A collider setup with <see cref="EventBase{EventType}"/> is should be done for <see cref="OnNormalAttack(UnityEngine.Collider2D)"/>.
 /// You can use <see cref="EventReflector"/> in order to reflect the event to base GameObject
 /// </remarks>
 [RequireComponent(typeof(Rigidbody2D))]
 [DisallowMultipleComponent]
 public abstract partial class AIBase : MonoBehaviour, IAITarget
 {
+	private AIState _state;
+
+	public AIState State
+	{
+		get => _state;
+		set
+		{
+			if (value != _state)
+				StateChanged(value);
+
+			_state = value;
+		}
+	}
+
 	[Header("Movement")]
 	[SerializeField]
 	private Rigidbody2D selfRigidbody;
 
 	public float horizontalVelocity = 5f;
 
-	public float idleMovementRadius = 5f;
+	private Vector2 lastPosition;
 
-	[Tooltip("Used for casting to check if idle can walk through. Ideally, you should set this nearly but not same as the player size (radius)")]
-	public float obstacleDetectorRadius = 1f;
+	private Vector2 currentDestination;
 
-	[SerializeField]
-	private Timer idleMovementTimer = new(5f);
+	[Tooltip("Used for defining the player bounds. You should set this nearly but not same as the player size (radius)")]
+	public float sizeRadius = 1f;
 
-	private float overrideHorizontalVelocity;
-
-	public virtual Vector2 Position => selfRigidbody.position;
-
-	public AIState State { get; protected set; }
+	public bool IsReachedDestination => (currentDestination != selfRigidbody.position);
 
 	[Header("Target")]
-	public InterfaceReference<IAITarget> currentTarget;
-
 	public string[] allowedTargetTags = new string[0];
-
-	public bool IsHaveTarget => (currentTarget.UnderlyingValue != null);
 
 	[field: SerializeField]
 	public virtual byte Power { get; protected set; }
 
-	[field: SerializeField]
-	public float OthersMaxApproachDistance { get; protected set; }
+	// Initialize
+	private void Start()
+	{
+		currentDestination = selfRigidbody.position;
+	}
 
 
 	// Update
 	protected virtual void Update()
 	{
+		// If not able to go into next position, set position to last position. Useful for where player cant fall to bottom from an edge
+		if (!IsAbleToGo(selfRigidbody.position + (selfRigidbody.velocity * Time.deltaTime)))
+		{
+			ClearDestination();
+			selfRigidbody.position = lastPosition;
+		}
+
 		DoState();
+		lastPosition = selfRigidbody.position;
 	}
 
-	protected virtual void FixedUpdate()
-	{
-		MoveByVelocity();
-	}
-
-	protected void MoveByVelocity()
-	{
-		selfRigidbody.velocityX = overrideHorizontalVelocity;
-	}
-
-	public void OnCaughtSomething(Collider2D collider)
+	// You must call that method by yourself
+	public bool TryGetTargetFromCollider(Collider2D collider, out IAITarget foundTarget)
 	{
 		// Check if event wants to reflect the collision. If there is no EventReflector, it is the main object that wants the event
 		if (!EventReflector.TryGetReflectedGameObject(collider.gameObject, out GameObject colliderGameObject))
 			colliderGameObject = collider.gameObject;
 
-		// Try to catch
-        if (IsCatchable(colliderGameObject) && colliderGameObject.TryGetComponent<IAITarget>(out IAITarget foundTarget))
+		// Try to attack
+		if (State != AIState.Attacking)
 		{
-			ClearTarget();
-			foundTarget.OnGotCaughtBy(this);
-		}
-	}
+			foreach (var iteratedTag in allowedTargetTags)
+				if (gameObject.CompareTag(iteratedTag))
+				{
+					if (colliderGameObject.TryGetComponent<IAITarget>(out foundTarget))
+						return true;
 
-	public bool IsCatchable(GameObject gameObject)
-	{
-		// Check if this(self) can catch the GameObject by tag (AITargetDummy tag is passing always)
-		if (gameObject.CompareTag(Tags.AITargetDummy))
-		{
-			if (gameObject.GetComponent<AITargetDummy>().ownerAI == this)
-				return true;
-			else
-				return false;
+					break;
+				}
 		}
 
-		foreach (var iteratedTag in allowedTargetTags)
-		{
-			if (gameObject.CompareTag(iteratedTag))
-				return true;
-		}
-
+		foundTarget = null;
 		return false;
 	}
 
-	public virtual void OnGotCaughtBy(AIBase chaser)
+	public virtual void OnGotAttacked(AIBase chaser)
 	{ }
-
-	protected virtual void UpdateState()
-	{
-		if (IsHaveTarget)
-		{
-			if (currentTarget.Value.IsChaseableBy(this))
-				State = AIState.Chasing;
-			else
-				State = AIState.RunningAway;
-		}
-		else
-			State = AIState.Idle;
-	}
 
 	protected virtual void DoState()
 	{
@@ -115,72 +97,73 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 		switch (State)
 		{
 			case AIState.Idle:
-				if (idleMovementTimer.Tick() && (currentTarget.UnderlyingValue == null))
-					DoIdle();
+			DoIdle();
 			break;
 
-			case AIState.RunningAway:
-				goto case AIState.Idle;
-
-			case AIState.Chasing:
-				DoChasing();
+			case AIState.Running:
+			DoRunning();
 			break;
 		}
 	}
+
+	protected void UpdateState()
+	{
+		// Wait for finishing the attack
+		if (State == AIState.Attacking)
+			return;
+
+		if (selfRigidbody.position.x != currentDestination.x)
+			State = AIState.Running;
+		else
+			State = AIState.Idle;
+	}
+
+	protected virtual void StateChanged(AIState newState)
+	{ }
 
 	protected virtual void DoIdle()
 	{
-		// Initialize random position
-		var horizontalRandomPosition = Random.Range(-idleMovementRadius, idleMovementRadius);
-		var newIdlePosition = selfRigidbody.position;
-		newIdlePosition.x += horizontalRandomPosition;
+		selfRigidbody.velocityX = 0;
+	}
 
-		// If cant go to the newIdlePosition, try opposite direction
-		if (!IsAbleToGo(newIdlePosition))
+	protected virtual void DoRunning()
+	{
+		if (!IsAbleToGo(currentDestination))
 		{
-			newIdlePosition.x -= horizontalRandomPosition;
-			newIdlePosition.x += -horizontalRandomPosition;
-
-			// If cant go to the opposite direction too, give up
-			if (!IsAbleToGo(newIdlePosition))
-				return;
+			ClearDestination();
+			return;
 		}
 
-		// Initialize dummy
-		var dummy = AITargetDummyPool.Get(newIdlePosition);
-		dummy.ownerAI = this;
+		// Run to the destination until the threshold exceeds
+		var horizontalDistanceToDestination = (currentDestination.x - selfRigidbody.position.x);
 
-		currentTarget.UnderlyingValue = dummy;
-	}
-
-	protected void DoChasing()
-	{
-		if (!IsHaveTarget)
-			return;
-
-		// Chase until reaching the max approach distance of current target
-		var distanceToTarget = (currentTarget.Value.Position - selfRigidbody.position);
-
-		if (distanceToTarget.x >= currentTarget.Value.OthersMaxApproachDistance)
-			overrideHorizontalVelocity = horizontalVelocity;
-		else if (distanceToTarget.x <= -currentTarget.Value.OthersMaxApproachDistance)
-			overrideHorizontalVelocity = -horizontalVelocity;
+		if (horizontalDistanceToDestination >= 0.5f)
+			selfRigidbody.velocityX = horizontalVelocity;
+		else if (horizontalDistanceToDestination <= -0.5f)
+			selfRigidbody.velocityX = -horizontalVelocity;
 		else
-			overrideHorizontalVelocity = 0;
+			selfRigidbody.velocityX = 0;
 	}
 
-	public void ClearTarget()
+	public void SetDestination(Vector2 newDestination)
 	{
-		overrideHorizontalVelocity = 0;
-		currentTarget.UnderlyingValue = null;
+		if (IsAbleToGo(newDestination))
+			currentDestination = newDestination;
+		else
+			currentDestination = selfRigidbody.position;
 	}
 
-	/// <summary> Checks whether it can go to that position without any obstacles or falling places </summary>
+	public void ClearDestination()
+	{
+		currentDestination = selfRigidbody.position;
+	}
+
+	/// <summary> Checks whether it can go to that position without any obstacles </summary>
 	public bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)
 	{
 		// Check if there is any obstacle in front of self
 		var normObstacleDetectorDir = (worldPosition2D - selfRigidbody.position).normalized;
-		var obstacleRaycast = Physics2D.CircleCast(selfRigidbody.position, obstacleDetectorRadius, normObstacleDetectorDir, Vector3.Distance(selfRigidbody.position, worldPosition2D), layerMask);
+		var obstacleRaycast = Physics2D.CircleCast(selfRigidbody.position, sizeRadius, normObstacleDetectorDir, Vector3.Distance(selfRigidbody.position, worldPosition2D), layerMask);
 
 		if (obstacleRaycast.collider)
 			return false;
@@ -188,6 +171,16 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 		// TODO: Check if the place is not fallable. So the method is extendable.
 
 		return true;
+	}
+
+	public bool IsPowerfulThan(IAITarget otherAI) => Power >= otherAI.Power;
+
+	public virtual bool IsAbleToAttackToTarget(IAITarget currentTarget)
+	{
+		if ((currentTarget != null) && this.IsPowerfulThan(currentTarget))
+			return true;
+
+		return false;
 	}
 }
 
@@ -200,7 +193,7 @@ public abstract partial class AIBase
 	{
 		// Display the explosion radius when selected
 		Gizmos.color = new Color(1f, 0f, 0f, 0.25f);
-		Gizmos.DrawSphere(this.transform.position, obstacleDetectorRadius);
+		Gizmos.DrawSphere(this.transform.position, sizeRadius);
 	}
 }
 

@@ -3,8 +3,9 @@ public enum AIState
 	/// <summary> Lowest priority </summary>
 	Idle,
 
-	RunningAway,
+	/// <summary> Chasing the target. Acts like Walking or Running </summary>
+	Running,
 
-	/// <summary> Highest priority </summary>
-	Chasing,
+	/// <summary> Attacking to the target </summary>
+	Attacking,
 }

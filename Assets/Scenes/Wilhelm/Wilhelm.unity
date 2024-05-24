@@ -567,7 +567,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: d3f4d5b6158c96241a42d27a058fc292, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -680,7 +680,7 @@ GameObject:
   - component: {fileID: 960155310}
   m_Layer: 0
   m_Name: AITarget
-  m_TagString: Chicken
+  m_TagString: AITargetDummy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -694,7 +694,7 @@ Transform:
   m_GameObject: {fileID: 960155307}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.29, y: 8.78, z: 0}
+  m_LocalPosition: {x: 3.48, y: 0.84, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -742,15 +742,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 960155309}
   horizontalVelocity: 10
-  idleMovementRadius: 5
-  obstacleDetectorRadius: 0
-  idleMovementTimer:
-    tickTime: 2
-  currentTarget:
-    _underlyingValue: {fileID: 0}
+  sizeRadius: 1
   allowedTargetTags: []
   <Power>k__BackingField: 0
-  <OthersMaxApproachDistance>k__BackingField: 0.5
 --- !u!1 &977131325
 GameObject:
   m_ObjectHideFlags: 0
@@ -820,116 +814,6 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 1, y: 2}
   m_Direction: 0
---- !u!1 &1053847367
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1053847368}
-  - component: {fileID: 1053847369}
-  - component: {fileID: 1053847371}
-  - component: {fileID: 1053847370}
-  m_Layer: 0
-  m_Name: ChaseCollider
-  m_TagString: Fox
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1053847368
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1053847367}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8563408416644423639}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!58 &1053847369
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1053847367}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 63
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 1.5
---- !u!114 &1053847370
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1053847367}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a421f48310d65d54a9259094b96e70c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  raised:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 8563408416644423633}
-        m_TargetAssemblyTypeName: AIBase, FRC.AI.Runtime
-        m_MethodName: OnCaughtSomething
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &1053847371
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1053847367}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32f1af422b934fb4184db5f30b9674a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  reflectTo: {fileID: 8563408416644423632}
 --- !u!1 &1262239795
 GameObject:
   m_ObjectHideFlags: 0
@@ -6898,7 +6782,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7173585969489889783, guid: 7921913823055da4d978176764ce805e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 4.23
+      value: -33.94
       objectReference: {fileID: 0}
     - target: {fileID: 7173585969489889783, guid: 7921913823055da4d978176764ce805e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6936,12 +6820,13 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7973699907714518999, guid: 7921913823055da4d978176764ce805e, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 6200000, guid: d3f4d5b6158c96241a42d27a058fc292, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects:
-    - targetCorrespondingSourceObject: {fileID: 7173585969489889783, guid: 7921913823055da4d978176764ce805e, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1053847368}
+    m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2669454140272425697, guid: 7921913823055da4d978176764ce805e, type: 3}
       insertIndex: -1
@@ -6969,23 +6854,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 8563408416644423638}
   horizontalVelocity: 10
-  idleMovementRadius: 5
-  obstacleDetectorRadius: 0.95
-  idleMovementTimer:
-    tickTime: 2
-  currentTarget:
-    _underlyingValue: {fileID: 0}
+  sizeRadius: 0.95
   allowedTargetTags: []
   <Power>k__BackingField: 1
-  <OthersMaxApproachDistance>k__BackingField: 0.5
 --- !u!50 &8563408416644423638 stripped
 Rigidbody2D:
   m_CorrespondingSourceObject: {fileID: 7973699907714518999, guid: 7921913823055da4d978176764ce805e, type: 3}
-  m_PrefabInstance: {fileID: 8563408416644423631}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &8563408416644423639 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7173585969489889783, guid: 7921913823055da4d978176764ce805e, type: 3}
   m_PrefabInstance: {fileID: 8563408416644423631}
   m_PrefabAsset: {fileID: 0}
 --- !u!114 &8563408416644423640
