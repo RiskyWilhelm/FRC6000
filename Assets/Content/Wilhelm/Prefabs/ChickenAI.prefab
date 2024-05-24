@@ -10,9 +10,12 @@ GameObject:
   m_Component:
   - component: {fileID: 7173585969489889783}
   - component: {fileID: 7973699907714518999}
+  - component: {fileID: -9038861455327793708}
+  - component: {fileID: 1005912783288694528}
+  - component: {fileID: 6166709007014389615}
   m_Layer: 0
-  m_Name: AI
-  m_TagString: Untagged
+  m_Name: ChickenAI
+  m_TagString: Chicken
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -50,7 +53,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: d3f4d5b6158c96241a42d27a058fc292, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -61,6 +64,50 @@ Rigidbody2D:
   m_SleepingMode: 0
   m_CollisionDetection: 1
   m_Constraints: 4
+--- !u!114 &-9038861455327793708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2669454140272425697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f6c50200ec1a1c4e9459fe20b4107df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  selfRigidbody: {fileID: 7973699907714518999}
+  horizontalVelocity: 5
+  sizeRadius: 0.95
+  allowedTargetTags:
+  - ChickenBase
+  <Power>k__BackingField: 0
+  <Health>k__BackingField: 2
+--- !u!114 &1005912783288694528
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2669454140272425697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc2bcaf3cb83ecf4cbbd979553bc45f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  updateType: 0
+--- !u!114 &6166709007014389615
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2669454140272425697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3b44c08615be18429936510aed2a1b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3556564923247605855
 GameObject:
   m_ObjectHideFlags: 0
@@ -73,7 +120,7 @@ GameObject:
   - component: {fileID: 7863816199902176656}
   m_Layer: 0
   m_Name: Visual
-  m_TagString: Untagged
+  m_TagString: Fox
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -138,7 +185,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
-  m_Color: {r: 0.6037736, g: 0.319661, b: 0.27625492, a: 1}
+  m_Color: {r: 0.256675, g: 0.5283019, b: 0.26960963, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -158,9 +205,10 @@ GameObject:
   m_Component:
   - component: {fileID: 7050009235390762627}
   - component: {fileID: 6886931853449807190}
-  m_Layer: 0
+  - component: {fileID: 8200733951105208569}
+  m_Layer: 6
   m_Name: Collider
-  m_TagString: Untagged
+  m_TagString: Fox
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -217,3 +265,16 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 1, y: 2}
   m_Direction: 0
+--- !u!114 &8200733951105208569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4241816251137796589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32f1af422b934fb4184db5f30b9674a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reflectTo: {fileID: 2669454140272425697}

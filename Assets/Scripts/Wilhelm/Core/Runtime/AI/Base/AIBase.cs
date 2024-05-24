@@ -34,13 +34,15 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 	[Tooltip("Used for defining the player bounds. You should set this nearly but not same as the player size (radius)")]
 	public float sizeRadius = 1f;
 
-	public bool IsReachedDestination => (currentDestination != selfRigidbody.position);
-
 	[Header("Target")]
 	public string[] allowedTargetTags = new string[0];
 
 	[field: SerializeField]
-	public virtual byte Power { get; protected set; }
+	public virtual ushort Power { get; protected set; }
+
+	[field: SerializeField]
+	public virtual ushort Health { get; protected set; }
+
 
 	// Initialize
 	private void Start()
@@ -52,43 +54,24 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 	// Update
 	protected virtual void Update()
 	{
-		// If not able to go into next position, set position to last position. Useful for where player cant fall to bottom from an edge
+		DetectObstaclesOnMovingDirection();
+		DoState();
+	}
+
+	protected virtual void LateUpdate()
+	{
+		lastPosition = selfRigidbody.position;
+	}
+
+	protected void DetectObstaclesOnMovingDirection()
+	{
+		// If not able to go into next position, set position to last position. Useful for where player cant fall to bottom from an edge and obstacle detection
 		if (!IsAbleToGo(selfRigidbody.position + (selfRigidbody.velocity * Time.deltaTime)))
 		{
 			ClearDestination();
 			selfRigidbody.position = lastPosition;
 		}
-
-		DoState();
-		lastPosition = selfRigidbody.position;
 	}
-
-	// You must call that method by yourself
-	public bool TryGetTargetFromCollider(Collider2D collider, out IAITarget foundTarget)
-	{
-		// Check if event wants to reflect the collision. If there is no EventReflector, it is the main object that wants the event
-		if (!EventReflector.TryGetReflectedGameObject(collider.gameObject, out GameObject colliderGameObject))
-			colliderGameObject = collider.gameObject;
-
-		// Try to attack
-		if (State != AIState.Attacking)
-		{
-			foreach (var iteratedTag in allowedTargetTags)
-				if (gameObject.CompareTag(iteratedTag))
-				{
-					if (colliderGameObject.TryGetComponent<IAITarget>(out foundTarget))
-						return true;
-
-					break;
-				}
-		}
-
-		foundTarget = null;
-		return false;
-	}
-
-	public virtual void OnGotAttacked(AIBase chaser)
-	{ }
 
 	protected virtual void DoState()
 	{
@@ -103,6 +86,14 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 			case AIState.Running:
 			DoRunning();
 			break;
+
+			case AIState.Attacking:
+			DoAttacking();
+			break;
+
+			case AIState.Dead:
+			DoDead();
+			break;
 		}
 	}
 
@@ -111,8 +102,9 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 		// Wait for finishing the attack
 		if (State == AIState.Attacking)
 			return;
-
-		if (selfRigidbody.position.x != currentDestination.x)
+		else if (Health == 0)
+			State = AIState.Dead;
+		else if (selfRigidbody.position.x != currentDestination.x)
 			State = AIState.Running;
 		else
 			State = AIState.Idle;
@@ -145,18 +137,45 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 			selfRigidbody.velocityX = 0;
 	}
 
-	public void SetDestination(Vector2 newDestination)
+	protected virtual void DoAttacking()
+	{ }
+
+	protected virtual void DoDead()
+	{ }
+
+	public void SetDestinationTo(Vector2 newDestination)
 	{
-		if (IsAbleToGo(newDestination))
-			currentDestination = newDestination;
-		else
-			currentDestination = selfRigidbody.position;
+		currentDestination = newDestination;
 	}
 
 	public void ClearDestination()
 	{
 		currentDestination = selfRigidbody.position;
 	}
+
+	public bool TryGetTargetFromCollider<TargetType>(Collider2D collider, out TargetType foundTarget)
+		where TargetType : IAITarget
+	{
+		// Check if event wants to reflect the collision. If there is no EventReflector, it is the main object that wants the event
+		if (!EventReflector.TryGetReflectedGameObject(collider.gameObject, out GameObject colliderGameObject))
+			colliderGameObject = collider.gameObject;
+
+		// Try Get AI target
+		foreach (var iteratedTag in allowedTargetTags)
+			if (colliderGameObject.CompareTag(iteratedTag))
+			{
+				if (colliderGameObject.TryGetComponent<TargetType>(out foundTarget))
+					return true;
+
+				break;
+			}
+
+		foundTarget = default;
+		return false;
+	}
+
+	public virtual void OnGotAttackedBy(AIBase chaser)
+	{ }
 
 	/// <summary> Checks whether it can go to that position without any obstacles </summary>
 	public bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)
@@ -175,9 +194,9 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 
 	public bool IsPowerfulThan(IAITarget otherAI) => Power >= otherAI.Power;
 
-	public virtual bool IsAbleToAttackToTarget(IAITarget currentTarget)
+	public virtual bool IsAbleToAttackTo(IAITarget target)
 	{
-		if ((currentTarget != null) && this.IsPowerfulThan(currentTarget))
+		if ((target != null) && this.IsPowerfulThan(target))
 			return true;
 
 		return false;

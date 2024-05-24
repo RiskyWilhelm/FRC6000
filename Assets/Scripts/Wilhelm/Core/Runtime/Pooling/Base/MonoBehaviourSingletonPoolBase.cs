@@ -6,6 +6,7 @@ public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, Pool
     where PooledObjectType : class
 {
     [SerializeField]
+	[Tooltip("Collection checks will throw errors if we try to release an item that is already in the pool")]
     private bool collectionCheck = true;
 
     [SerializeField]
@@ -30,7 +31,32 @@ public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, Pool
 
 	public static PooledObjectType Get() => instance.objectPool.Get();
 
+	public static PooledObjectType Get(Vector2 worldPosition2D)
+	{
+		var pooledObject = instance.objectPool.Get();
+
+		if (pooledObject is MonoBehaviour pooledMonoBehaviour)
+			pooledMonoBehaviour.transform.position = worldPosition2D;
+		else
+			Debug.LogErrorFormat("{0} is not a type of MonoBehaviour. Returned normal pooled object", typeof(PooledObjectType));
+
+		return pooledObject;
+	}
+
 	public static PooledObject<PooledObjectType> Get(out PooledObjectType pooledObject) => instance.objectPool.Get(out pooledObject);
+
+	public static PooledObject<PooledObjectType> Get(Vector2 worldPosition2D, out PooledObjectType pooledObject)
+	{
+		var disposablePooledObject = instance.objectPool.Get(out PooledObjectType takenPooledObject);
+		pooledObject = takenPooledObject;
+
+		if (takenPooledObject is MonoBehaviour pooledMonoBehaviour)
+			pooledMonoBehaviour.transform.position = worldPosition2D;
+		else
+			Debug.LogErrorFormat("{0} is not a type of MonoBehaviour. Returned normal pooled object", typeof(PooledObjectType));
+
+		return disposablePooledObject;
+	}
 
 	public static void Release(PooledObjectType obj) => instance.objectPool.Release(obj);
 

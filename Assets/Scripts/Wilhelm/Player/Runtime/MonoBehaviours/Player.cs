@@ -4,15 +4,9 @@ using static UnityEngine.InputSystem.InputAction;
 [RequireComponent(typeof(Rigidbody2D))]
 public sealed partial class Player : MonoBehaviour
 {
-	private PlayerState _state;
-
-	[SerializeField]
-	[Header("Movement")]
-	private Rigidbody2D selfRigidbody;
-
-	public float movementVelocity;
-
 	private FRC_Default_InputActions inputActions;
+
+	private PlayerState _state;
 
 	public PlayerState State
 	{
@@ -25,6 +19,12 @@ public sealed partial class Player : MonoBehaviour
 			_state = value;
 		}
 	}
+
+	[SerializeField]
+	[Header("Movement")]
+	private Rigidbody2D selfRigidbody;
+
+	public float movementVelocity;
 
 
 	// Initialize
@@ -59,11 +59,9 @@ public sealed partial class Player : MonoBehaviour
 			State = PlayerState.Idle;
 		else
 			State = PlayerState.Running;
-
-		// Extendable to the jump, fly, falling or whatever
 	}
 
-	private void StateChanged(PlayerState state)
+	private void StateChanged(PlayerState newState)
 	{ }
 
 

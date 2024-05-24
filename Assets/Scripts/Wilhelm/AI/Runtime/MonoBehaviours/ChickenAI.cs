@@ -1,14 +1,9 @@
-using UnityEngine;
-
 public sealed partial class ChickenAI : AIBase
 {
-	// Initialize
-
-
-	// Update
-
-
-	// Dispose
+	public void OnGotCaughtBy(AIBase chaser)
+	{
+		ChickenAIPool.Release(this);
+	}
 }
 
 

@@ -29,6 +29,7 @@ public sealed class Tags
     public const string Player = "Player";
     public const string GameController = "GameController";
     public const string Chicken = "Chicken";
+    public const string ChickenBase = "ChickenBase";
     public const string Fox = "Fox";
-    public const string AITargetDummy = "AITargetDummy";
+    public const string FoxBase = "FoxBase";
 }
