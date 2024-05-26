@@ -77,12 +77,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
-  horizontalVelocity: 5
+  horizontalVelocity: 2.5
   sizeRadius: 0.95
   allowedTargetTags:
   - ChickenBase
+  - Fox
   <Power>k__BackingField: 0
   <Health>k__BackingField: 2
+  idleTimer:
+    tickTime: 2
 --- !u!114 &1005912783288694528
 MonoBehaviour:
   m_ObjectHideFlags: 0

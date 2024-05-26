@@ -10,11 +10,12 @@ GameObject:
   m_Component:
   - component: {fileID: 150079601730306279}
   - component: {fileID: 7326570579824223486}
-  - component: {fileID: 1771570836286773129}
   - component: {fileID: 7978156460112614562}
+  - component: {fileID: 1771570836286773129}
+  - component: {fileID: 5694485341825279247}
   m_Layer: 0
   m_Name: FoxBase
-  m_TagString: Untagged
+  m_TagString: FoxBase
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -89,18 +90,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &1771570836286773129
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8937228621258481250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0508c65a7b2d0ea499072fa8b004c17d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &7978156460112614562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,8 +125,8 @@ MonoBehaviour:
   m_ShadowMesh:
     m_Mesh: {fileID: 0}
     m_LocalBounds:
-      m_Center: {x: 0, y: 1, z: 0}
-      m_Extent: {x: 2, y: 2, z: 0}
+      m_Center: {x: 0, y: -0.125, z: 0}
+      m_Extent: {x: 2, y: 0.875, z: 0}
     m_EdgeProcessing: 1
     m_TrimEdge: 0
     m_FlipX: 0
@@ -146,7 +135,7 @@ MonoBehaviour:
   m_CastingOption: 1
   m_PreviousTrimEdge: 0
   m_PreviousEdgeProcessing: 1
-  m_PreviousShadowCastingSource: 1
+  m_PreviousShadowCastingSource: 2
   m_PreviousShadowShape2DSource: {fileID: 7326570579824223486}
   references:
     version: 2
@@ -154,3 +143,27 @@ MonoBehaviour:
     - rid: 1524242551132389518
       type: {class: ShadowShape2DProvider_SpriteRenderer, ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
       data: 
+--- !u!114 &1771570836286773129
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937228621258481250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0508c65a7b2d0ea499072fa8b004c17d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5694485341825279247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937228621258481250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3b44c08615be18429936510aed2a1b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

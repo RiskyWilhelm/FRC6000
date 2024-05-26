@@ -7,11 +7,6 @@ public sealed partial class FoxBase : MonoBehaviour, IAITarget
 	public ushort Health => 0;
 
 
-	private void Start()
-	{
-		Debug.Log("Start");
-	}
-
 	// Update
 	public void OnGotAttackedBy(AIBase chaser)
 	{ }
