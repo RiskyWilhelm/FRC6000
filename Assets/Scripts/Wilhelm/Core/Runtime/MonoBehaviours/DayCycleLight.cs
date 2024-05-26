@@ -1,6 +1,6 @@
-using System;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering.Universal;
 
 public sealed partial class DayCycleLight : MonoBehaviour
@@ -18,6 +18,8 @@ public sealed partial class DayCycleLight : MonoBehaviour
 	private Vector2 previousTransformRight;
 
 	private float totalRotatedAngle;
+
+	public UnityEvent onCompletedFullTurn;
 
 	// Time
 	[field: SerializeField]
@@ -37,6 +39,7 @@ public sealed partial class DayCycleLight : MonoBehaviour
 	private void Update()
 	{
 		UpdateSun();
+		UpdateSunColorByTime();
 		UpdateTime();
 	}
 
@@ -45,29 +48,22 @@ public sealed partial class DayCycleLight : MonoBehaviour
 		// Rotate the sun. Negated the dayspeed because the sun never rise from right and negative means "rotate to right"
 		this.transform.Rotate(0, 0, -daySpeed * UnityEngine.Time.deltaTime);
 
-		// compare it to the previous frame's right vector and sum up the delta angle
+		// Check if it turned fully by comparing it to the previous frame's right vector and summing up the delta angle
 		var currentRight = this.transform.right;
 		totalRotatedAngle += Vector2.SignedAngle(previousTransformRight, currentRight);
 
 		// did the angle reach +/- 360 ? Is Completed full turn?
 		if (Mathf.Abs(totalRotatedAngle) >= 360f)
 		{
-			CompletedFullTurn();
+			Debug.Log("Completed full turn");
+			onCompletedFullTurn?.Invoke();
 
 			// if _angle > 360 subtract 360
 			// if _angle < -360 add 360
 			totalRotatedAngle -= 360f * Mathf.Sign(totalRotatedAngle);
 		}
 
-		// Update sun color
-		sun.color = Color.Lerp(dayLightColor, dayNightColor, 0);
-
 		previousTransformRight = currentRight;
-	}
-
-	private void CompletedFullTurn()
-	{
-
 	}
 
 	private void UpdateTime()
@@ -79,7 +75,10 @@ public sealed partial class DayCycleLight : MonoBehaviour
 
 	private void UpdateSunColorByTime()
 	{
-
+		var currentZAngle = this.transform.rotation.eulerAngles.z;
+		var exactLightPoint = 180;
+		var lightAnglePointWithProcess = Mathf.Abs((currentZAngle - (exactLightPoint * Mathf.Sign(currentZAngle))) / exactLightPoint);
+		sun.color = Color.Lerp(dayNightColor, dayLightColor, lightAnglePointWithProcess);
 	}
 
 	public string GetCurrentTimeInAngle(float angle, byte offsetHour = 0)
@@ -94,10 +93,10 @@ public sealed partial class DayCycleLight : MonoBehaviour
 
 		// Get how long it will take to the next hours in a range of 0-1
 		float processToNextHour = (hourWithProcess + 1f) - Mathf.Ceil(hourWithProcess);
-		float minuteWithProcess = processToNextHour * 60;
+		float minuteWithProcess = processToNextHour * 60f;
 
 		float processToNextMin = (minuteWithProcess + 1f) - Mathf.Ceil(minuteWithProcess);
-		float secondWithProcess = processToNextMin * 60;
+		float secondWithProcess = processToNextMin * 60f;
 
 		timeBuilder.AppendFormat("{0:00}:{1:00}:{2:00}", (int)hourWithProcess, (int)minuteWithProcess, (int)secondWithProcess);
 		return timeBuilder.ToString();
