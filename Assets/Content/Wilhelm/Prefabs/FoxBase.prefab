@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 150079601730306279}
   - component: {fileID: 7326570579824223486}
   - component: {fileID: 1771570836286773129}
+  - component: {fileID: 7978156460112614562}
   m_Layer: 0
   m_Name: FoxBase
   m_TagString: Untagged
@@ -100,3 +101,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0508c65a7b2d0ea499072fa8b004c17d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7978156460112614562
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937228621258481250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7db70e0ea77f5ac47a8f4565a9406397, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ShadowGroup: 0
+  m_Priority: 0
+  m_ComponentVersion: 5
+  m_HasRenderer: 1
+  m_UseRendererSilhouette: 1
+  m_CastsShadows: 1
+  m_SelfShadows: 0
+  m_AlphaCutoff: 0.1
+  m_ApplyToSortingLayers: 000000006f57db4c
+  m_ShapePath:
+  - {x: -2, y: -1, z: 0}
+  - {x: -2, y: 3, z: 0}
+  - {x: 2, y: 3, z: 0}
+  - {x: 2, y: -1, z: 0}
+  m_ShapePathHash: 0
+  m_InstanceId: 0
+  m_ShadowShape2DComponent: {fileID: 7326570579824223486}
+  m_ShadowShape2DProvider:
+    rid: 1524242551132389518
+  m_ShadowCastingSource: 2
+  m_ShadowMesh:
+    m_Mesh: {fileID: 0}
+    m_LocalBounds:
+      m_Center: {x: 0, y: 1, z: 0}
+      m_Extent: {x: 2, y: 2, z: 0}
+    m_EdgeProcessing: 1
+    m_TrimEdge: 0
+    m_FlipX: 0
+    m_FlipY: 0
+    m_InitialTrim: 0
+  m_CastingOption: 1
+  m_PreviousTrimEdge: 0
+  m_PreviousEdgeProcessing: 1
+  m_PreviousShadowCastingSource: 1
+  m_PreviousShadowShape2DSource: {fileID: 7326570579824223486}
+  references:
+    version: 2
+    RefIds:
+    - rid: 1524242551132389518
+      type: {class: ShadowShape2DProvider_SpriteRenderer, ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
+      data: 
