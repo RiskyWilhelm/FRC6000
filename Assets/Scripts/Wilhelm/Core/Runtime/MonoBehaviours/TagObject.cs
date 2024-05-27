@@ -53,6 +53,7 @@ public sealed partial class TagObject : MonoBehaviour
 		return false;
 	}
 
+	/// <param name="predicateNearest"> If the nearest chicken meets the criteria(predicate returns true), set it to nearest. If not, skip </param>
 	public static bool TryGetNearestTagObject(Transform relativeTo, string checkTag, out Transform nearestTagObject, Predicate<Transform> predicateNearest = null)
 	{
 		nearestTagObject = null;

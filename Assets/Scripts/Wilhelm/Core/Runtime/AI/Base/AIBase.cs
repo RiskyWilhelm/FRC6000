@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 /// <remarks> A collider setup with <see cref="EventBase{EventType}"/> is should be done for <see cref="OnNormalAttack(UnityEngine.Collider2D)"/>.
@@ -8,6 +7,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public abstract partial class AIBase : MonoBehaviour, IAITarget
 {
+	// Actions
 	private AIState _state;
 
 	public AIState State
@@ -16,7 +16,10 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 		set
 		{
 			if (value != _state)
+			{
+				Debug.LogFormat("State of {0} is set to {1}", this.name, value);
 				OnStateChanged(value);
+			}
 
 			_state = value;
 		}
@@ -28,9 +31,9 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 
 	public float horizontalVelocity = 5f;
 
-	private Vector2 lastPosition;
-
 	private Vector2? currentDestination;
+
+	private Transform currentDestinationTarget;
 
 	/// <summary> Controls how many meters will be considered as reached when approaching the target </summary>
 	private float destinationThresholdDistance;
@@ -39,8 +42,6 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 	public float sizeRadius = 1f;
 
 	[Header("Target")]
-	public string[] allowedTargetTags = new string[0];
-
 	[field: SerializeField]
 	public virtual ushort Power { get; protected set; }
 
@@ -51,33 +52,28 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 	// Update
 	private void Update()
 	{
-		DetectObstaclesOnMovingDirection();
-		DoState();
-		CheckIfReachedToDestination();
-	}
-
-	private void LateUpdate()
-	{
-		lastPosition = selfRigidbody.position;
-	}
-
-	private void DetectObstaclesOnMovingDirection()
-	{
-		// If not able to go into next position, set position to last position. Useful for where player cant fall to bottom from an edge and obstacle detection
-		if (!IsAbleToGo(selfRigidbody.position + (selfRigidbody.velocity * Time.deltaTime)))
-		{
-			ClearDestination();
-			selfRigidbody.position = lastPosition;
-		}
-	}
-
-	private void CheckIfReachedToDestination()
-	{
 		if (IsReachedToDestination())
 		{
 			OnReachedToDestination();
 			ClearDestination();
 		}
+		
+		DetectObstacles();
+		DoState();
+		OnUpdate();
+	}
+
+	protected virtual void OnUpdate()
+	{ }
+
+	private void DetectObstacles()
+	{
+		// If not able to go to next position and destination, clear destination and set position to last position. Useful for where player cant fall to bottom from an edge and obstacle detection
+		var nextPredictedPosition = selfRigidbody.position + (selfRigidbody.velocity * Time.deltaTime);
+		var hasDestination = TryGetDestination(out Vector2 destination);
+
+		if (!IsAbleToGo(nextPredictedPosition) || (hasDestination && !IsAbleToGo(destination)))
+			ClearDestination();
 	}
 
 	protected virtual void OnReachedToDestination()
@@ -114,29 +110,41 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 			return;
 		else if (Health == 0)
 			State = AIState.Dead;
-		else if (currentDestination.HasValue && !IsReachedToDestination())
+		else if ((selfRigidbody.velocityX != 0) && !IsReachedToDestination())
 			State = AIState.Running;
 		else
 			State = AIState.Idle;
 	}
 
 	protected virtual void OnStateChanged(AIState newState)
-	{ }
+	{
+		switch (newState)
+		{
+			case AIState.Idle:
+			selfRigidbody.velocityX = 0;
+			break;
+
+			case AIState.Dead:
+			selfRigidbody.velocityX = 0;
+			break;
+		}
+	}
 
 	protected virtual void DoIdle()
-	{
-		selfRigidbody.velocityX = 0;
-	}
+	{ }
 
 	protected virtual void DoRunning()
 	{
 		// Run to the destination until the threshold exceeds
-		var horizontalDistanceToDestination = (currentDestination.Value.x - selfRigidbody.position.x);
+		if (TryGetDestination(out Vector2 destination))
+		{
+			float horizontalDistanceToDestination = (destination.x - selfRigidbody.position.x);
 
-		if (horizontalDistanceToDestination > 0)
-			selfRigidbody.velocityX = horizontalVelocity;
-		else if (horizontalDistanceToDestination < 0)
-			selfRigidbody.velocityX = -horizontalVelocity;
+			if (horizontalDistanceToDestination > 0)
+				selfRigidbody.velocityX = horizontalVelocity;
+			else if (horizontalDistanceToDestination < 0)
+				selfRigidbody.velocityX = -horizontalVelocity;
+		}
 	}
 
 	protected virtual void DoAttacking()
@@ -147,29 +155,65 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 
 	public bool IsReachedToDestination()
 	{
-		// If destination dont have any value, consider as reached
-		if (!currentDestination.HasValue)
+		var hasDestination = TryGetDestination(out Vector2 destination);
+
+		// If destinations dont have any value, consider as reached
+		if (!hasDestination)
 			return true;
 
-		// If position equals or inside the threshold, consider as reached
-		var distanceToCurrentDestination = (currentDestination.Value - selfRigidbody.position);
-		if (distanceToCurrentDestination.sqrMagnitude <= (destinationThresholdDistance * destinationThresholdDistance))
+		// If self position equals or inside the threshold of destination, consider as reached
+		var distanceToDestination = (destination - selfRigidbody.position);
+		if (distanceToDestination.sqrMagnitude <= (destinationThresholdDistance * destinationThresholdDistance))
 			return true;
 
 		return false;
 	}
 
-	public void SetDestinationTo(Vector2 newDestination, float destinationApproachThreshold)
+	public void SetDestinationTo(Vector2 newDestination, float destinationApproachThreshold = 0.5f)
 	{
 		currentDestination = newDestination;
+		currentDestinationTarget = null;
 		this.destinationThresholdDistance = destinationApproachThreshold;
+
+		// Check if the new destination is already reached one, then clear it
+		if (IsReachedToDestination())
+			ClearDestination();
+	}
+
+	public void SetDestinationTo(Transform newDestination, float destinationApproachThreshold = 0.5f)
+	{
+		currentDestination = null;
+		currentDestinationTarget = newDestination;
+		this.destinationThresholdDistance = destinationApproachThreshold;
+
+		// Check if the new destination is already reached one, then clear it
+		if (IsReachedToDestination())
+			ClearDestination();
+	}
+
+	/// <summary> The destination supports transforms too so it gets the one which had set </summary>
+	public bool TryGetDestination(out Vector2 worldPosition)
+	{
+		if (currentDestination.HasValue)
+		{
+			worldPosition = currentDestination.Value;
+			return true;
+		}
+		else if (currentDestinationTarget != null)
+		{
+			worldPosition = currentDestinationTarget.position;
+			return true;
+		}
+
+		worldPosition = default;
+		return false;
 	}
 
 	public void ClearDestination()
 	{
 		currentDestination = null;
+		currentDestinationTarget = null;
 		destinationThresholdDistance = 0;
-		selfRigidbody.velocityX = 0;
 	}
 
 	public bool TryGetTargetFromCollider<TargetType>(Collider2D collider, out TargetType foundTarget)
@@ -180,16 +224,22 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 			colliderGameObject = collider.gameObject;
 
 		// Try Get AI target
-		foreach (var iteratedTag in allowedTargetTags)
-			if (colliderGameObject.CompareTag(iteratedTag) && colliderGameObject.TryGetComponent<TargetType>(out foundTarget))
-				return true;
-
-		foundTarget = default;
-		return false;
+		return colliderGameObject.TryGetComponent<TargetType>(out foundTarget);
 	}
 
 	public virtual void OnGotAttackedBy(AIBase chaser)
-	{ }
+	{
+		TakeDamage(chaser.Power);
+	}
+
+	public void TakeDamage(ushort damage)
+	{
+		if (Health != 0)
+			this.Health -= (ushort)Mathf.Clamp(damage, ushort.MinValue, ushort.MaxValue);
+
+		if (Health == 0)
+			State = AIState.Dead;
+	}
 
 	/// <summary> Checks whether it can go to that position without any obstacles </summary>
 	public bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)

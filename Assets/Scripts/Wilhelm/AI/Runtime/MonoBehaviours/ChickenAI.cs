@@ -6,29 +6,17 @@ public sealed partial class ChickenAI : AIBase
 
 	protected override void DoIdle()
 	{
-		// Check if reached the destination
-		if (IsReachedToDestination() && idleTimer.Tick())
+		// Do idle when the timer finishes
+		if (idleTimer.Tick())
 		{
-			// Find a random horizontal position around self
+			// Find a random horizontal position around self and set destination
 			var randomHorizontalPosition = Random.Range(-5, 5);
 			var newDestination = selfRigidbody.position;
+
 			newDestination.x += randomHorizontalPosition;
-
-			// Check if self able to go new horizontal position
-			if (IsAbleToGo(newDestination))
-			{
-				SetDestinationTo(newDestination, 0.5f);
-				return;
-			}
-
-			// If not, check if the other side is valid
-			// If not, then no self has no luck
-			newDestination.x += (-randomHorizontalPosition * 2);
-			if (IsAbleToGo(newDestination))
-				SetDestinationTo(newDestination, 0.5f);
+			SetDestinationTo(newDestination);
 		}
 	}
-
 
 	public void RunAwayFromFox(Collider2D collider)
 	{
@@ -44,14 +32,7 @@ public sealed partial class ChickenAI : AIBase
 		var newDestination = selfRigidbody.position;
 		newDestination.x += normalizedDirToChicken.x * 1f;
 
-		// Run if able to go
-		if (IsAbleToGo(newDestination))
-			SetDestinationTo(newDestination, 0.5f);
-	}
-
-	public void OnGotCaughtBy(AIBase chaser)
-	{
-		ChickenAIPool.Release(this);
+		SetDestinationTo(newDestination);
 	}
 }
 

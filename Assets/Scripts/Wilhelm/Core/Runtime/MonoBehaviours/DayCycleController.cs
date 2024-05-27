@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
-public sealed partial class DayCycleLight : MonoBehaviour
+public sealed partial class DayCycleController : MonoBehaviourSingletonBase<DayCycleController>
 {
 	[Header("Movement")]
 	[SerializeField]
@@ -69,7 +69,7 @@ public sealed partial class DayCycleLight : MonoBehaviour
 
 #if UNITY_EDITOR
 
-public sealed partial class DayCycleLight
+public sealed partial class DayCycleController
 {
 	public string e_Time;
 
