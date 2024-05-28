@@ -13,8 +13,19 @@ public sealed partial class EventReflector : MonoBehaviour
             return true;
         }
 
-        reflectedTo = null;
+        reflectedTo = gameObject;
         return false;
+	}
+
+	/// <summary> Same with <see cref="GameObject.TryGetComponent{T}(out T)"/> except it reflects the method to desired <see cref="GameObject"/> via <see cref="EventReflector"/> if there is any </summary>
+	public static bool TryGetComponentByEventReflector<TargetType>(GameObject searchGameObject, out TargetType foundTarget)
+	{
+		// Check if event wants to reflect the collision. If there is no EventReflector, it is the main object that wants the event
+		if (!TryGetReflectedGameObject(searchGameObject, out GameObject foundGameObject))
+			foundGameObject = searchGameObject;
+
+		// Try Get AI target
+		return foundGameObject.TryGetComponent<TargetType>(out foundTarget);
 	}
 }
 

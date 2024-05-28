@@ -9,7 +9,7 @@ public readonly struct GameTime : IEquatable<GameTime>
 
 	public readonly byte second;
 
-	public readonly bool IsNightTime => (hour >= 19);
+	public readonly TimeType timeType;
 
 	private static readonly StringBuilder timeBuilder = new();
 
@@ -20,11 +20,24 @@ public readonly struct GameTime : IEquatable<GameTime>
 		return timeBuilder.AppendFormat("{0:00}:{1:00}:{2:00}", hour, minute, second).ToString();
 	}
 
-	public GameTime(byte hour, byte minute, byte second)
+	/// <summary> Accepts 24-clock hour time </summary>
+	/// <param name="convertToPM"> Converts to 12-hour clock </param>
+	public GameTime(byte hour, byte minute, byte second, bool convertToPM = false)
 	{
-		this.hour = hour;
-		this.minute = minute;
-		this.second = second;
+		// Check if it is night time or not
+		if ((hour >= 19) || (hour <= 5))
+			this.timeType = TimeType.Night;
+		else
+			this.timeType = TimeType.Light;
+
+		// Convert if desired
+		if (convertToPM)
+			this.hour = (byte)(hour % 12);
+		else
+			this.hour = hour;
+
+		this.minute = (byte)Math.Abs(minute % 60);
+		this.second = (byte)Math.Abs(second % 60);
 	}
 
 	public override bool Equals(object obj)

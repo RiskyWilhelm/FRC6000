@@ -1,25 +1,21 @@
 using System.Collections;
 using UnityEngine;
 
-public sealed partial class FoxAI : AIBase
+public sealed partial class FoxAI : AIBase<FoxAIStats>
 {
-	public float normalAttackSpeed;
-	private bool isCaughtChicken;
-
 	// Update
 	protected override void DoIdle()
 	{
-		var chasingChicken = TrySetDestinationToNearestChicken();
-
 		// If found nearest chicken and yet didnt caught any chicken, catch the chicken
 		// Else, go to the nearest fox base
-		if (!chasingChicken)
+		if (!TrySetDestinationToNearestChicken())
 			TrySetDestinationToNearestFoxBase();
 	}
 
 	public bool TrySetDestinationToNearestFoxBase()
 	{
-		if(TagObject.TryGetNearestTagObject(this.transform, Tags.FoxBase, out Transform nearestFoxBase, (iteratedTagObject) => IsAbleToGo(iteratedTagObject.position)))
+		if(TagObject.TryGetNearestTagObject(this.transform, Tags.FoxBase, out Transform nearestFoxBase,
+			(iteratedTagObject) => IsAbleToGo(iteratedTagObject.position)))
 		{
 			SetDestinationTo(nearestFoxBase);
 			return true;
@@ -30,7 +26,7 @@ public sealed partial class FoxAI : AIBase
 
 	public bool TrySetDestinationToNearestChicken()
 	{
-		if (!isCaughtChicken && TagObject.TryGetNearestTagObject(this.transform, Tags.Chicken, out Transform nearestChicken,
+		if (!Stats.IsCaughtChicken && TagObject.TryGetNearestTagObject(this.transform, Tags.Chicken, out Transform nearestChicken,
 			(iteratedTagObject) => IsAbleToGo(iteratedTagObject.position)))
 		{
 			SetDestinationTo(nearestChicken);
@@ -40,17 +36,19 @@ public sealed partial class FoxAI : AIBase
 		return false;
 	}
 
-	private void CancelNormalAttack(AIBase target)
+	private void CancelNormalAttack<TStatsType>(AIBase<TStatsType> target)
+		where TStatsType : AIStats
 	{
 		State = AIState.Running;
 		StopCoroutine(OnNormalAttack(target));
 	}
 
-	private IEnumerator OnNormalAttack(AIBase target)
+	private IEnumerator OnNormalAttack<TStatsType>(AIBase<TStatsType> target)
+		where TStatsType : AIStats
 	{
 		// Take full control over the body by setting state to attacking, ready timer
 		State = AIState.Attacking;
-		var normalAttackTimer = new Timer(normalAttackSpeed);
+		var normalAttackTimer = new Timer(this.Stats.NormalAttackSpeed);
 
 		// Wait until timer finishes and set the destination to the target recursively
 		while (!normalAttackTimer.Tick())
@@ -66,14 +64,15 @@ public sealed partial class FoxAI : AIBase
 			yield return null;
 		}
 
-		target.OnGotAttackedBy(this);
+		// Do the attack
+		target.TakeDamage(this.Stats.Power);
 
 		// If target dead, go try to go nearest base
 		// If target not dead, repeat the attack recursively
 		if (target.State == AIState.Dead)
 		{
 			State = AIState.Running;
-			isCaughtChicken = true;
+			Stats.IsCaughtChicken = true;
 			TrySetDestinationToNearestFoxBase();
 		}
 		else
@@ -82,13 +81,13 @@ public sealed partial class FoxAI : AIBase
 
 	public void OnCaughtChicken(Collider2D collider)
 	{
-		if (TryGetTargetFromCollider(collider, out ChickenAI caughtChicken))
+		if (EventReflector.TryGetComponentByEventReflector<ChickenAI>(collider.gameObject, out ChickenAI caughtChicken))
 			StartCoroutine(OnNormalAttack(caughtChicken));
 	}
 
 	public void OnChickenRanaway(Collider2D collider)
 	{
-		if (TryGetTargetFromCollider(collider, out ChickenAI escapedChicken))
+		if (EventReflector.TryGetComponentByEventReflector<ChickenAI>(collider.gameObject, out ChickenAI escapedChicken))
 			CancelNormalAttack(escapedChicken);
 	}
 }

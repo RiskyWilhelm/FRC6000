@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering.Universal;
 
 public sealed partial class DayCycleController : MonoBehaviourSingletonBase<DayCycleController>
@@ -15,7 +16,21 @@ public sealed partial class DayCycleController : MonoBehaviourSingletonBase<DayC
 
 
 	// Time
-	public GameTime Time { get; private set; }
+	private GameTime _time;
+
+	public GameTime Time
+	{
+		get => _time;
+		private set
+		{
+			if (value.timeType != _time.timeType)
+				onTimeTypeChanged?.Invoke(value.timeType);
+
+			_time = value;
+		}
+	}
+
+	public UnityEvent<TimeType> onTimeTypeChanged;
 
 
 	// Update
@@ -47,6 +62,7 @@ public sealed partial class DayCycleController : MonoBehaviourSingletonBase<DayC
 		sun.color = Color.Lerp(dayNightColor, dayLightColor, lightAnglePointWithProcess);
 	}
 
+	/// <param name="offsetHour"> Offsets the angle by (exact hour points * offsetHour). Ex: when (angle = {0}, offsetHour = {1 or -1}) result.hour = {1} </param>
 	private GameTime GetCurrentTimeInAngle(float angle, byte offsetHour = 0)
 	{
 		// Snap the angle to 0-360 degree(negative allowed) by (value % 360) and get hour process
@@ -72,10 +88,12 @@ public sealed partial class DayCycleController : MonoBehaviourSingletonBase<DayC
 public sealed partial class DayCycleController
 {
 	public string e_Time;
+	public string e_Time12;
 
 	private void LateUpdate()
 	{
-		e_Time = GetCurrentTimeInAngle(this.transform.rotation.eulerAngles.z - 360, 12).ToString();
+		e_Time = Time.ToString();
+		e_Time12 = new GameTime(Time.hour, Time.minute, Time.second, convertToPM: true).ToString();
 	}
 }
 

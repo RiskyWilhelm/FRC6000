@@ -1,13 +1,11 @@
 using UnityEngine;
 
-public sealed partial class ChickenAI : AIBase
+public sealed partial class ChickenAI : AIBase<ChickenAIStats>
 {
-	public Timer idleTimer = new (2f);
-
 	protected override void DoIdle()
 	{
 		// Do idle when the timer finishes
-		if (idleTimer.Tick())
+		if (Stats.IdleTimer.Tick())
 		{
 			// Find a random horizontal position around self and set destination
 			var randomHorizontalPosition = Random.Range(-5, 5);
@@ -18,9 +16,21 @@ public sealed partial class ChickenAI : AIBase
 		}
 	}
 
-	public void RunAwayFromFox(Collider2D collider)
+	protected override void OnStateChanged(AIState newState)
 	{
-		if (TryGetTargetFromCollider(collider, out FoxAI foundChaserFox))
+		switch (newState)
+		{
+			case AIState.Dead:
+			ChickenAIPool.Release(this);
+			break;
+		}
+
+		base.OnStateChanged(newState);
+	}
+
+	public void OnRunAwayFromFox(Collider2D collider)
+	{
+		if (EventReflector.TryGetComponentByEventReflector<FoxAI>(collider.gameObject, out FoxAI foundChaserFox))
 			SetDestinationToAwayFromFox(foundChaserFox);
 	}
 

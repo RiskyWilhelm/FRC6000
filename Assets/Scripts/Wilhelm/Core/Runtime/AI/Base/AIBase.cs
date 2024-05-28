@@ -1,12 +1,27 @@
+using System;
 using UnityEngine;
 
-/// <remarks> A collider setup with <see cref="EventBase{EventType}"/> is should be done for <see cref="OnNormalAttack(UnityEngine.Collider2D)"/>.
-/// You can use <see cref="EventReflector"/> in order to reflect the event to base GameObject
-/// </remarks>
+/// <summary> Fresh base of AI. Implements destination system </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 [DisallowMultipleComponent]
-public abstract partial class AIBase : MonoBehaviour, IAITarget
+public abstract partial class AIBase : MonoBehaviour
 {
+	[Header("Movement")]
+	[SerializeField]
+	protected Rigidbody2D selfRigidbody;
+
+	[field: SerializeField]
+	[Tooltip("Used for defining the player bounds. You should set this nearly but not same as the player size (radius)")]
+	public float SizeRadius { get; private set; } = 1f;
+
+	private Vector2? currentDestination;
+
+	private Transform currentDestinationTarget;
+
+	/// <summary> Controls how many meters will be considered as reached when approaching the target </summary>
+	private float destinationThresholdDistance;
+
+
 	// Actions
 	private AIState _state;
 
@@ -16,55 +31,23 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 		set
 		{
 			if (value != _state)
-			{
-				Debug.LogFormat("State of {0} is set to {1}", this.name, value);
 				OnStateChanged(value);
-			}
 
 			_state = value;
 		}
 	}
 
-	[Header("Movement")]
-	[SerializeField]
-	protected Rigidbody2D selfRigidbody;
-
-	public float horizontalVelocity = 5f;
-
-	private Vector2? currentDestination;
-
-	private Transform currentDestinationTarget;
-
-	/// <summary> Controls how many meters will be considered as reached when approaching the target </summary>
-	private float destinationThresholdDistance;
-
-	[Tooltip("Used for defining the player bounds. You should set this nearly but not same as the player size (radius)")]
-	public float sizeRadius = 1f;
-
-	[Header("Target")]
-	[field: SerializeField]
-	public virtual ushort Power { get; protected set; }
-
-	[field: SerializeField]
-	public virtual ushort Health { get; protected set; }
 
 
 	// Update
 	private void Update()
 	{
 		if (IsReachedToDestination())
-		{
-			OnReachedToDestination();
 			ClearDestination();
-		}
-		
+
 		DetectObstacles();
 		DoState();
-		OnUpdate();
 	}
-
-	protected virtual void OnUpdate()
-	{ }
 
 	private void DetectObstacles()
 	{
@@ -76,8 +59,22 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 			ClearDestination();
 	}
 
-	protected virtual void OnReachedToDestination()
-	{ }
+	protected virtual void UpdateState()
+	{
+		// Freeze the state machine when these happens
+		if (State is AIState.Attacking or AIState.Dead or AIState.Jumping)
+			return;
+
+		if (!IsReachedToDestination())
+		{
+			if ((selfRigidbody.velocity != Vector2.zero) && !IsGrounded())
+				State = AIState.Flying;
+			else if (selfRigidbody.velocityX != 0)
+				State = AIState.Running;
+		}
+		else
+			State = AIState.Idle;
+	}
 
 	private void DoState()
 	{
@@ -93,6 +90,14 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 			DoRunning();
 			break;
 
+			case AIState.Flying:
+			DoFlying();
+			break;
+
+			case AIState.Jumping:
+			DoJumping();
+			break;
+
 			case AIState.Attacking:
 			DoAttacking();
 			break;
@@ -103,49 +108,22 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 		}
 	}
 
-	protected virtual void UpdateState()
-	{
-		// Wait for finishing the attack
-		if (State == AIState.Attacking)
-			return;
-		else if (Health == 0)
-			State = AIState.Dead;
-		else if ((selfRigidbody.velocityX != 0) && !IsReachedToDestination())
-			State = AIState.Running;
-		else
-			State = AIState.Idle;
-	}
-
 	protected virtual void OnStateChanged(AIState newState)
 	{
-		switch (newState)
-		{
-			case AIState.Idle:
-			selfRigidbody.velocityX = 0;
-			break;
-
-			case AIState.Dead:
-			selfRigidbody.velocityX = 0;
-			break;
-		}
+		throw new NotImplementedException();
 	}
 
 	protected virtual void DoIdle()
 	{ }
 
 	protected virtual void DoRunning()
-	{
-		// Run to the destination until the threshold exceeds
-		if (TryGetDestination(out Vector2 destination))
-		{
-			float horizontalDistanceToDestination = (destination.x - selfRigidbody.position.x);
+	{ }
 
-			if (horizontalDistanceToDestination > 0)
-				selfRigidbody.velocityX = horizontalVelocity;
-			else if (horizontalDistanceToDestination < 0)
-				selfRigidbody.velocityX = -horizontalVelocity;
-		}
-	}
+	protected virtual void DoFlying()
+	{ }
+
+	protected virtual void DoJumping()
+	{ }
 
 	protected virtual void DoAttacking()
 	{ }
@@ -216,59 +194,92 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget
 		destinationThresholdDistance = 0;
 	}
 
-	public bool TryGetTargetFromCollider<TargetType>(Collider2D collider, out TargetType foundTarget)
-		where TargetType : IAITarget
+	public virtual bool IsGrounded()
 	{
-		// Check if event wants to reflect the collision. If there is no EventReflector, it is the main object that wants the event
-		if (!EventReflector.TryGetReflectedGameObject(collider.gameObject, out GameObject colliderGameObject))
-			colliderGameObject = collider.gameObject;
+		var groundRaycast = Physics2D.BoxCast(selfRigidbody.position, new Vector2(SizeRadius, 1), 0, Vector2.down, SizeRadius, Layers.Mask.Ground);
 
-		// Try Get AI target
-		return colliderGameObject.TryGetComponent<TargetType>(out foundTarget);
+		if (groundRaycast.collider)
+			return true;
+
+		return false;
 	}
 
-	public virtual void OnGotAttackedBy(AIBase chaser)
+	/// <summary> Checks whether it can go to that position without any obstacles </summary>
+	public abstract bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground);
+}
+
+
+public abstract partial class AIBase<StatsType> : AIBase
+	where StatsType : AIStats
+{
+	[field: SerializeField]
+	public StatsType Stats { get; private set; }
+
+
+	// Update
+	protected override void OnStateChanged(AIState newState)
 	{
-		TakeDamage(chaser.Power);
+		switch (newState)
+		{
+			case AIState.Idle:
+			selfRigidbody.velocityX = 0;
+			break;
+
+			case AIState.Dead:
+			selfRigidbody.velocityX = 0;
+			break;
+		}
+	}
+
+	protected override void DoRunning()
+	{
+		// Run to the destination until the threshold exceeds
+		if (TryGetDestination(out Vector2 destination))
+		{
+			float horizontalDistanceToDestination = (destination.x - selfRigidbody.position.x);
+
+			// Sets the velocity depends on the horizontal direction
+			selfRigidbody.velocityX = Stats.Velocity * Mathf.Sign(horizontalDistanceToDestination);
+		}
 	}
 
 	public void TakeDamage(ushort damage)
 	{
-		if (Health != 0)
-			this.Health -= (ushort)Mathf.Clamp(damage, ushort.MinValue, ushort.MaxValue);
+		Stats.DecreaseHealth(damage);
 
-		if (Health == 0)
+		if (Stats.IsDead)
 			State = AIState.Dead;
 	}
 
-	/// <summary> Checks whether it can go to that position without any obstacles </summary>
-	public bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)
+	public override bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = 8)
 	{
 		// Check if there is any obstacle in front of self
 		var normObstacleDetectorDir = (worldPosition2D - selfRigidbody.position).normalized;
-		var obstacleRaycast = Physics2D.CircleCast(selfRigidbody.position, sizeRadius, normObstacleDetectorDir, Vector3.Distance(selfRigidbody.position, worldPosition2D), layerMask);
+		var obstacleRaycast = Physics2D.CircleCast(selfRigidbody.position, SizeRadius, normObstacleDetectorDir, Vector3.Distance(selfRigidbody.position, worldPosition2D), layerMask);
 
 		if (obstacleRaycast.collider)
 			return false;
 
-		// TODO: Check if the place is not fallable. So the method is extendable.
-
 		return true;
 	}
 
-	public bool IsPowerfulThan(IAITarget otherAI) => Power >= otherAI.Power;
+	public bool IsPowerfulThan<TStatsType>(AIBase<TStatsType> otherAI)
+		where TStatsType : AIStats
+	{
+		return	Stats.Power >= otherAI.Stats.Power;
+	}
 }
 
 
 #if UNITY_EDITOR
 
-public abstract partial class AIBase
+public abstract partial class AIBase<StatsType>
 {
 	private void OnDrawGizmosSelected()
 	{
 		// Display the explosion radius when selected
 		Gizmos.color = new Color(1f, 0f, 0f, 0.25f);
-		Gizmos.DrawSphere(this.transform.position, sizeRadius);
+		Gizmos.DrawSphere(this.transform.position, SizeRadius);
 	}
 }
 

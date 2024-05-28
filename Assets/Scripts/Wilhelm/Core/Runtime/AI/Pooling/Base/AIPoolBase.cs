@@ -37,7 +37,7 @@ public abstract partial class AIPoolBase<SingletonType, AIType> : MonoBehaviourS
 
 #if UNITY_EDITOR
 
-public abstract partial class AIPoolBase<SingletonType, AIType>
+public abstract partial class AIPoolBase<SingletonType, AIType, AIStatsType>
 { }
 
 #endif

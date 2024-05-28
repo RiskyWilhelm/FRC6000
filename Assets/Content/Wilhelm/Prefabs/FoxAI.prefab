@@ -78,11 +78,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
-  horizontalVelocity: 5
-  sizeRadius: 0.95
-  <Power>k__BackingField: 1
-  <Health>k__BackingField: 10
-  normalAttackSpeed: 0
+  <SizeRadius>k__BackingField: 1
+  <Stats>k__BackingField:
+    <Velocity>k__BackingField: 5
+    <Power>k__BackingField: 1
+    <Health>k__BackingField: 10
+    <NormalAttackSpeed>k__BackingField: 1
+    IsCaughtChicken: 0
 --- !u!114 &1005912783288694528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -206,8 +208,9 @@ GameObject:
   - component: {fileID: 8426746232564705225}
   - component: {fileID: 6388657600226924967}
   - component: {fileID: 6071342635228719053}
+  - component: {fileID: 8141789435931607941}
   m_Layer: 7
-  m_Name: CatchCollider
+  m_Name: CatchChickenTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -301,6 +304,33 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &8141789435931607941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4192512353348284368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 741db10aaff39c54abe6026079b1eb49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raised:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4028007122091320076}
+        m_TargetAssemblyTypeName: FoxAI, FRC.AI.Runtime
+        m_MethodName: OnChickenRanaway
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &4241816251137796589
 GameObject:
   m_ObjectHideFlags: 0
@@ -313,7 +343,7 @@ GameObject:
   - component: {fileID: 6886931853449807190}
   - component: {fileID: 2377241653080917077}
   m_Layer: 6
-  m_Name: Collider
+  m_Name: MainCollider
   m_TagString: Fox
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

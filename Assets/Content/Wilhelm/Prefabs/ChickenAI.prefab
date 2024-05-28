@@ -78,15 +78,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
-  horizontalVelocity: 2.5
-  sizeRadius: 0.95
-  allowedTargetTags:
-  - ChickenBase
-  - Fox
-  <Power>k__BackingField: 0
-  <Health>k__BackingField: 2
-  idleTimer:
-    tickTime: 2
+  <SizeRadius>k__BackingField: 1
+  <Stats>k__BackingField:
+    <Velocity>k__BackingField: 2.5
+    <Power>k__BackingField: 0
+    <Health>k__BackingField: 2
+    _idleTimer:
+      tickTime: 2
 --- !u!114 &1005912783288694528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -211,7 +209,7 @@ GameObject:
   - component: {fileID: 6886931853449807190}
   - component: {fileID: 8200733951105208569}
   m_Layer: 6
-  m_Name: Collider
+  m_Name: MainCollider
   m_TagString: Fox
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -294,7 +292,7 @@ GameObject:
   - component: {fileID: 2614751270683377832}
   - component: {fileID: 7133292710129551134}
   m_Layer: 7
-  m_Name: RunCollider
+  m_Name: RunawayFromFoxTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -368,7 +366,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: -9038861455327793708}
         m_TargetAssemblyTypeName: ChickenAI, FRC.AI.Runtime
-        m_MethodName: RunAwayFromFox
+        m_MethodName: OnRunAwayFromFox
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

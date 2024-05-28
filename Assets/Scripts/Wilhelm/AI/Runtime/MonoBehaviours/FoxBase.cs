@@ -1,15 +1,16 @@
 using UnityEngine;
 
-public sealed partial class FoxBase : MonoBehaviour, IAITarget
+public sealed partial class FoxBase : MonoBehaviour
 {
-	public ushort Power => 0;
-
-	public ushort Health => 0;
-
-
 	// Update
-	public void OnGotAttackedBy(AIBase chaser)
-	{ }
+	public void OnFoxEnterToGate(Collider2D collider)
+	{
+		if (EventReflector.TryGetComponentByEventReflector<FoxAI>(collider.gameObject, out FoxAI gatePasser))
+		{
+			if (gatePasser.Stats.IsCaughtChicken)
+				FoxAIPool.Release(gatePasser);
+		}
+	}
 }
 
 
