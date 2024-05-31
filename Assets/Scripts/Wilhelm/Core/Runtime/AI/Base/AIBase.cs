@@ -1,10 +1,9 @@
-using System;
 using UnityEngine;
 
 /// <summary> Fresh base of AI. Implements destination system </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 [DisallowMultipleComponent]
-public abstract partial class AIBase : MonoBehaviour, ICopyable<AIBase>
+public abstract partial class AIBase : MonoBehaviour, ICopyable<AIStatsBase>, ICopyable<AIPreReadyStatsSOBase>
 {
 	[Header("Movement")]
 	[SerializeField]
@@ -109,9 +108,7 @@ public abstract partial class AIBase : MonoBehaviour, ICopyable<AIBase>
 	}
 
 	protected virtual void OnStateChanged(AIState newState)
-	{
-		throw new NotImplementedException();
-	}
+	{ }
 
 	protected virtual void DoIdle()
 	{ }
@@ -217,7 +214,16 @@ public abstract partial class AIBase : MonoBehaviour, ICopyable<AIBase>
 		return true;
 	}
 
-	public virtual void CopyTo(in AIBase main)
+	public virtual void Copy(in AIStatsBase other)
+	{ }
+
+	public virtual void CopyTo(in AIStatsBase main)
+	{ }
+
+	public virtual void Copy(in AIPreReadyStatsSOBase other)
+	{ }
+
+	public virtual void CopyTo(in AIPreReadyStatsSOBase main)
 	{ }
 }
 
@@ -268,6 +274,18 @@ public abstract partial class AIBase<StatsType> : AIBase
 		where TStatsType : AIStatsBase
 	{
 		return	Stats.Power >= otherAI.Stats.Power;
+	}
+
+	public override void Copy(in AIStatsBase other)
+	{
+		other.CopyTo(this.Stats);
+		base.Copy(other);
+	}
+
+	public override void Copy(in AIPreReadyStatsSOBase other)
+	{
+		other.CopyTo(this.Stats);
+		base.Copy(other);
 	}
 }
 

@@ -1,30 +1,7 @@
-using System;
 using UnityEngine;
 
-public sealed partial class ChickenAI : AIBase<ChickenAI.Statistics>
+public sealed partial class BabyChickenAI : AIBase<BabyChickenAIStats>
 {
-	// Initialize
-	[Serializable]
-	public sealed class Statistics : AIStatsBase, ICopyable<Statistics>
-	{
-		[SerializeField]
-		private Timer _idleTimer = new(2f);
-
-		public ref Timer IdleTimer
-		{
-			get => ref _idleTimer;
-		}
-
-		public void CopyTo(in Statistics main)
-		{
-			main.Velocity = this.Velocity;
-			main.Power = this.Power;
-			main.Health = this.Health;
-			main.IdleTimer = this.IdleTimer;
-		}
-	}
-	
-
 	// Update
 	protected override void DoIdle()
 	{
@@ -55,11 +32,11 @@ public sealed partial class ChickenAI : AIBase<ChickenAI.Statistics>
 
 	public void OnRunAwayFromFox(Collider2D collider)
 	{
-		if (EventReflector.TryGetComponentByEventReflector<FoxAI>(collider.gameObject, out FoxAI foundChaserFox))
+		if (EventReflector.TryGetComponentByEventReflector<BabyFoxAI>(collider.gameObject, out BabyFoxAI foundChaserFox))
 			SetDestinationToAwayFromFox(foundChaserFox);
 	}
 
-	public void SetDestinationToAwayFromFox(FoxAI fox)
+	public void SetDestinationToAwayFromFox(BabyFoxAI fox)
 	{
 		// Get direction of: fox to the chicken
 		// Add that direction to the position that exceeds destinationApproachThreshold
@@ -69,18 +46,12 @@ public sealed partial class ChickenAI : AIBase<ChickenAI.Statistics>
 
 		SetDestinationTo(newDestination);
 	}
-
-	public override void CopyTo(in AIBase main)
-	{
-		if (main is AIBase<ChickenAI.Statistics> aiBaseT)
-			this.Stats.CopyTo(aiBaseT.Stats);
-	}
 }
 
 
 #if UNITY_EDITOR
 
-public sealed partial class ChickenAI
+public sealed partial class BabyChickenAI
 { }
 
 #endif

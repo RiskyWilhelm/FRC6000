@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbf80ccf958fee54da3f6411eabe3d50, type: 3}
   m_Name: BabyChickenStats
   m_EditorClassIdentifier: 
-  prefab: {fileID: -9038861455327793708, guid: f481f532ee8f84f4b84bb14d6ab5bbc9, type: 3}
   preReadyStats:
-    <Velocity>k__BackingField: 5
+    <Velocity>k__BackingField: 16.16
     <Power>k__BackingField: 0
     <Health>k__BackingField: 1
     _idleTimer:

@@ -107,19 +107,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   raised:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1771570836286773129}
-        m_TargetAssemblyTypeName: FoxBase, FRC.AI.Runtime
-        m_MethodName: OnFoxEnterToGate
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!1 &8937228621258481250
 GameObject:
   m_ObjectHideFlags: 0
@@ -131,11 +119,11 @@ GameObject:
   - component: {fileID: 150079601730306279}
   - component: {fileID: 7326570579824223486}
   - component: {fileID: 7978156460112614562}
-  - component: {fileID: 1771570836286773129}
+  - component: {fileID: 4328882997510795556}
   - component: {fileID: 5694485341825279247}
   m_Layer: 0
-  m_Name: FoxAIBase
-  m_TagString: FoxBase
+  m_Name: ChickenAIHome
+  m_TagString: ChickenBase
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -200,8 +188,8 @@ SpriteRenderer:
   m_SortingLayerID: -863061807
   m_SortingLayer: 1
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 11e63d744127b0148a252307ec249fd8, type: 3}
-  m_Color: {r: 0.05660379, g: 0.05660379, b: 0.05660379, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 6911ccd98aa228641a06acbbfd1e0930, type: 3}
+  m_Color: {r: 0.21867214, g: 0.509434, b: 0.35823783, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -264,7 +252,7 @@ MonoBehaviour:
     - rid: 1524242551132389518
       type: {class: ShadowShape2DProvider_SpriteRenderer, ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
       data: 
---- !u!114 &1771570836286773129
+--- !u!114 &4328882997510795556
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -273,9 +261,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 8937228621258481250}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0508c65a7b2d0ea499072fa8b004c17d, type: 3}
+  m_Script: {fileID: 11500000, guid: 0aa36a127faf7114ea6da687878c5921, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  nightSpawnTimer:
+    tickTime: 30
+  lightSpawnTimer:
+    tickTime: 10
+  chickenLuckPoolList: []
 --- !u!114 &5694485341825279247
 MonoBehaviour:
   m_ObjectHideFlags: 0

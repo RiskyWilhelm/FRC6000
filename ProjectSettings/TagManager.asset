@@ -4,10 +4,10 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - Chicken
-  - ChickenBase
-  - Fox
-  - FoxBase
+  - ChickenAI
+  - ChickenAIHome
+  - FoxAI
+  - FoxAIHome
   layers:
   - Default
   - TransparentFX

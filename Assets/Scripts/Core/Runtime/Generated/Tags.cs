@@ -28,8 +28,12 @@ public sealed class Tags
     public const string MainCamera = "MainCamera";
     public const string Player = "Player";
     public const string GameController = "GameController";
+    public const string ChickenAI = "ChickenAI";
+    public const string ChickenAIHome = "ChickenAIHome";
+    public const string FoxAI = "FoxAI";
+    public const string FoxAIHome = "FoxAIHome";
     public const string Chicken = "Chicken";
-    public const string ChickenBase = "ChickenBase";
     public const string Fox = "Fox";
+    public const string ChickenBase = "ChickenBase";
     public const string FoxBase = "FoxBase";
 }

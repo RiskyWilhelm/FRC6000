@@ -1,29 +1,8 @@
-using System;
 using System.Collections;
 using UnityEngine;
 
-public sealed partial class FoxAI : AIBase<FoxAI.Statistics>
+public sealed partial class BabyFoxAI : AIBase<BabyFoxAIStats>
 {
-	// Initialize
-	[Serializable]
-	public sealed class Statistics : AIStatsBase, ICopyable<Statistics>
-	{
-		[field: SerializeField]
-		public ushort NormalAttackSpeed { get; private set; }
-
-		[NonSerialized]
-		public bool IsCaughtChicken;
-
-		public void CopyTo(in Statistics main)
-		{
-			main.Velocity = this.Velocity;
-			main.Power = this.Power;
-			main.Health = this.Health;
-			main.NormalAttackSpeed = this.NormalAttackSpeed;
-		}
-	}
-
-
 	// Update
 	protected override void DoIdle()
 	{
@@ -35,7 +14,7 @@ public sealed partial class FoxAI : AIBase<FoxAI.Statistics>
 
 	public bool TrySetDestinationToNearestFoxBase()
 	{
-		if(TagObject.TryGetNearestTagObject(this.transform, Tags.FoxBase, out Transform nearestFoxBase,
+		if(TagObject.TryGetNearestTagObject(this.transform, Tags.FoxAIHome, out Transform nearestFoxBase,
 			(iteratedTagObject) => IsAbleToGo(iteratedTagObject.position)))
 		{
 			SetDestinationTo(nearestFoxBase);
@@ -47,7 +26,7 @@ public sealed partial class FoxAI : AIBase<FoxAI.Statistics>
 
 	public bool TrySetDestinationToNearestChicken()
 	{
-		if (!Stats.IsCaughtChicken && TagObject.TryGetNearestTagObject(this.transform, Tags.Chicken, out Transform nearestChicken,
+		if (!Stats.IsCaughtChicken && TagObject.TryGetNearestTagObject(this.transform, Tags.ChickenAI, out Transform nearestChicken,
 			(iteratedTagObject) => IsAbleToGo(iteratedTagObject.position)))
 		{
 			SetDestinationTo(nearestChicken);
@@ -102,13 +81,13 @@ public sealed partial class FoxAI : AIBase<FoxAI.Statistics>
 
 	public void OnCaughtChicken(Collider2D collider)
 	{
-		if (EventReflector.TryGetComponentByEventReflector<ChickenAI>(collider.gameObject, out ChickenAI caughtChicken))
+		if (EventReflector.TryGetComponentByEventReflector<BabyChickenAI>(collider.gameObject, out BabyChickenAI caughtChicken))
 			StartCoroutine(OnNormalAttack(caughtChicken));
 	}
 
 	public void OnChickenRanaway(Collider2D collider)
 	{
-		if (EventReflector.TryGetComponentByEventReflector<ChickenAI>(collider.gameObject, out ChickenAI escapedChicken))
+		if (EventReflector.TryGetComponentByEventReflector<BabyChickenAI>(collider.gameObject, out BabyChickenAI escapedChicken))
 			CancelNormalAttack(escapedChicken);
 	}
 }
@@ -116,7 +95,7 @@ public sealed partial class FoxAI : AIBase<FoxAI.Statistics>
 
 #if UNITY_EDITOR
 
-public sealed partial class FoxAI
+public sealed partial class BabyFoxAI
 { }
 
 #endif

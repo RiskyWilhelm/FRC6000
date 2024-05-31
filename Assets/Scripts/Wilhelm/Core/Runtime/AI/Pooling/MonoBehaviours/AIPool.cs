@@ -1,17 +1,23 @@
 using UnityEngine;
 
-public abstract partial class AIPoolBase : MonoBehaviourPoolBase<AIBase>
+public partial class AIPool : MonoBehaviourPoolBase<AIBase>
 {
 	[SerializeField]
 	[Tooltip("Used for copying when creating a new AI in pool")]
 	private AIBase prefab;
+
+	[SerializeReference]
+	[Tooltip("If null, the prefab will be used. Used for copying the pre stats when creating a new AI in pool")]
+	private AIPreReadyStatsSOBase preStats;
 
 
 	// Initialize
 	protected override AIBase OnCreatePooledObject()
 	{
 		var newAI = Instantiate(prefab);
-		prefab.CopyTo(newAI);
+
+		if (preStats)
+			newAI.Copy(preStats);
 
 		return newAI;
 	}
@@ -38,7 +44,7 @@ public abstract partial class AIPoolBase : MonoBehaviourPoolBase<AIBase>
 
 #if UNITY_EDITOR
 
-public abstract partial class AIPoolBase
+public partial class AIPool
 { }
 
 #endif

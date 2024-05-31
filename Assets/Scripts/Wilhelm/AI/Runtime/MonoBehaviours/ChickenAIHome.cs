@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -12,7 +11,7 @@ public sealed partial class ChickenAIHome : MonoBehaviour
 	[SerializeField]
 	private Timer lightSpawnTimer = new(10f);
 
-	public List<Luck<AIPoolBase>> chickenLuckPoolList = new ();
+	public List<Luck<AIPool>> chickenLuckPoolList = new ();
 
 
 	// Update
@@ -42,11 +41,9 @@ public sealed partial class ChickenAIHome : MonoBehaviour
 
 	private void SpawnChicken()
 	{
-		Debug.Log("Spawned chicken");
-
 		// Get auto-generated luck and get chicken pool list by that
 		var generatedLuckType = LuckUtil.Generate();
-		var cachedLuckList = ListPool<Luck<AIPoolBase>>.Get();
+		var cachedLuckList = ListPool<Luck<AIPool>>.Get();
 
         foreach (var iteratedLuckPool in chickenLuckPoolList)
         {
@@ -61,7 +58,7 @@ public sealed partial class ChickenAIHome : MonoBehaviour
 			cachedLuckList[randomSelect].value.Get(this.transform.position);
 		}
 
-		ListPool<Luck<AIPoolBase>>.Release(cachedLuckList);
+		ListPool<Luck<AIPool>>.Release(cachedLuckList);
     }
 }
 
