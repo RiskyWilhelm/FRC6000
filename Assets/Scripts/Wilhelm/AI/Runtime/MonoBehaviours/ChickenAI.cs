@@ -1,14 +1,38 @@
+using System;
 using UnityEngine;
 
-public sealed partial class ChickenAI : AIBase<ChickenAIStats>
+public sealed partial class ChickenAI : AIBase<ChickenAI.Statistics>
 {
+	// Initialize
+	[Serializable]
+	public sealed class Statistics : AIStatsBase, ICopyable<Statistics>
+	{
+		[SerializeField]
+		private Timer _idleTimer = new(2f);
+
+		public ref Timer IdleTimer
+		{
+			get => ref _idleTimer;
+		}
+
+		public void CopyTo(in Statistics main)
+		{
+			main.Velocity = this.Velocity;
+			main.Power = this.Power;
+			main.Health = this.Health;
+			main.IdleTimer = this.IdleTimer;
+		}
+	}
+	
+
+	// Update
 	protected override void DoIdle()
 	{
 		// Do idle when the timer finishes
 		if (Stats.IdleTimer.Tick())
 		{
 			// Find a random horizontal position around self and set destination
-			var randomHorizontalPosition = Random.Range(-5, 5);
+			var randomHorizontalPosition = UnityEngine.Random.Range(-5, 6);
 			var newDestination = selfRigidbody.position;
 
 			newDestination.x += randomHorizontalPosition;
@@ -21,7 +45,8 @@ public sealed partial class ChickenAI : AIBase<ChickenAIStats>
 		switch (newState)
 		{
 			case AIState.Dead:
-			ChickenAIPool.Release(this);
+			// TODO: Pool access
+			//ChickenAIPool.Release(this);
 			break;
 		}
 
@@ -43,6 +68,12 @@ public sealed partial class ChickenAI : AIBase<ChickenAIStats>
 		newDestination.x += normalizedDirToChicken.x * 1f;
 
 		SetDestinationTo(newDestination);
+	}
+
+	public override void CopyTo(in AIBase main)
+	{
+		if (main is AIBase<ChickenAI.Statistics> aiBaseT)
+			this.Stats.CopyTo(aiBaseT.Stats);
 	}
 }
 

@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering.Universal;
 
-public sealed partial class DayCycleController : MonoBehaviourSingletonBase<DayCycleController>
+public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingletonBase<DayCycleControllerSingleton>
 {
 	[Header("Movement")]
 	[SerializeField]
@@ -23,14 +23,22 @@ public sealed partial class DayCycleController : MonoBehaviourSingletonBase<DayC
 		get => _time;
 		private set
 		{
-			if (value.timeType != _time.timeType)
-				onTimeTypeChanged?.Invoke(value.timeType);
+			if (value.daylightType != _time.daylightType)
+				onDaylightTypeChanged?.Invoke(value.daylightType);
 
 			_time = value;
 		}
 	}
 
-	public UnityEvent<TimeType> onTimeTypeChanged;
+	public UnityEvent<DayLightType> onDaylightTypeChanged;
+
+	// Initialize
+	// WARNING: If you change the SunLight rotation by where it doesnt starts from Night, you must change here too
+	// If initialization depends on this event, then send a pre-timetype. Game will start from night.
+	private void Start()
+	{
+		onDaylightTypeChanged?.Invoke(DayLightType.Night);
+	}
 
 
 	// Update
@@ -85,7 +93,7 @@ public sealed partial class DayCycleController : MonoBehaviourSingletonBase<DayC
 
 #if UNITY_EDITOR
 
-public sealed partial class DayCycleController
+public sealed partial class DayCycleControllerSingleton
 {
 	public string e_Time;
 	public string e_Time12;

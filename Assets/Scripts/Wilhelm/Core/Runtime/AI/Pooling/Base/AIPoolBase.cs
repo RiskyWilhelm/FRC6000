@@ -1,34 +1,35 @@
 using UnityEngine;
 
-public abstract partial class AIPoolBase<SingletonType, AIType> : MonoBehaviourSingletonPoolBase<SingletonType, AIType>
-	where SingletonType : AIPoolBase<SingletonType, AIType>
-	where AIType : AIBase
+public abstract partial class AIPoolBase : MonoBehaviourPoolBase<AIBase>
 {
 	[SerializeField]
 	[Tooltip("Used for copying when creating a new AI in pool")]
-	private AIType prefab;
+	private AIBase prefab;
 
 
 	// Initialize
-	protected override AIType OnCreatePooledObject()
+	protected override AIBase OnCreatePooledObject()
 	{
-		return Instantiate(prefab);
+		var newAI = Instantiate(prefab);
+		prefab.CopyTo(newAI);
+
+		return newAI;
 	}
 
-	protected override void OnGetPooledObject(AIType pooledObject)
+	protected override void OnGetPooledObject(AIBase pooledObject)
 	{
 		pooledObject.gameObject.SetActive(true);
 	}
 
 
 	// Dispose
-	protected override void OnReleasePooledObject(AIType pooledObject)
+	protected override void OnReleasePooledObject(AIBase pooledObject)
 	{
 		// TODO: Set position to random base
 		pooledObject.gameObject.SetActive(false);
 	}
 
-	protected override void OnDestroyPooledObject(AIType pooledObject)
+	protected override void OnDestroyPooledObject(AIBase pooledObject)
 	{
 		Destroy(pooledObject.gameObject);
 	}
@@ -37,7 +38,7 @@ public abstract partial class AIPoolBase<SingletonType, AIType> : MonoBehaviourS
 
 #if UNITY_EDITOR
 
-public abstract partial class AIPoolBase<SingletonType, AIType, AIStatsType>
+public abstract partial class AIPoolBase
 { }
 
 #endif

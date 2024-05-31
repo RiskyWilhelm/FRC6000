@@ -1,8 +1,29 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
-public sealed partial class FoxAI : AIBase<FoxAIStats>
+public sealed partial class FoxAI : AIBase<FoxAI.Statistics>
 {
+	// Initialize
+	[Serializable]
+	public sealed class Statistics : AIStatsBase, ICopyable<Statistics>
+	{
+		[field: SerializeField]
+		public ushort NormalAttackSpeed { get; private set; }
+
+		[NonSerialized]
+		public bool IsCaughtChicken;
+
+		public void CopyTo(in Statistics main)
+		{
+			main.Velocity = this.Velocity;
+			main.Power = this.Power;
+			main.Health = this.Health;
+			main.NormalAttackSpeed = this.NormalAttackSpeed;
+		}
+	}
+
+
 	// Update
 	protected override void DoIdle()
 	{
@@ -37,14 +58,14 @@ public sealed partial class FoxAI : AIBase<FoxAIStats>
 	}
 
 	private void CancelNormalAttack<TStatsType>(AIBase<TStatsType> target)
-		where TStatsType : AIStats
+		where TStatsType : AIStatsBase
 	{
 		State = AIState.Running;
 		StopCoroutine(OnNormalAttack(target));
 	}
 
 	private IEnumerator OnNormalAttack<TStatsType>(AIBase<TStatsType> target)
-		where TStatsType : AIStats
+		where TStatsType : AIStatsBase
 	{
 		// Take full control over the body by setting state to attacking, ready timer
 		State = AIState.Attacking;

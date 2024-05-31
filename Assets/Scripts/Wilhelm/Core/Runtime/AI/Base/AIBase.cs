@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary> Fresh base of AI. Implements destination system </summary>
 [RequireComponent(typeof(Rigidbody2D))]
 [DisallowMultipleComponent]
-public abstract partial class AIBase : MonoBehaviour
+public abstract partial class AIBase : MonoBehaviour, ICopyable<AIBase>
 {
 	[Header("Movement")]
 	[SerializeField]
@@ -205,12 +205,25 @@ public abstract partial class AIBase : MonoBehaviour
 	}
 
 	/// <summary> Checks whether it can go to that position without any obstacles </summary>
-	public abstract bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground);
+	public virtual bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)
+	{
+		// Check if there is any obstacle in front of self
+		var normObstacleDetectorDir = (worldPosition2D - selfRigidbody.position).normalized;
+		var obstacleRaycast = Physics2D.CircleCast(selfRigidbody.position, SizeRadius, normObstacleDetectorDir, Vector3.Distance(selfRigidbody.position, worldPosition2D), layerMask);
+
+		if (obstacleRaycast.collider)
+			return false;
+
+		return true;
+	}
+
+	public virtual void CopyTo(in AIBase main)
+	{ }
 }
 
 
 public abstract partial class AIBase<StatsType> : AIBase
-	where StatsType : AIStats
+	where StatsType : AIStatsBase
 {
 	[field: SerializeField]
 	public StatsType Stats { get; private set; }
@@ -251,20 +264,8 @@ public abstract partial class AIBase<StatsType> : AIBase
 			State = AIState.Dead;
 	}
 
-	public override bool IsAbleToGo(Vector2 worldPosition2D, int layerMask = 8)
-	{
-		// Check if there is any obstacle in front of self
-		var normObstacleDetectorDir = (worldPosition2D - selfRigidbody.position).normalized;
-		var obstacleRaycast = Physics2D.CircleCast(selfRigidbody.position, SizeRadius, normObstacleDetectorDir, Vector3.Distance(selfRigidbody.position, worldPosition2D), layerMask);
-
-		if (obstacleRaycast.collider)
-			return false;
-
-		return true;
-	}
-
 	public bool IsPowerfulThan<TStatsType>(AIBase<TStatsType> otherAI)
-		where TStatsType : AIStats
+		where TStatsType : AIStatsBase
 	{
 		return	Stats.Power >= otherAI.Stats.Power;
 	}

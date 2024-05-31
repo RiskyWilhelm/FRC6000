@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public abstract partial class AIStats
+public abstract partial class AIStatsBase
 {
 	[field: SerializeField]
 	public float Velocity { get; protected set; } = 5f;
@@ -26,7 +26,7 @@ public abstract partial class AIStats
 
 #if UNITY_EDITOR
 
-public abstract partial class AIStats
+public abstract partial class AIStatsBase
 { }
 
 #endif

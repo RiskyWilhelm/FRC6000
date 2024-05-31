@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 1771570836286773129}
   - component: {fileID: 5694485341825279247}
   m_Layer: 0
-  m_Name: FoxBase
+  m_Name: FoxAIBase
   m_TagString: FoxBase
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

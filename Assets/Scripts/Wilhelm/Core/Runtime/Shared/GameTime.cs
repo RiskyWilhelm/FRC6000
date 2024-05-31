@@ -9,7 +9,7 @@ public readonly struct GameTime : IEquatable<GameTime>
 
 	public readonly byte second;
 
-	public readonly TimeType timeType;
+	public readonly DayLightType daylightType;
 
 	private static readonly StringBuilder timeBuilder = new();
 
@@ -26,9 +26,9 @@ public readonly struct GameTime : IEquatable<GameTime>
 	{
 		// Check if it is night time or not
 		if ((hour >= 19) || (hour <= 5))
-			this.timeType = TimeType.Night;
+			this.daylightType = DayLightType.Night;
 		else
-			this.timeType = TimeType.Light;
+			this.daylightType = DayLightType.Light;
 
 		// Convert if desired
 		if (convertToPM)

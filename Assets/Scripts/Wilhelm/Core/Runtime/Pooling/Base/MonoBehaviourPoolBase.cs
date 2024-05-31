@@ -1,27 +1,23 @@
 using UnityEngine;
 using UnityEngine.Pool;
 
-public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, PooledObjectType> : MonoBehaviourSingletonBase<SingletonType>
-    where SingletonType : MonoBehaviourSingletonPoolBase<SingletonType, PooledObjectType>
+public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBehaviour
     where PooledObjectType : class
 {
     [SerializeField]
 	[Tooltip("Collection checks will throw errors if we try to release an item that is already in the pool")]
     private bool collectionCheck = true;
 
-	[field: SerializeField]
-	public int MaxPoolSize { get; private set; } = 100;
+    [field: SerializeField]
+    public int MaxPoolSize { get; private set; } = 100;
 
-	public static ObjectPool<PooledObjectType> MainPool { get; private set; }
+	public ObjectPool<PooledObjectType> MainPool { get; private set; }
 
 
 	// Initialize
-	protected override void Awake()
+	protected virtual void Awake()
 	{
-		if (Instance == this)
-			MainPool = new ObjectPool<PooledObjectType>(OnCreatePooledObject, OnGetPooledObject, OnReleasePooledObject, OnDestroyPooledObject, collectionCheck, 10, MaxPoolSize);
-
-		base.Awake();
+		MainPool = new ObjectPool<PooledObjectType>(OnCreatePooledObject, OnGetPooledObject, OnReleasePooledObject, OnDestroyPooledObject, collectionCheck, 10, MaxPoolSize);
 	}
 
 	protected abstract PooledObjectType OnCreatePooledObject();
@@ -30,6 +26,7 @@ public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, Pool
 
 
 	// Update
+
 	public PooledObjectType Get() => MainPool.Get();
 
 	public PooledObjectType Get(Vector2 worldPosition2D)
@@ -67,8 +64,7 @@ public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, Pool
 	// Dispose
 	protected virtual void OnDestroy()
 	{
-		if (Instance == this)
-			Clear();
+		Clear();
 	}
 
 	protected abstract void OnDestroyPooledObject(PooledObjectType pooledObject);
@@ -79,7 +75,7 @@ public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, Pool
 
 #if UNITY_EDITOR
 
-public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, PooledObjectType>
+public abstract partial class MonoBehaviourPoolBase<PooledObjectType>
 { }
 
 #endif
