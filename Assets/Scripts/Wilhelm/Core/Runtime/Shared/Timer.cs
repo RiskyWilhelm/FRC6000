@@ -4,17 +4,53 @@ using UnityEngine;
 [Serializable]
 public struct Timer : IEquatable<Timer>
 {
-    private float currentTime;
+	[Tooltip("If isRandomized set to true, used to set TickTime on Reset() or when the timer finishes")]
+	public float minInclusiveTickTime;
+
+	[Tooltip("If isRandomized set to true, used to set TickTime on Reset() or when the timer finishes")]
+	public float maxInclusiveTickTime;
+
+	private float currentTime;
 
     public float tickTime;
+
+	public bool isRandomized;
+
+	private static System.Random mainRandomizer = new ();
 
 
     // Initialize
     public Timer(float tickTime)
     {
+		this.minInclusiveTickTime = 0;
+		this.maxInclusiveTickTime = 0;
         this.tickTime = tickTime;
         this.currentTime = 0;
+		this.isRandomized = false;
     }
+
+	public Timer(float tickTime, float minInclusiveTickTime, float maxInclusiveTickTime, bool isRandomized = true)
+	{
+		this.minInclusiveTickTime = minInclusiveTickTime;
+		this.maxInclusiveTickTime = maxInclusiveTickTime;
+
+		if (isRandomized)
+			this.tickTime = Mathf.Abs((float)mainRandomizer.NextDouble(minInclusiveTickTime, maxInclusiveTickTime));
+		else
+			this.tickTime = tickTime;
+
+		this.currentTime = 0;
+		this.isRandomized = isRandomized;
+	}
+
+	public Timer(float minInclusiveTickTime, float maxInclusiveTickTime)
+	{
+		this.minInclusiveTickTime = minInclusiveTickTime;
+		this.maxInclusiveTickTime = maxInclusiveTickTime;
+		this.tickTime = Mathf.Abs((float)mainRandomizer.NextDouble(minInclusiveTickTime, maxInclusiveTickTime));
+		this.currentTime = 0;
+		this.isRandomized = true;
+	}
 
 
 	// Update
@@ -35,6 +71,9 @@ public struct Timer : IEquatable<Timer>
 
     public void Reset()
     {
+		if (isRandomized)
+			tickTime = Mathf.Abs(UnityEngine.Random.Range(minInclusiveTickTime, maxInclusiveTickTime));
+
         currentTime = 0;
     }
 

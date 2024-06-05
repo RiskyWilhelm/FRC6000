@@ -1,5 +1,129 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &898414398333120356
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9099224165892448737}
+  - component: {fileID: 8761675461620121584}
+  - component: {fileID: 9084277841350427866}
+  - component: {fileID: 8278685016554041550}
+  m_Layer: 7
+  m_Name: EnemyTrigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9099224165892448737
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898414398333120356}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 150079601730306279}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!58 &8761675461620121584
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898414398333120356}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 191
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 25.29
+--- !u!114 &9084277841350427866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898414398333120356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a421f48310d65d54a9259094b96e70c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raised:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 70463749042360382}
+        m_TargetAssemblyTypeName: FoxAIHome, FRC.AI.Runtime
+        m_MethodName: OnEnemyTriggerEnter2D
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &8278685016554041550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898414398333120356}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 741db10aaff39c54abe6026079b1eb49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raised:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 70463749042360382}
+        m_TargetAssemblyTypeName: FoxAIHome, FRC.AI.Runtime
+        m_MethodName: OnEnemyTriggerExit2D
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &3784343929845236059
 GameObject:
   m_ObjectHideFlags: 0
@@ -10,8 +134,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6632874874903025815}
   - component: {fileID: 9099630285785831523}
-  - component: {fileID: 7026901338078502933}
-  - component: {fileID: 9197653844598481027}
+  - component: {fileID: 8596979324990227312}
   m_Layer: 7
   m_Name: GateTrigger
   m_TagString: Untagged
@@ -80,7 +203,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.25, y: 0.25}
   m_EdgeRadius: 0
---- !u!114 &7026901338078502933
+--- !u!114 &8596979324990227312
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -89,28 +212,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 3784343929845236059}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32f1af422b934fb4184db5f30b9674a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  reflectTo: {fileID: 8937228621258481250}
---- !u!114 &9197653844598481027
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3784343929845236059}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a421f48310d65d54a9259094b96e70c5, type: 3}
+  m_Script: {fileID: 11500000, guid: 36c15773df7fd3d41bb9fffb01039bf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   raised:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1771570836286773129}
-        m_TargetAssemblyTypeName: FoxBase, FRC.AI.Runtime
-        m_MethodName: OnFoxEnterToGate
+      - m_Target: {fileID: 70463749042360382}
+        m_TargetAssemblyTypeName: FoxAIHome, FRC.AI.Runtime
+        m_MethodName: OnGateTriggerStay2D
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -131,11 +241,11 @@ GameObject:
   - component: {fileID: 150079601730306279}
   - component: {fileID: 7326570579824223486}
   - component: {fileID: 7978156460112614562}
-  - component: {fileID: 1771570836286773129}
   - component: {fileID: 5694485341825279247}
+  - component: {fileID: 70463749042360382}
   m_Layer: 0
   m_Name: FoxAIHome
-  m_TagString: FoxBase
+  m_TagString: FoxAIHome
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -154,6 +264,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6632874874903025815}
+  - {fileID: 9099224165892448737}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7326570579824223486
@@ -201,7 +312,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 11e63d744127b0148a252307ec249fd8, type: 3}
-  m_Color: {r: 0.05660379, g: 0.05660379, b: 0.05660379, a: 1}
+  m_Color: {r: 0.3679245, g: 0.224062, b: 0.20652366, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -224,7 +335,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShadowGroup: 0
-  m_Priority: 1
+  m_Priority: 0
   m_ComponentVersion: 5
   m_HasRenderer: 1
   m_UseRendererSilhouette: 1
@@ -264,18 +375,6 @@ MonoBehaviour:
     - rid: 1524242551132389518
       type: {class: ShadowShape2DProvider_SpriteRenderer, ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
       data: 
---- !u!114 &1771570836286773129
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8937228621258481250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0508c65a7b2d0ea499072fa8b004c17d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &5694485341825279247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -288,3 +387,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3b44c08615be18429936510aed2a1b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &70463749042360382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937228621258481250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5217dadcb2425504daa1248429d8bca4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nightSpawnTimer:
+    minInclusiveTickTime: 0
+    maxInclusiveTickTime: 0
+    tickTime: 10
+    isRandomized: 0
+  lightSpawnTimer:
+    minInclusiveTickTime: 0
+    maxInclusiveTickTime: 0
+    tickTime: 20
+    isRandomized: 0
+  luckAIPoolList: []
+  ignoreTargetTagArray:
+  - FoxAI

@@ -11,6 +11,8 @@ public readonly struct GameTime : IEquatable<GameTime>
 
 	public readonly DayLightType daylightType;
 
+	public readonly bool isDayChangeHour;
+
 	private static readonly StringBuilder timeBuilder = new();
 
 
@@ -30,14 +32,20 @@ public readonly struct GameTime : IEquatable<GameTime>
 		else
 			this.daylightType = DayLightType.Light;
 
+		// Check if hour is day change hour
+		if (hour == 0)
+			isDayChangeHour = true;
+		else
+			isDayChangeHour = false;
+
 		// Convert if desired
 		if (convertToPM)
 			this.hour = (byte)(hour % 12);
 		else
 			this.hour = hour;
 
-		this.minute = (byte)Math.Abs(minute % 60);
-		this.second = (byte)Math.Abs(second % 60);
+		this.minute = (byte)(minute % 60);
+		this.second = (byte)(second % 60);
 	}
 
 	public override bool Equals(object obj)

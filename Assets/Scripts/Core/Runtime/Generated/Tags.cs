@@ -32,8 +32,4 @@ public sealed class Tags
     public const string ChickenAIHome = "ChickenAIHome";
     public const string FoxAI = "FoxAI";
     public const string FoxAIHome = "FoxAIHome";
-    public const string Chicken = "Chicken";
-    public const string Fox = "Fox";
-    public const string ChickenBase = "ChickenBase";
-    public const string FoxBase = "FoxBase";
 }

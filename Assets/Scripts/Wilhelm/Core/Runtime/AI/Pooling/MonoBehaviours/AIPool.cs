@@ -3,27 +3,22 @@ using UnityEngine;
 public partial class AIPool : MonoBehaviourPoolBase<AIBase>
 {
 	[SerializeField]
-	[Tooltip("Used for copying when creating a new AI in pool")]
+	[Tooltip("If preStats null, this will be used. Used for copying when creating a new AI in pool")]
 	private AIBase prefab;
-
-	[SerializeReference]
-	[Tooltip("If null, the prefab will be used. Used for copying the pre stats when creating a new AI in pool")]
-	private AIPreReadyStatsSOBase preStats;
 
 
 	// Initialize
 	protected override AIBase OnCreatePooledObject()
 	{
 		var newAI = Instantiate(prefab);
-
-		if (preStats)
-			newAI.Copy(preStats);
+		newAI.ParentPool = this;
 
 		return newAI;
 	}
 
 	protected override void OnGetPooledObject(AIBase pooledObject)
 	{
+		pooledObject.Copy(prefab);
 		pooledObject.gameObject.SetActive(true);
 	}
 
@@ -31,7 +26,6 @@ public partial class AIPool : MonoBehaviourPoolBase<AIBase>
 	// Dispose
 	protected override void OnReleasePooledObject(AIBase pooledObject)
 	{
-		// TODO: Set position to random base
 		pooledObject.gameObject.SetActive(false);
 	}
 

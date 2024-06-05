@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Pool;
 
-public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBehaviour
+public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBehaviour, IPool<PooledObjectType>
     where PooledObjectType : class
 {
     [SerializeField]

@@ -107,7 +107,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   raised:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4430227839226178056}
+        m_TargetAssemblyTypeName: ChickenAIHome, FRC.AI.Runtime
+        m_MethodName: OnGateTriggerEnter2D
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &8937228621258481250
 GameObject:
   m_ObjectHideFlags: 0
@@ -119,11 +131,11 @@ GameObject:
   - component: {fileID: 150079601730306279}
   - component: {fileID: 7326570579824223486}
   - component: {fileID: 7978156460112614562}
-  - component: {fileID: 4328882997510795556}
   - component: {fileID: 5694485341825279247}
+  - component: {fileID: 4430227839226178056}
   m_Layer: 0
   m_Name: ChickenAIHome
-  m_TagString: ChickenBase
+  m_TagString: ChickenAIHome
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -252,23 +264,6 @@ MonoBehaviour:
     - rid: 1524242551132389518
       type: {class: ShadowShape2DProvider_SpriteRenderer, ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
       data: 
---- !u!114 &4328882997510795556
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8937228621258481250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0aa36a127faf7114ea6da687878c5921, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  nightSpawnTimer:
-    tickTime: 30
-  lightSpawnTimer:
-    tickTime: 10
-  chickenLuckPoolList: []
 --- !u!114 &5694485341825279247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,3 +276,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3b44c08615be18429936510aed2a1b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &4430227839226178056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937228621258481250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8c33a47411de51489cb8afc52fa5c97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  nightSpawnTimer:
+    tickTime: 20
+  lightSpawnTimer:
+    tickTime: 10
+  luckPoolList: []

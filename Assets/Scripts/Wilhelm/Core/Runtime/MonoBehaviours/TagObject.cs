@@ -74,12 +74,9 @@ public sealed partial class TagObject : MonoBehaviour
 					nearestHorizontalDistance = iteratedHorizontalDistance;
 				}
 			}
-
-			if (nearestTagObject != null)
-				return true;
 		}
 
-		return false;
+		return (nearestTagObject != null);
 	}
 
 

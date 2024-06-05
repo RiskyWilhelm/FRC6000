@@ -1,94 +1,128 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
-public sealed partial class BabyFoxAI : AIBase<BabyFoxAIStats>
+public sealed partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 {
+	[Header("Attack")]
+	#region
+
+	[SerializeField]
+	private Timer normalAttackTimer = new(1f, 2f);
+
+	private ValueTuple<IAITarget, Coroutine> normalAttTargetRoutineTuple;
+
+	private bool IsDoingNormalAttack => (normalAttTargetRoutineTuple.Item2 != null);
+
+	#endregion
+
+	[field: NonSerialized]
+	public bool OpenAIHomeGate { get; private set; }
+
+
 	// Update
 	protected override void DoIdle()
 	{
-		// If found nearest chicken and yet didnt caught any chicken, catch the chicken
-		// Else, go to the nearest fox base
-		if (!TrySetDestinationToNearestChicken())
-			TrySetDestinationToNearestFoxBase();
+		TrySetDestinationToNearestFoxBase();
 	}
+
+	public void OnEnteredAIHome(AIHomeBase home)
+	{
+		OpenAIHomeGate = false;
+		ReleaseOrDestroySelf();
+	}
+
+	public void OnLeftFromAIHome(AIHomeBase home)
+	{ }
 
 	public bool TrySetDestinationToNearestFoxBase()
 	{
 		if(TagObject.TryGetNearestTagObject(this.transform, Tags.FoxAIHome, out Transform nearestFoxBase,
-			(iteratedTagObject) => IsAbleToGo(iteratedTagObject.position)))
+			(iteratedTagObject) => IsAbleToGoTo(iteratedTagObject.position)))
 		{
-			SetDestinationTo(nearestFoxBase);
+			OpenAIHomeGate = true;
+			SetDestinationTo(nearestFoxBase, 0.1f);
 			return true;
 		}
 
 		return false;
 	}
 
-	public bool TrySetDestinationToNearestChicken()
-	{
-		if (!Stats.IsCaughtChicken && TagObject.TryGetNearestTagObject(this.transform, Tags.ChickenAI, out Transform nearestChicken,
-			(iteratedTagObject) => IsAbleToGo(iteratedTagObject.position)))
-		{
-			SetDestinationTo(nearestChicken);
-			return true;
-		}
 
-		return false;
-	}
-
-	private void CancelNormalAttack<TStatsType>(AIBase<TStatsType> target)
-		where TStatsType : AIStatsBase
+	private void RefreshAttackState()
 	{
+		ClearDestination();
+
+		if (IsDoingNormalAttack)
+			StopCoroutine(normalAttTargetRoutineTuple.Item2);
+
 		State = AIState.Running;
-		StopCoroutine(OnNormalAttack(target));
+		normalAttTargetRoutineTuple = default;
+		normalAttackTimer.Reset();
 	}
 
-	private IEnumerator OnNormalAttack<TStatsType>(AIBase<TStatsType> target)
-		where TStatsType : AIStatsBase
+	private IEnumerator OnNormalAttack(IAITarget target)
 	{
 		// Take full control over the body by setting state to attacking, ready timer
 		State = AIState.Attacking;
-		var normalAttackTimer = new Timer(this.Stats.NormalAttackSpeed);
 
 		// Wait until timer finishes and set the destination to the target recursively
+		var targetTransform = (target as Component).transform;
 		while (!normalAttackTimer.Tick())
 		{
-			if (target.State == AIState.Dead)
+			yield return null;
+
+			if (target.IsDead)
 			{
-				ClearDestination();
+				RefreshAttackState();
 				yield break;
 			}
 
-			SetDestinationTo(target.transform);
+			SetDestinationTo(targetTransform);
 			DoRunning();
-			yield return null;
 		}
 
 		// Do the attack
-		target.TakeDamage(this.Stats.Power);
+		target.TakeDamage(this.Power);
 
 		// If target dead, go try to go nearest base
 		// If target not dead, repeat the attack recursively
-		if (target.State == AIState.Dead)
+		if (target.IsDead)
 		{
-			State = AIState.Running;
-			Stats.IsCaughtChicken = true;
 			TrySetDestinationToNearestFoxBase();
+			RefreshAttackState();
 		}
 		else
 			StartCoroutine(OnNormalAttack(target));
 	}
 
-	public void OnCaughtChicken(Collider2D collider)
+	public void OnNormalAttackTriggerEnter2D(Collider2D collider)
 	{
-		if (EventReflector.TryGetComponentByEventReflector<BabyChickenAI>(collider.gameObject, out BabyChickenAI caughtChicken))
-			StartCoroutine(OnNormalAttack(caughtChicken));
+		// If no normal attack is going on, found the target and found target is not the same type as self, do the attack
+		if (!IsDoingNormalAttack
+			&& EventReflector.TryGetComponentByEventReflector<IAITarget>(collider.gameObject, out IAITarget foundTarget)
+			&& (foundTarget is not BabyFoxAI))
+		{
+			normalAttTargetRoutineTuple.Item1 = foundTarget;
+			normalAttTargetRoutineTuple.Item2 = StartCoroutine(OnNormalAttack(foundTarget));
+		}
 	}
 
-	public void OnChickenRanaway(Collider2D collider)
+	public void OnNormalAttackTriggerExit2D(Collider2D collider)
 	{
-		if (EventReflector.TryGetComponentByEventReflector<BabyChickenAI>(collider.gameObject, out BabyChickenAI escapedChicken))
-			CancelNormalAttack(escapedChicken);
+		if (EventReflector.TryGetComponentByEventReflector<IAITarget>(collider.gameObject, out IAITarget escapedTarget))
+		{
+			if (escapedTarget == normalAttTargetRoutineTuple.Item1)
+				RefreshAttackState();
+		}
+	}
+
+	public override void CopyTo(in AIBase main)
+	{
+		if (main is BabyFoxAI babyFoxAI)
+			babyFoxAI.normalAttackTimer = this.normalAttackTimer;
+
+		base.CopyTo(main);
 	}
 }
 

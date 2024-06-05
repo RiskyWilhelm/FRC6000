@@ -27,6 +27,7 @@ public sealed partial class DirectionRelativeRotation : MonoBehaviour
 			UpdateRotation();
 	}
 
+	// TODO: A boolean can control if method will control both rotation axis x or z
 	private void UpdateRotation()
 	{
 		// Calculate new dir

@@ -14,12 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Default Local Group
   m_GUID: dd00c14b8d0fb9a4c9991cdedbdd9346
-  m_SerializeEntries:
-  - m_GUID: 1370a72b69a766844a7e2532f020b0e5
-    m_Address: BabyChickenStats
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: d6c249ea23b383d4499c4007a4902b5e, type: 2}
   m_SchemaSet:

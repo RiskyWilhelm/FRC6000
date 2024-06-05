@@ -26,19 +26,16 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 			if (value.daylightType != _time.daylightType)
 				onDaylightTypeChanged?.Invoke(value.daylightType);
 
+			if (value.isDayChangeHour != _time.isDayChangeHour)
+				onDayChanged?.Invoke();
+
 			_time = value;
 		}
 	}
 
 	public UnityEvent<DayLightType> onDaylightTypeChanged;
 
-	// Initialize
-	// WARNING: If you change the SunLight rotation by where it doesnt starts from Night, you must change here too
-	// If initialization depends on this event, then send a pre-timetype. Game will start from night.
-	private void Start()
-	{
-		onDaylightTypeChanged?.Invoke(DayLightType.Night);
-	}
+	public UnityEvent onDayChanged;
 
 
 	// Update
@@ -70,6 +67,7 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 		sun.color = Color.Lerp(dayNightColor, dayLightColor, lightAnglePointWithProcess);
 	}
 
+	// TODO: Refactor the code
 	/// <param name="offsetHour"> Offsets the angle by (exact hour points * offsetHour). Ex: when (angle = {0}, offsetHour = {1 or -1}) result.hour = {1} </param>
 	private GameTime GetCurrentTimeInAngle(float angle, byte offsetHour = 0)
 	{

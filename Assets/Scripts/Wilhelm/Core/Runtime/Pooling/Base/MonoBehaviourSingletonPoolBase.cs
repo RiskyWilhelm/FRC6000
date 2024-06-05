@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Pool;
 
-public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, PooledObjectType> : MonoBehaviourSingletonBase<SingletonType>
+public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, PooledObjectType> : MonoBehaviourSingletonBase<SingletonType>, IPool<PooledObjectType>
     where SingletonType : MonoBehaviourSingletonPoolBase<SingletonType, PooledObjectType>
     where PooledObjectType : class
 {
