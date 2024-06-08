@@ -1,4 +1,4 @@
-public enum DayLightType
+public enum DaylightType
 {
 	Night,
 	Light

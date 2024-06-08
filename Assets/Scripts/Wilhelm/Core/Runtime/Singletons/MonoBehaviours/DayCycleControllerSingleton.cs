@@ -2,9 +2,12 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Rendering.Universal;
 
+// TODO: This class will need a rework after if game gets popular. Because this is not very extendable
 public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingletonBase<DayCycleControllerSingleton>
 {
-	[Header("Movement")]
+	[Header("DayCycleControllerSingleton Movement")]
+	#region
+
 	[SerializeField]
 	private Light2D sun;
 
@@ -14,13 +17,28 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 
 	public Color dayNightColor;
 
+	#endregion
 
-	// Time
+	[Header("DayCycleControllerSingleton Time")]
+	#region Time
+
 	private GameTime _time;
+
+	private bool isTimeInitialized;
+
+	public UnityEvent<DaylightType> onDaylightTypeChanged = new();
+
+	public UnityEvent onDayChanged = new();
 
 	public GameTime Time
 	{
-		get => _time;
+		get
+		{
+			if (!isTimeInitialized)
+				InitializeTime();
+
+			return _time;
+		}
 		private set
 		{
 			if (value.daylightType != _time.daylightType)
@@ -33,38 +51,43 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 		}
 	}
 
-	public UnityEvent<DayLightType> onDaylightTypeChanged;
+	#endregion
 
-	public UnityEvent onDayChanged;
+
+	// Initialize
+	protected override void Awake()
+	{
+		InitializeTime();
+		base.Awake();
+	}
 
 
 	// Update
 	private void Update()
 	{
-		UpdateSunRotation();
-		UpdateSunColorByTime();
-		UpdateTime();
-	}
+		UpdateSun();
 
-	private void UpdateSunRotation()
-	{
-		// Rotate the sun. Negated the dayspeed because the sun never rise from right and negative means "rotate to right"
-		this.transform.Rotate(0, 0, -daySpeed * UnityEngine.Time.deltaTime);
-	}
-
-	private void UpdateTime()
-	{
 		// By default, unity will rotate to LEFT when z rotation of a Transform is increased. We dont want that because the sun should rise from left side
 		// Mirror the circular rotation by subtracting with 360. Ex. (350 - 360) = -10 which means it grows to the other side instead of the current side
 		Time = GetCurrentTimeInAngle(this.transform.rotation.eulerAngles.z - 360, 12);
 	}
 
-	private void UpdateSunColorByTime()
+	private void UpdateSun()
 	{
+		// Rotate the sun. Negated the dayspeed because the sun never rise from right and negative means "rotate to right"
+		this.transform.Rotate(0, 0, -daySpeed * UnityEngine.Time.deltaTime);
+
+		// Change color based on rotation
 		var currentZAngle = this.transform.rotation.eulerAngles.z;
 		var exactLightPoint = 180;
 		var lightAnglePointWithProcess = Mathf.Abs((currentZAngle - (exactLightPoint * Mathf.Sign(currentZAngle))) / exactLightPoint);
 		sun.color = Color.Lerp(dayNightColor, dayLightColor, lightAnglePointWithProcess);
+	}
+
+	private void InitializeTime()
+	{
+		_time = GetCurrentTimeInAngle(this.transform.rotation.eulerAngles.z - 360, 12);
+		isTimeInitialized = true;
 	}
 
 	// TODO: Refactor the code
@@ -98,8 +121,8 @@ public sealed partial class DayCycleControllerSingleton
 
 	private void LateUpdate()
 	{
-		e_Time = Time.ToString();
-		e_Time12 = new GameTime(Time.hour, Time.minute, Time.second, convertToPM: true).ToString();
+		e_Time = _time.ToString();
+		e_Time12 = new GameTime(_time.hour, _time.minute, _time.second, convertToPM: true).ToString();
 	}
 }
 

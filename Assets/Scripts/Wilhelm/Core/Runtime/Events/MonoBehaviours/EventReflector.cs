@@ -5,7 +5,8 @@ public sealed partial class EventReflector : MonoBehaviour
 {
     public GameObject reflectTo;
 
-    public static bool TryGetReflectedGameObject(GameObject gameObject, out GameObject reflectedTo)
+	/// <returns> If found the reflected GameObject, else self </returns>
+	public static bool TryGetReflectedGameObject(GameObject gameObject, out GameObject reflectedTo)
     {
         if (gameObject.TryGetComponent<EventReflector>(out EventReflector foundEventReflector))
         {

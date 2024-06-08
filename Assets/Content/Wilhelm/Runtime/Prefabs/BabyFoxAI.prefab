@@ -35,6 +35,7 @@ Transform:
   m_Children:
   - {fileID: 5747292688927411197}
   - {fileID: 7050009235390762627}
+  - {fileID: 7861913939581313386}
   - {fileID: 8426746232564705225}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -84,10 +85,12 @@ MonoBehaviour:
   movementForce: 0.5
   maxVelocityX: 5
   normalAttackTimer:
-    minInclusiveTickTime: 1
-    maxInclusiveTickTime: 2
-    tickTime: 1.163389
+    minInclusiveTickTime: 0.5
+    maxInclusiveTickTime: 0.75
+    tickTime: 0.4
     isRandomized: 1
+  ignoreEnemyTagList:
+  - FoxAI
 --- !u!114 &1005912783288694528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -210,7 +213,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8426746232564705225}
   - component: {fileID: 6388657600226924967}
-  - component: {fileID: 6071342635228719053}
+  - component: {fileID: 6659747044206583017}
   - component: {fileID: 8141789435931607941}
   m_Layer: 7
   m_Name: NormalAttackTrigger
@@ -280,7 +283,7 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 2}
   m_EdgeRadius: 0
---- !u!114 &6071342635228719053
+--- !u!114 &6659747044206583017
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -289,7 +292,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4192512353348284368}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a421f48310d65d54a9259094b96e70c5, type: 3}
+  m_Script: {fileID: 11500000, guid: 36c15773df7fd3d41bb9fffb01039bf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   raised:
@@ -297,7 +300,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 4028007122091320076}
         m_TargetAssemblyTypeName: BabyFoxAI, FRC.AI.Runtime
-        m_MethodName: OnNormalAttackTriggerEnter2D
+        m_MethodName: OnNormalAttackTriggerStay2D
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -417,3 +420,137 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   reflectTo: {fileID: 2669454140272425697}
+--- !u!1 &4933941834959415881
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7861913939581313386}
+  - component: {fileID: 6542531528210770503}
+  - component: {fileID: 6612453962532214104}
+  - component: {fileID: 5925518641693449629}
+  m_Layer: 7
+  m_Name: EnemyTrigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7861913939581313386
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4933941834959415881}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7173585969489889783}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &6542531528210770503
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4933941834959415881}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 191
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 25, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 75, y: 50}
+  m_EdgeRadius: 0
+--- !u!114 &6612453962532214104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4933941834959415881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36c15773df7fd3d41bb9fffb01039bf4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raised:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4028007122091320076}
+        m_TargetAssemblyTypeName: BabyFoxAI, FRC.AI.Runtime
+        m_MethodName: OnEnemyTriggerStay2D
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &5925518641693449629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4933941834959415881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 741db10aaff39c54abe6026079b1eb49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raised:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 4028007122091320076}
+        m_TargetAssemblyTypeName: BabyFoxAI, FRC.AI.Runtime
+        m_MethodName: OnEnemyTriggerExit2D
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

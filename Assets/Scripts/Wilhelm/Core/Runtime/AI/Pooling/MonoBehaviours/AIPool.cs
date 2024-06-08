@@ -2,9 +2,14 @@ using UnityEngine;
 
 public partial class AIPool : MonoBehaviourPoolBase<AIBase>
 {
+	[Header("AIPool Spawn")]
+	#region
+
 	[SerializeField]
 	[Tooltip("If preStats null, this will be used. Used for copying when creating a new AI in pool")]
 	private AIBase prefab;
+
+	#endregion
 
 
 	// Initialize

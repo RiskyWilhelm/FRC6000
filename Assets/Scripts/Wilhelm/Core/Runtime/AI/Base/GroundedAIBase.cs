@@ -3,6 +3,9 @@ using UnityEngine;
 
 public abstract partial class GroundedAIBase : AIBase
 {
+	[Header("GroundedAIBase Movement")]
+	#region
+
 	[SerializeField]
 	protected float movementForce = 10;
 
@@ -11,6 +14,16 @@ public abstract partial class GroundedAIBase : AIBase
 
 	[NonSerialized]
 	private sbyte norDirRunningToX;
+
+	#endregion
+
+
+	// Initialize
+	protected override void OnEnable()
+	{
+		norDirRunningToX = 0;
+		base.OnEnable();
+	}
 
 
 	// Update
@@ -35,6 +48,17 @@ public abstract partial class GroundedAIBase : AIBase
 
 		// Clamp the speed
 		selfRigidbody.velocityX = Math.Clamp(selfRigidbody.velocityX, -maxVelocityX, maxVelocityX);
+	}
+
+	public override void CopyTo(in AIBase main)
+	{
+		if (main is GroundedAIBase groundedAI)
+		{
+			groundedAI.movementForce = this.movementForce;
+			groundedAI.maxVelocityX = this.maxVelocityX;
+		}
+
+		base.CopyTo(main);
 	}
 }
 

@@ -1,8 +1,9 @@
+using System;
 using UnityEngine;
 
-public sealed partial class BabyChickenAI : GroundedAIBase
+public sealed partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
 {
-	[Header("Movement")]
+	[Header("BabyChickenAI Movement")]
 	#region
 
 	[SerializeField, Range(0, 255)]
@@ -13,22 +14,64 @@ public sealed partial class BabyChickenAI : GroundedAIBase
 
 	#endregion
 
+	#region Other
+
+	[field: NonSerialized]
+	public bool OpenAIHomeGate { get; private set; }
+
+	#endregion
+
 
 	// Update
 	protected override void DoIdle()
 	{
-		// Do idle when the timer finishes
-		if (idleTimer.Tick())
-		{
-			// Find a random horizontal position around self and set destination
-			var randomHorizontalPosition = UnityEngine.Random.Range(-idleMaxDistance, idleMaxDistance);
-			var newDestination = selfRigidbody.position;
-			newDestination.x += randomHorizontalPosition;
+		// If the time is night-time, try go to the base. If there is no base, do the idle
 
-			SetDestinationTo(newDestination);
+		switch (DayCycleControllerSingleton.Instance.Time.daylightType)
+		{
+			case DaylightType.Light:
+				goto default;
+
+			case DaylightType.Night:
+			{
+				var isFoundNearbyChickenBase = TrySetDestinationToNearestChickenBase();
+
+				if (!isFoundNearbyChickenBase)
+					goto default;
+			}
+			break;
+
+			default:
+			{
+				if (idleTimer.Tick())
+				{
+					// Do idle when the timer finishes
+					// Find a random horizontal position around self and set destination
+					var randomHorizontalPosition = UnityEngine.Random.Range(-idleMaxDistance, idleMaxDistance);
+					var newDestination = selfRigidbody.position;
+					newDestination.x += randomHorizontalPosition;
+
+					SetDestinationTo(newDestination);
+				}
+			}
+			break;
 		}
 
+
 		base.DoIdle();
+	}
+
+	public bool TrySetDestinationToNearestChickenBase()
+	{
+		if (TagObject.TryGetNearestTagObject(this.transform, Tags.ChickenAIHome, out Transform nearestChickenBase,
+			(iteratedTagObject) => IsAbleToGoTo(iteratedTagObject.position)))
+		{
+			OpenAIHomeGate = true;
+			SetDestinationTo(nearestChickenBase, 0.1f);
+			return true;
+		}
+
+		return false;
 	}
 
 	protected override void OnStateChangedToDead()
@@ -57,6 +100,15 @@ public sealed partial class BabyChickenAI : GroundedAIBase
 
 		base.CopyTo(main);
 	}
+
+	public void OnEnteredAIHome(AIHomeBase home)
+	{
+		OpenAIHomeGate = false;
+		ReleaseOrDestroySelf();
+	}
+
+	public void OnLeftFromAIHome(AIHomeBase home)
+	{ }
 }
 
 

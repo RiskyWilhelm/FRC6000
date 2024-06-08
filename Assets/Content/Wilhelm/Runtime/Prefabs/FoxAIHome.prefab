@@ -69,7 +69,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 25.29
+  m_Radius: 48
 --- !u!114 &9084277841350427866
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,6 +240,7 @@ GameObject:
   m_Component:
   - component: {fileID: 150079601730306279}
   - component: {fileID: 7326570579824223486}
+  - component: {fileID: 7825853524092691296}
   - component: {fileID: 7978156460112614562}
   - component: {fileID: 5694485341825279247}
   - component: {fileID: 70463749042360382}
@@ -322,6 +323,33 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!50 &7825853524092691296
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8937228621258481250}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
 --- !u!114 &7978156460112614562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,16 +427,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5217dadcb2425504daa1248429d8bca4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nightSpawnTimer:
-    minInclusiveTickTime: 0
-    maxInclusiveTickTime: 0
-    tickTime: 10
-    isRandomized: 0
-  lightSpawnTimer:
-    minInclusiveTickTime: 0
-    maxInclusiveTickTime: 0
-    tickTime: 20
-    isRandomized: 0
   luckAIPoolList: []
-  ignoreTargetTagArray:
+  spawnTimer:
+    minInclusiveTickTime: 10
+    maxInclusiveTickTime: 20
+    tickTime: 10
+    isRandomized: 1
+  ignoreEnemyTagList:
   - FoxAI

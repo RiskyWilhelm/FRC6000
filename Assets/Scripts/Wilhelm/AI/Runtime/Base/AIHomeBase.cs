@@ -4,43 +4,15 @@ using UnityEngine.Pool;
 
 public abstract partial class AIHomeBase : MonoBehaviour
 {
-	[Header("Spawn")]
+	[Header("AIHomeBase Spawn")]
 	#region
-	[SerializeField]
-	private Timer nightSpawnTimer = new (20f);
-
-	[SerializeField]
-	private Timer lightSpawnTimer = new(10f);
 
 	public List<Luck<AIPool>> luckAIPoolList = new ();
+
 	#endregion
 
 
-	// Update
-	private void Update()
-	{
-		switch (DayCycleControllerSingleton.Instance.Time.daylightType)
-		{
-			case DayLightType.Night:
-			{
-				if (nightSpawnTimer.Tick())
-					goto default;
-			}
-			break;
-
-			case DayLightType.Light:
-			{
-				if (lightSpawnTimer.Tick())
-					goto default;
-			}
-			break;
-
-			default:
-			TrySpawn(out _);
-			break;
-		}
-	}
-
+	// Update	
 	protected virtual bool TrySpawn(out AIBase spawnedAI)
 	{
 		spawnedAI = null;

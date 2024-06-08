@@ -9,7 +9,7 @@ public readonly struct GameTime : IEquatable<GameTime>
 
 	public readonly byte second;
 
-	public readonly DayLightType daylightType;
+	public readonly DaylightType daylightType;
 
 	public readonly bool isDayChangeHour;
 
@@ -26,26 +26,21 @@ public readonly struct GameTime : IEquatable<GameTime>
 	/// <param name="convertToPM"> Converts to 12-hour clock </param>
 	public GameTime(byte hour, byte minute, byte second, bool convertToPM = false)
 	{
+		this.minute = (byte)(minute % 60);
+		this.second = (byte)(second % 60);
+		isDayChangeHour = (hour == 0);
+
 		// Check if it is night time or not
 		if ((hour >= 19) || (hour <= 5))
-			this.daylightType = DayLightType.Night;
+			this.daylightType = DaylightType.Night;
 		else
-			this.daylightType = DayLightType.Light;
-
-		// Check if hour is day change hour
-		if (hour == 0)
-			isDayChangeHour = true;
-		else
-			isDayChangeHour = false;
+			this.daylightType = DaylightType.Light;
 
 		// Convert if desired
 		if (convertToPM)
 			this.hour = (byte)(hour % 12);
 		else
 			this.hour = hour;
-
-		this.minute = (byte)(minute % 60);
-		this.second = (byte)(second % 60);
 	}
 
 	public override bool Equals(object obj)

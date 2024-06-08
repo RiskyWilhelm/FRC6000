@@ -1,4 +1,4 @@
-public interface IAIHomeAccesser 
+public interface IAIHomeAccesser
 {
 	public bool OpenAIHomeGate { get; }
 

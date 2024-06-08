@@ -59,22 +59,7 @@ public sealed partial class TagObject : MonoBehaviour
 		nearestTagObject = null;
 
 		if (TryGetActiveObjectListFromTag(checkTag, out List<Transform> activeTagObjectList))
-		{
-			// Ready
-			float nearestHorizontalDistance = Mathf.Abs(activeTagObjectList[0].position.x - relativeTo.position.x);
-
-			// Check distances and select nearest chicken
-			foreach (var iteratedTagObject in activeTagObjectList)
-			{
-				var iteratedHorizontalDistance = Mathf.Abs(iteratedTagObject.position.x - relativeTo.position.x);
-
-				if (iteratedHorizontalDistance <= nearestHorizontalDistance && (predicateNearest == null || predicateNearest.Invoke(iteratedTagObject)))
-				{
-					nearestTagObject = iteratedTagObject;
-					nearestHorizontalDistance = iteratedHorizontalDistance;
-				}
-			}
-		}
+			TransformExtensions.TryGetNearestTransform(relativeTo, activeTagObjectList, out nearestTagObject, predicateNearest);
 
 		return (nearestTagObject != null);
 	}

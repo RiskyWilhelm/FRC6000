@@ -7,7 +7,7 @@ using UnityEngine.Pool;
 [DisallowMultipleComponent]
 public abstract partial class AIBase : MonoBehaviour, IAITarget, IPooledObject<AIBase>, ICopyable<AIBase> 
 {
-	[Header("Movement")]
+	[Header("AIBase Movement")]
 	#region
 
 	[SerializeField]
@@ -29,6 +29,7 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget, IPooledObject<A
 
 	#endregion
 
+	[field: Header("AIBase Stats")]
 	#region Stats
 
 	[field: SerializeField]
@@ -43,7 +44,7 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget, IPooledObject<A
 
 	#region Other
 
-	protected AIState _state;
+	private AIState _state;
 
 	public AIState State
 	{
@@ -217,10 +218,10 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget, IPooledObject<A
 			State = AIState.Dead;
 	}
 
-	protected virtual void OnReachedToDestination(Vector2 reachedDestination)
+	protected virtual void OnChangedDestination(Vector2? newDestination)
 	{ }
 
-	protected virtual void OnClearedDestination()
+	protected virtual void OnReachedToDestination(Vector2 reachedDestination)
 	{ }
 
 	public void SetDestinationTo(Vector2 newDestination, float destinationApproachThreshold = 1f)
@@ -232,6 +233,8 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget, IPooledObject<A
 		// Check if the new destination is already reached one, then clear it
 		if (IsReachedToDestination())
 			ClearDestination();
+		else
+			OnChangedDestination(newDestination);
 	}
 
 	public void SetDestinationTo(Transform newDestination, float destinationApproachThreshold = 1f)
@@ -243,9 +246,12 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget, IPooledObject<A
 		// Check if the new destination is already reached one, then clear it
 		if (IsReachedToDestination())
 			ClearDestination();
+		else
+			OnChangedDestination(newDestination.position);
 	}
 
 	// OPTIMIZATION: Needed in future versions
+	/// <param name="isGroundedOnly"> Get the grounded direction only </param>
 	public void SetDestinationToAwayFrom(Vector2 target, float destinationApproachThreshold = 1f, float checkInDegree = -180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
 	{
 		// Prevent from no check by keeping the values positive
@@ -347,7 +353,7 @@ public abstract partial class AIBase : MonoBehaviour, IAITarget, IPooledObject<A
 		currentDestination = null;
 		currentDestinationTarget = null;
 		destinationThresholdDistance = 0;
-		OnClearedDestination();
+		OnChangedDestination(null);
 	}
 
 	public bool IsReachedToDestination()
