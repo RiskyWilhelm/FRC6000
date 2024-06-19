@@ -2,71 +2,95 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool;
 
-public sealed partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
+public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 {
-	[Header("BabyFoxAI Attack")]
-	#region
+	#region BabyFoxAI Movement
+
+	[SerializeField]
+	private Timer goHomeBackTimer = new(10f, 10f, 20f);
+
+	private bool mustGoHomeBack;
+
+
+	#endregion
+
+	[Header("BabyFoxAI Normal Attack")]
+	#region BabyFoxAI Normal Attack
+
+	[SerializeField]
+	private uint normalAttackDamage = 1;
 
 	[SerializeField]
 	private Timer normalAttackTimer = new(0.5f, 0.75f);
 
-	private ValueTuple<IAITarget, Coroutine> normalAttTargetRoutineTuple;
+	[NonSerialized]
+	private ValueTuple<ITarget, Coroutine> currentNormalAttack;
 
 	#endregion
 
 	[Header("BabyFoxAI Enemy")]
-	#region
+	#region BabyFoxAI Enemy
 
-	public List<string> ignoreEnemyTagList = new ();
+	[NonSerialized]
+	private readonly HashSet<ITarget> targetInRangeSet = new();
 
-	private readonly HashSet<IAITarget> enemyInRangeSet = new();
+	[NonSerialized]
+	private readonly HashSet<ITarget> runawayTargetsInRangeSet = new();
 
 	#endregion
 
-	#region Other
+	#region BabyFoxAI Other
 
 	[field: NonSerialized]
 	public bool IsCaughtMeal {  get; private set; }
 
-	[field: NonSerialized]
+	[field: SerializeField]
 	public bool OpenAIHomeGate { get; private set; }
+
+	[field: NonSerialized]
+	public AIHomeBase ParentHome { get; set; }
 
 	#endregion
 
 
 	// Initialize
-	private void Start()
-	{
-		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.AddListener(OnDaylightTypeChanged);
-		UpdateByDaylightType(DayCycleControllerSingleton.Instance.Time.daylightType);
-	}
-
 	protected override void OnEnable()
 	{
-		IsCaughtMeal = false;
-		OpenAIHomeGate = false;
+		mustGoHomeBack = false;
+		goHomeBackTimer.Reset();
 		ClearDestination();
 		RefreshAttackState();
 
 		base.OnEnable();
 	}
 
+	private void Start()
+	{
+		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.AddListener(OnDaylightTypeChanged);
+		UpdateByDaylightType(DayCycleControllerSingleton.Instance.Time.daylightType);
+	}
+
 
 	// Update
 	protected override void DoIdle()
 	{
-		TrySetDestinationToNearestFoxBase();
+		bool isGoingHome = false;
+
+		if (mustGoHomeBack || IsCaughtMeal)
+			isGoingHome = TrySetDestinationToHome();
+		
+		if (!isGoingHome)
+			base.DoIdle();
 	}
 
-	public void OnEnteredAIHome(AIHomeBase home)
+	protected override void Update()
 	{
-		ReleaseOrDestroySelf();
-	}
+		if (goHomeBackTimer.Tick())
+			mustGoHomeBack = true;
 
-	public void OnLeftFromAIHome(AIHomeBase home)
-	{ }
+		base.Update();
+	}
 
 	protected override void OnChangedDestination(Vector2? newDestination)
 	{
@@ -74,95 +98,44 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 		base.OnChangedDestination(newDestination);
 	}
 
-	public bool TrySetDestinationToNearestFoxBase()
+	public bool TrySetDestinationToHome()
 	{
-		if(TagObject.TryGetNearestTagObject(this.transform, Tags.FoxAIHome, out Transform nearestFoxHome, (iteratedTagObject) => IsAbleToGoTo(iteratedTagObject.position)))
+		var isDestinationSet = false;
+
+		if (ParentHome != null)
 		{
-			SetDestinationTo(nearestFoxHome, 0.1f);
-			OpenAIHomeGate = true;
-			return true;
+			isDestinationSet = TrySetDestinationTo(ParentHome.transform, 0.1f);
+
+			if (isDestinationSet)
+				OpenAIHomeGate = true;
 		}
 
-		return false;
+		return isDestinationSet;
 	}
 
-	// OPTIMIZATION: Those two called too frequently. Some of them implemented in FoxAIHome with exact topic
-	public bool TrySetDestinationAwayFromPowerfulEnemyInRange()
+	public void OnEnteredAIHome(AIHomeBase home)
 	{
-		using (ListPool<Transform>.Get(out List<Transform> powerfulEnemyInRangeList))
-		{
-			// Find powerful enemies in range
-			foreach (var iteratedEnemy in enemyInRangeSet)
-			{
-				if ((iteratedEnemy is AIBase iteratedEnemyAI) && iteratedEnemyAI.IsPowerfulThan(this))
-					powerfulEnemyInRangeList.Add(iteratedEnemyAI.transform);
-			}
-
-			// Try set destination away from the nearest strongest enemy
-			if (powerfulEnemyInRangeList.Count > 0)
-			{
-				if (this.transform.TryGetNearestTransform(powerfulEnemyInRangeList, out Transform nearestPowerfulEnemy, IsCanCatchSelf))
-				{
-					SetDestinationToAwayFrom(nearestPowerfulEnemy.position, isGroundedOnly: true);
-					return true;
-				}
-			}
-		}
-
-		return false;
-		bool IsCanCatchSelf(Transform chaserTransform)
-		{
-			var chaserAIComponent = chaserTransform.GetComponent<AIBase>();
-			return !chaserAIComponent.IsDead && chaserAIComponent.IsAbleToGoTo(this.transform.position);
-		}
+		IsCaughtMeal = false;
+		ReleaseOrDestroySelf();
 	}
 
-	public bool TrySetDestinationToNearestEnemyInRange()
+	public void OnLeftFromAIHome(AIHomeBase home)
 	{
-		using (ListPool<Transform>.Get(out List<Transform> enemyInRangeTransformList))
-		{
-			// Convert enemies in range list to transform list
-			foreach (var iteratedEnemy in enemyInRangeSet)
-				enemyInRangeTransformList.Add((iteratedEnemy as Component).transform);
-
-			// Set destination to the nearest enemy if able to go
-			if (this.transform.TryGetNearestTransform(enemyInRangeTransformList, out Transform nearestEnemy, IsCatchable))
-			{
-				SetDestinationTo(nearestEnemy);
-				return true;
-			}
-		}
-
-		return false;
-		bool IsCatchable(Transform targetTransform) => !targetTransform.GetComponent<IAITarget>().IsDead && IsAbleToGoTo(targetTransform.position);
-	}
-
-	private void RefreshAttackState()
-	{
-		if (State == AIState.Attacking)
-		{
-			if (normalAttTargetRoutineTuple.Item2 != null)
-				StopCoroutine(normalAttTargetRoutineTuple.Item2);
-			
-			State = AIState.Idle;
-		}
-
-		normalAttTargetRoutineTuple = default;
-		normalAttackTimer.Reset();
+		OpenAIHomeGate = false;
 	}
 
 	/// <summary> Attacks single target </summary>
-	private IEnumerator DoNormalAttack(IAITarget target)
+	private IEnumerator DoNormalAttack(ITarget target)
 	{
 		// Cant attack the dead
 		if (target.IsDead)
 			yield break;
 
 		// Take full control over the body by setting state to attacking, ready timer
-		State = AIState.Attacking;
+		State = PlayerStateType.Attacking;
 
 		// Do the attack
-		target.TakeDamage(this.Power);
+		target.TakeDamage(normalAttackDamage, selfRigidbody.position);
 
 		if (target.IsDead)
 		{
@@ -178,86 +151,89 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 		RefreshAttackState();
 	}
 
-	private void OnKilledTarget(IAITarget target)
+	private void OnKilledTarget(ITarget target)
 	{
-		var targetComponent = (target as Component);
-
 		// If target is a chicken or chicken home, it means it caught a chicken
-		if (targetComponent.CompareTag(Tags.ChickenAI) || targetComponent.CompareTag(Tags.ChickenAIHome))
+		if (target.TargetTag is TargetType.Chicken or TargetType.ChickenHome)
 			IsCaughtMeal = true;
 
-		TrySetDestinationToNearestFoxBase();
+		TrySetDestinationToHome();
+	}
+
+	private void RefreshAttackState()
+	{
+		if (State == PlayerStateType.Attacking)
+		{
+			if (currentNormalAttack.Item2 != null)
+				StopCoroutine(currentNormalAttack.Item2);
+
+			State = PlayerStateType.Idle;
+		}
+
+		currentNormalAttack = default;
+		normalAttackTimer.Reset();
 	}
 
 	public void OnNormalAttackTriggerStay2D(Collider2D collider)
 	{
-		// If reflected, get reflected object
-		EventReflector.TryGetReflectedGameObject(collider.gameObject, out GameObject reflected);
-
-		if (ignoreEnemyTagList.Contains(reflected.tag))
+		// If attacking, let it finish first
+		if (State == PlayerStateType.Attacking)
 			return;
 
-		// If currently not attacking, do the attack
-		if (!(State == AIState.Attacking)
-			&& reflected.TryGetComponent<IAITarget>(out IAITarget foundTarget))
+		// Do the attack
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget foundTarget))
 		{
-			normalAttTargetRoutineTuple.Item1 = foundTarget;
-			normalAttTargetRoutineTuple.Item2 = StartCoroutine(DoNormalAttack(foundTarget));
+			// If target is not accepted, return
+			if (!acceptedTargetTypeList.Contains(foundTarget.TargetTag))
+				return;
+
+			currentNormalAttack.Item1 = foundTarget;
+			currentNormalAttack.Item2 = StartCoroutine(DoNormalAttack(foundTarget));
 		}
 	}
 
 	public void OnNormalAttackTriggerExit2D(Collider2D collider)
 	{
-		if (EventReflector.TryGetComponentByEventReflector<IAITarget>(collider.gameObject, out IAITarget escapedTarget))
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget escapedTarget))
 		{
-			if (escapedTarget == normalAttTargetRoutineTuple.Item1)
+			if (escapedTarget == currentNormalAttack.Item1)
 				RefreshAttackState();
 		}
 	}
 
 	public void OnEnemyTriggerStay2D(Collider2D collider)
 	{
-		// If reflected, get reflected object
-		EventReflector.TryGetReflectedGameObject(collider.gameObject, out GameObject reflected);
-
-		if (ignoreEnemyTagList.Contains(reflected.tag))
-			return;
-
 		// If the GameObject is a AI Target, add to range list
-		if (reflected.TryGetComponent<IAITarget>(out IAITarget foundTarget))
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget foundTarget))
 		{
-			enemyInRangeSet.Add(foundTarget);
+			// Update enemies in range
+			if (acceptedTargetTypeList.Contains(foundTarget.TargetTag))
+				targetInRangeSet.Add(foundTarget);
 
-			if (State is AIState.Attacking)
+			if (runawayTargetTypeList.Contains(foundTarget.TargetTag))
+				runawayTargetsInRangeSet.Add(foundTarget);
+
+			// Let the blocked states take control
+			if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Dead)
 				return;
 
 			// If there is any powerful enemy in range, runaway from it and discard other targets
-			if (TrySetDestinationAwayFromPowerfulEnemyInRange())
+			if ((runawayTargetsInRangeSet.Count > 0) && TrySetDestinationAwayFromNearestIn(runawayTargetsInRangeSet))
 				return;
 
 			// If didnt caught any meal, try catch the nearest enemy
-			// If cant catch any enemy, set destination to home back
-			if (!IsCaughtMeal && !TrySetDestinationToNearestEnemyInRange())
-				TrySetDestinationToNearestFoxBase();
+			if (!IsCaughtMeal)
+				TrySetDestinationToNearestIn(targetInRangeSet);
 		}
 	}
 
 	public void OnEnemyTriggerExit2D(Collider2D collider)
 	{
-		// If reflected, get reflected object
-		EventReflector.TryGetReflectedGameObject(collider.gameObject, out GameObject reflected);
-
-		if (ignoreEnemyTagList.Contains(reflected.tag))
-			return;
-
 		// If the GameObject is a AI Target, remove from the range list
-		if (reflected.TryGetComponent<IAITarget>(out IAITarget foundTarget))
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget foundTarget))
 		{
-			enemyInRangeSet.Remove(foundTarget);
-
-			// If there is no enemy in range, set destination to nearest home
-			if (enemyInRangeSet.Count == 0)
-				TrySetDestinationToNearestFoxBase();
+			runawayTargetsInRangeSet.Remove(foundTarget);
+			targetInRangeSet.Remove(foundTarget);
 		}
 	}
 
@@ -272,14 +248,14 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 		{
 			case DaylightType.Light:
 			{
-				if (!ignoreEnemyTagList.Contains(Tags.ChickenAIHome))
-					ignoreEnemyTagList.Add(Tags.ChickenAIHome);
+				acceptedTargetTypeList.Remove(TargetType.ChickenHome);
 			}
 			break;
 
 			case DaylightType.Night:
 			{
-				ignoreEnemyTagList.Remove(Tags.ChickenAIHome);
+				if (!acceptedTargetTypeList.Contains(TargetType.ChickenHome))
+					acceptedTargetTypeList.Add(TargetType.ChickenHome);
 			}
 			break;
 		}
@@ -290,7 +266,8 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 		if (main is BabyFoxAI babyFoxAI)
 		{
 			babyFoxAI.normalAttackTimer = this.normalAttackTimer;
-			babyFoxAI.ignoreEnemyTagList = this.ignoreEnemyTagList;
+			babyFoxAI.normalAttackDamage = this.normalAttackDamage;
+			babyFoxAI.goHomeBackTimer = this.goHomeBackTimer;
 		}
 
 		base.CopyTo(main);
@@ -300,7 +277,8 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 	// Dispose
 	private void OnDestroy()
 	{
-		if (!this.gameObject.scene.isLoaded) return;
+		if (AppStateControllerSingleton.IsQuitting)
+			return;
 
 		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.RemoveListener(OnDaylightTypeChanged);
 	}
@@ -309,7 +287,7 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 
 #if UNITY_EDITOR
 
-public sealed partial class BabyFoxAI
+public partial class BabyFoxAI
 { }
 
 #endif

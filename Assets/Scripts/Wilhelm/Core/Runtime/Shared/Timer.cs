@@ -16,7 +16,7 @@ public struct Timer : IEquatable<Timer>
 
 	public bool isRandomized;
 
-	private static System.Random mainRandomizer = new ();
+	private static readonly System.Random mainRandomizer = new ();
 
 
     // Initialize

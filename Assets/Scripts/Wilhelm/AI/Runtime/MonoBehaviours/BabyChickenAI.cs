@@ -1,32 +1,31 @@
 using System;
 using UnityEngine;
 
-public sealed partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
+public partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
 {
-	[Header("BabyChickenAI Movement")]
-	#region
+	#region BabyChickenAI Other
 
-	[SerializeField, Range(0, 255)]
-	private byte idleMaxDistance = 10;
-
-	[SerializeField]
-	private Timer idleTimer = new (2f);
-
-	#endregion
-
-	#region Other
+	[field: SerializeField]
+	public bool OpenAIHomeGate { get; protected set; }
 
 	[field: NonSerialized]
-	public bool OpenAIHomeGate { get; private set; }
+	public AIHomeBase ParentHome { get; set; }
 
 	#endregion
+
+
+	// Initialize
+	protected override void OnEnable()
+	{
+		ClearDestination();
+		base.OnEnable();
+	}
 
 
 	// Update
 	protected override void DoIdle()
 	{
 		// If the time is night-time, try go to the base. If there is no base, do the idle
-
 		switch (DayCycleControllerSingleton.Instance.Time.daylightType)
 		{
 			case DaylightType.Light:
@@ -34,44 +33,36 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
 
 			case DaylightType.Night:
 			{
-				var isFoundNearbyChickenBase = TrySetDestinationToNearestChickenBase();
-
-				if (!isFoundNearbyChickenBase)
+				if (!TrySetDestinationToHome())
 					goto default;
 			}
 			break;
 
 			default:
-			{
-				if (idleTimer.Tick())
-				{
-					// Do idle when the timer finishes
-					// Find a random horizontal position around self and set destination
-					var randomHorizontalPosition = UnityEngine.Random.Range(-idleMaxDistance, idleMaxDistance);
-					var newDestination = selfRigidbody.position;
-					newDestination.x += randomHorizontalPosition;
-
-					SetDestinationTo(newDestination);
-				}
-			}
+				base.DoIdle();
 			break;
 		}
-
-
-		base.DoIdle();
 	}
 
-	public bool TrySetDestinationToNearestChickenBase()
+	public bool TrySetDestinationToHome()
 	{
-		if (TagObject.TryGetNearestTagObject(this.transform, Tags.ChickenAIHome, out Transform nearestChickenBase,
-			(iteratedTagObject) => IsAbleToGoTo(iteratedTagObject.position)))
+		var isDestinationSet = false;
+
+		if (ParentHome != null)
 		{
-			OpenAIHomeGate = true;
-			SetDestinationTo(nearestChickenBase, 0.1f);
-			return true;
+			isDestinationSet = TrySetDestinationTo(ParentHome.transform, 0.1f);
+
+			if (isDestinationSet)
+				OpenAIHomeGate = true;
 		}
 
-		return false;
+		return isDestinationSet;
+	}
+
+	protected override void OnChangedDestination(Vector2? newDestination)
+	{
+		OpenAIHomeGate = false;
+		base.OnChangedDestination(newDestination);
 	}
 
 	protected override void OnStateChangedToDead()
@@ -83,38 +74,31 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
 	public void OnRunawayTriggerStay2D(Collider2D collider)
 	{
 		// If there is any AI that is powerful than self nearby, run!
-		if (EventReflector.TryGetComponentByEventReflector<AIBase>(collider.gameObject, out AIBase foundTarget)
-			&& foundTarget.IsPowerfulThan(this))
+		if (EventReflectorUtils.TryGetComponentByEventReflector<AIBase>(collider.gameObject, out AIBase foundTarget))
 		{
-			SetDestinationToAwayFrom(foundTarget.transform.position);
+			if (runawayTargetTypeList.Contains(foundTarget.TargetTag))
+			{
+				TrySetDestinationAwayFrom(foundTarget.transform.position);
+				OpenAIHomeGate = true;
+			}
 		}
-	}
-
-	public override void CopyTo(in AIBase main)
-	{
-		if (main is BabyChickenAI babyChickenAI)
-		{
-			babyChickenAI.idleMaxDistance = this.idleMaxDistance;
-			babyChickenAI.idleTimer = this.idleTimer;
-		}
-
-		base.CopyTo(main);
 	}
 
 	public void OnEnteredAIHome(AIHomeBase home)
 	{
-		OpenAIHomeGate = false;
 		ReleaseOrDestroySelf();
 	}
 
 	public void OnLeftFromAIHome(AIHomeBase home)
-	{ }
+	{
+		OpenAIHomeGate = false;
+	}
 }
 
 
 #if UNITY_EDITOR
 
-public sealed partial class BabyChickenAI
+public partial class BabyChickenAI
 { }
 
 #endif

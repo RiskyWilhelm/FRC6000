@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public static class LuckUtil
+public static class LuckUtils
 {
 	public static LuckType Generate()
 	{

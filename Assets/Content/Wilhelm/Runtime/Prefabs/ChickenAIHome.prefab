@@ -382,14 +382,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   luckAIPoolList: []
+  acceptedTargetTypeList: 01000000
   lightSpawnTimer:
     minInclusiveTickTime: 10
     maxInclusiveTickTime: 20
     tickTime: 10
     isRandomized: 1
-  _health: 10
   restoreHealthTimer:
     minInclusiveTickTime: 0
-    maxInclusiveTickTime: 0
+    maxInclusiveTickTime: 5
     tickTime: 5
-    isRandomized: 0
+    isRandomized: 1
+  <Health>k__BackingField: 10
+  <MaxHealth>k__BackingField: 10

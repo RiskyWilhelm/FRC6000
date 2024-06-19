@@ -1,129 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &898414398333120356
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 9099224165892448737}
-  - component: {fileID: 8761675461620121584}
-  - component: {fileID: 9084277841350427866}
-  - component: {fileID: 8278685016554041550}
-  m_Layer: 7
-  m_Name: EnemyTrigger
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &9099224165892448737
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 898414398333120356}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 150079601730306279}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!58 &8761675461620121584
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 898414398333120356}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 191
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_CompositeOperation: 0
-  m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 48
---- !u!114 &9084277841350427866
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 898414398333120356}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a421f48310d65d54a9259094b96e70c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  raised:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 70463749042360382}
-        m_TargetAssemblyTypeName: FoxAIHome, FRC.AI.Runtime
-        m_MethodName: OnEnemyTriggerEnter2D
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
---- !u!114 &8278685016554041550
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 898414398333120356}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 741db10aaff39c54abe6026079b1eb49, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  raised:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 70463749042360382}
-        m_TargetAssemblyTypeName: FoxAIHome, FRC.AI.Runtime
-        m_MethodName: OnEnemyTriggerExit2D
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!1 &3784343929845236059
 GameObject:
   m_ObjectHideFlags: 0
@@ -265,7 +141,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6632874874903025815}
-  - {fileID: 9099224165892448737}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7326570579824223486
@@ -363,7 +238,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShadowGroup: 0
-  m_Priority: 0
+  m_Priority: 1
   m_ComponentVersion: 5
   m_HasRenderer: 1
   m_UseRendererSilhouette: 1
@@ -428,10 +303,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   luckAIPoolList: []
+  acceptedTargetTypeList: 00000000
   spawnTimer:
     minInclusiveTickTime: 10
     maxInclusiveTickTime: 20
     tickTime: 10
     isRandomized: 1
-  ignoreEnemyTagList:
-  - FoxAI

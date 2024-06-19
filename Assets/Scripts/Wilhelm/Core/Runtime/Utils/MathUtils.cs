@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public static class MathfUtil
+public static class MathfUtils
 {
 	/// <summary> Same as <see cref="Mathf.Atan2(float, float)"/> but returns in 2PI radians (360 degree) instead of PI radians (180 degree) </summary>
 	public static float Atan2_360(float y, float x)

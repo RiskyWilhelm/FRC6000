@@ -79,18 +79,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
-  <Bounds>k__BackingField: {x: 0.75, y: 1.75}
+  raycastBounds: {x: 0.75, y: 1.75}
+  <TargetTag>k__BackingField: 0
   <Health>k__BackingField: 2
-  <Power>k__BackingField: 1
+  <MaxHealth>k__BackingField: 2
+  acceptedTargetTypeList: 01000000
+  runawayTargetTypeList: 
   movementForce: 0.5
   maxVelocityX: 5
+  idleMaxDistance: 10
+  idleTimer:
+    minInclusiveTickTime: 0
+    maxInclusiveTickTime: 0
+    tickTime: 2
+    isRandomized: 0
+  goHomeBackTimer:
+    minInclusiveTickTime: 10
+    maxInclusiveTickTime: 20
+    tickTime: 10
+    isRandomized: 1
+  normalAttackDamage: 1
   normalAttackTimer:
     minInclusiveTickTime: 0.5
     maxInclusiveTickTime: 0.75
     tickTime: 0.4
     isRandomized: 1
-  ignoreEnemyTagList:
-  - FoxAI
 --- !u!114 &1005912783288694528
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -78,9 +78,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
-  <Bounds>k__BackingField: {x: 0.75, y: 1.75}
+  raycastBounds: {x: 0.75, y: 1.75}
+  <TargetTag>k__BackingField: 1
   <Health>k__BackingField: 2
-  <Power>k__BackingField: 0
+  <MaxHealth>k__BackingField: 2
+  acceptedTargetTypeList: 
+  runawayTargetTypeList: 00000000
   movementForce: 0.5
   maxVelocityX: 2.5
   idleMaxDistance: 10

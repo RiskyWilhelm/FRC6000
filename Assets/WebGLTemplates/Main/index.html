@@ -31,7 +31,9 @@
       </div>
     </div>
     <script>
-      var canvas = document.querySelector("#unity-canvas");
+        var canvas = document.querySelector("#unity-canvas");
+        var unityInstance = null;
+		const appStateControllerInGame = "AppStateControllerSingleton";
 
       // Shows a temporary message banner/ribbon for a few seconds, or
       // a permanent error message on top of the canvas if type=='error'.
@@ -58,15 +60,30 @@
         updateBannerVisibility();
       }
 
-      function unloadHandler(event) {        
-        // Recommended
-        event.preventDefault();
 
-        // Included for legacy support, e.g. Chrome/Edge < 119
-        event.returnValue = true;
+    function onPageHide(event)
+    {
+        // the page isn't being discarded, so it can be reused later 
+        if (event.isPersisted) {
+            console.log("onPageHide is persisted");
+        }
+        else {
+			console.log("onPageHide didnt persisted");
+        }
 
-        unityInstance.SendMessage("CloseEvent", "CloseCallback");
-      }
+        // Call these when the method is called regardless of any state
+        unityInstance.SendMessage(appStateControllerInGame, "OnPageHide", event.isPersisted ? 1 : 0);
+    }
+
+    function onVisibilityChange(value)
+    {
+		unityInstance.SendMessage(appStateControllerInGame, "OnVisibilityChange", value);
+    }
+
+    function onBeforeUnload(event)
+    {
+		unityInstance.SendMessage(appStateControllerInGame, "OnBeforeUnload");
+    }
 
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
@@ -133,11 +150,18 @@
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
-        createUnityInstance(canvas, config, (progress) => {
-          window.addEventListener("unload", unloadHandler);
+          createUnityInstance(canvas, config, (progress) => {
 
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
+          }).then((unityInstance) => {
+              this.unityInstance = unityInstance;
+
+                // Add the custom events to send to the C# side
+                window.addEventListener("beforeunload", onBeforeUnload);
+                window.addEventListener("pagehide", onPageHide);
+                window.addEventListener("visibilitychange", () => onVisibilityChange(document.visibilityState));
+
+                // Let unity continue the progress
                 document.querySelector("#unity-loading-bar").style.display = "none";
 #if SHOW_DIAGNOSTICS
                 document.getElementById("diagnostics-icon").onclick = () => {

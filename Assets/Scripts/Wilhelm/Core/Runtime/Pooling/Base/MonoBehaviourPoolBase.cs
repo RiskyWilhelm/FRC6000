@@ -64,6 +64,9 @@ public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBeha
 	// Dispose
 	protected virtual void OnDestroy()
 	{
+		if (AppStateControllerSingleton.IsQuitting)
+			return;
+
 		Clear();
 	}
 

@@ -18,6 +18,8 @@ public abstract partial class MonoBehaviourSingletonBase<T> : MonoBehaviour
 
     protected string GameObjectName => typeof(T).Name;
 
+    public static bool IsInstanceLiving => _instance;
+
 
 	// Initialize
 	protected virtual void Awake()
@@ -32,7 +34,7 @@ public abstract partial class MonoBehaviourSingletonBase<T> : MonoBehaviour
         _instance = (this as T);
     }
 
-	private static void FindOrCreate()
+	protected static void FindOrCreate()
 	{
         // Try to find
 		_instance = FindFirstObjectByType<T>(findObjectsInactive: FindObjectsInactive.Include);

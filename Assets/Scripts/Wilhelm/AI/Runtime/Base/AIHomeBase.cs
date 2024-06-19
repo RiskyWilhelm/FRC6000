@@ -7,7 +7,15 @@ public abstract partial class AIHomeBase : MonoBehaviour
 	[Header("AIHomeBase Spawn")]
 	#region
 
-	public List<Luck<AIPool>> luckAIPoolList = new ();
+	public List<LuckValue<AIPool>> luckAIPoolList = new ();
+
+
+	#endregion
+
+	#region AIBase Destination & Target Verify
+
+	public List<TargetType> acceptedTargetTypeList = new();
+
 
 	#endregion
 
@@ -19,8 +27,8 @@ public abstract partial class AIHomeBase : MonoBehaviour
 		bool isSpawned = false;
 
 		// Get auto-generated luck and all of the LuckAIPool elements where the LuckAIPool has the value of auto-generated luck
-		var generatedLuckType = LuckUtil.Generate();
-		var cachedLuckList = ListPool<Luck<AIPool>>.Get();
+		var generatedLuckType = LuckUtils.Generate();
+		var cachedLuckList = ListPool<LuckValue<AIPool>>.Get();
 
         foreach (var iteratedLuckPool in luckAIPoolList)
         {
@@ -35,13 +43,17 @@ public abstract partial class AIHomeBase : MonoBehaviour
 			
 			spawnedAI = cachedLuckList[randomSelect].value.Get(this.transform.position);
 
+			// TODO: This is ridicilous
 			if (spawnedAI is IAIHomeAccesser homeAccesser)
+			{
 				homeAccesser.OnLeftFromAIHome(this);
+				homeAccesser.ParentHome = this;
+			}
 
 			isSpawned = true;
 		}
 
-		ListPool<Luck<AIPool>>.Release(cachedLuckList);
+		ListPool<LuckValue<AIPool>>.Release(cachedLuckList);
 		return isSpawned;
     }
 }

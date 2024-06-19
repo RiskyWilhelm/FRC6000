@@ -2,55 +2,50 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using UnityEngine;
+using UnityEngine.Pool;
 
+// TODO: This class does not support dynamic tag changes
 [DisallowMultipleComponent]
 public sealed partial class TagObject : MonoBehaviour
 {
-	private static readonly Dictionary<string, List<Transform>> activeTagObjectDictionary = new ();
+	// Stores tag> tagList, tagReadonlyList(connected to tagList)
+	private static readonly Dictionary<string, ValueTuple<List<Transform>, ReadOnlyCollection<Transform>>> activeTagObjectDictionary = new();
 
 
 	// Initialize
 	private void OnEnable()
 	{
 		// Try creating the tag list if there is none
-		if (!IsTagHaveLivingObjects(tag))
-			activeTagObjectDictionary[tag] = new List<Transform>();
-		
-		activeTagObjectDictionary[tag].Add(this.transform);
+		if (!IsTagHaveLivingObjects(this.tag))
+			CreateTagTuple();
+
+		// Add to list
+		activeTagObjectDictionary[tag].Item1.Add(this.transform);
 	}
 
-
-	// Update
-	public static bool IsTagHaveLivingObjects(string checkTag)
+	private void CreateTagTuple()
 	{
-		return activeTagObjectDictionary.ContainsKey(checkTag);
-	}
+		var cachedTransformList = ListPool<Transform>.Get();
 
-	/// <summary> Gets the reference to the tag object list </summary>
-	private static bool TryGetActiveObjectListFromTag(string checkTag, out List<Transform> activeTagObjectList)
-	{
-		// Return the copy so we dont need to worry about modifying the list
-		if (IsTagHaveLivingObjects(checkTag))
+		activeTagObjectDictionary[this.tag] = new()
 		{
-			activeTagObjectList = activeTagObjectDictionary[checkTag];
-			return true;
-		}
-
-		activeTagObjectList = null;
-		return false;
+			Item1 = cachedTransformList,
+			Item2 = new(cachedTransformList)
+		};
 	}
+
+	// TODO: Utils class should be created
+	public static bool IsTagHaveLivingObjects(string checkTag) => activeTagObjectDictionary.ContainsKey(checkTag);
 
 	/// <summary> Gets the reference to the tag object list and converts to <see cref="ReadOnlyCollection{T}"/> </summary>
-	public static bool TryGetActiveObjectListFromTag(string checkTag, out ReadOnlyCollection<Transform> activeTagObjectCollection)
+	public static bool TryGetActiveObjectListFromTag(string checkTag, out ReadOnlyCollection<Transform> activeTagObjectReadonlyList)
 	{
-		if (TryGetActiveObjectListFromTag(checkTag, out List<Transform> activeTagObjectList))
-		{
-			activeTagObjectCollection = activeTagObjectList.AsReadOnly();
-			return true;
-		}
-		
-		activeTagObjectCollection = null;
-		return false;
+		activeTagObjectReadonlyList = null;
+
+		if (IsTagHaveLivingObjects(checkTag))
+			activeTagObjectReadonlyList = activeTagObjectDictionary[checkTag].Item2;
+
+		return activeTagObjectReadonlyList != null;
 	}
 
 	/// <param name="predicateNearest"> If the nearest chicken meets the criteria(predicate returns true), set it to nearest. If not, skip </param>
@@ -58,18 +53,23 @@ public sealed partial class TagObject : MonoBehaviour
 	{
 		nearestTagObject = null;
 
-		if (TryGetActiveObjectListFromTag(checkTag, out List<Transform> activeTagObjectList))
+		if (TryGetActiveObjectListFromTag(checkTag, out ReadOnlyCollection<Transform> activeTagObjectList))
 			TransformExtensions.TryGetNearestTransform(relativeTo, activeTagObjectList, out nearestTagObject, predicateNearest);
 
-		return (nearestTagObject != null);
+		return nearestTagObject != null;
 	}
 
 
 	// Dispose
 	private void OnDisable()
 	{
-		if (activeTagObjectDictionary[tag].Remove(this.transform) && (activeTagObjectDictionary[tag].Count == 0))
-			activeTagObjectDictionary.Remove(tag);
+		var activeTagObjectList = activeTagObjectDictionary[this.tag].Item1;
+
+		if (activeTagObjectList.Remove(this.transform) && (activeTagObjectList.Count == 0))
+		{
+			activeTagObjectDictionary.Remove(this.tag, out var removedValue);
+			ListPool<Transform>.Release(removedValue.Item1);
+		}
 	}
 }
 
