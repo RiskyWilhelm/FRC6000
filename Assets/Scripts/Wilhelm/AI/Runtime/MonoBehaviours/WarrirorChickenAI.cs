@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
+public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 {
-	#region BabyFoxAI Movement
+	#region WarrirorChickenAI Movement
 
 	[SerializeField]
 	private Timer goHomeBackTimer = new(10f, 10f, 20f);
@@ -15,8 +15,8 @@ public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 
 	#endregion
 
-	[Header("BabyFoxAI Normal Attack")]
-	#region BabyFoxAI Normal Attack
+	[Header("WarrirorChickenAI Normal Attack")]
+	#region WarrirorChickenAI Normal Attack
 
 	[SerializeField]
 	private uint normalAttackDamage = 1;
@@ -29,8 +29,8 @@ public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 
 	#endregion
 
-	[Header("BabyFoxAI Enemy")]
-	#region BabyFoxAI Enemy
+	[Header("WarrirorChickenAI Enemy")]
+	#region WarrirorChickenAI Enemy
 
 	[NonSerialized]
 	private readonly HashSet<ITarget> targetInRangeSet = new();
@@ -40,16 +40,13 @@ public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 
 	#endregion
 
-	#region BabyFoxAI Other
+	#region WarrirorChickenAI Other
 
 	[field: NonSerialized]
-	public bool IsCaughtMeal {  get; private set; }
-
-	[field: SerializeField]
 	public bool OpenAIHomeGate { get; private set; }
 
 	[field: NonSerialized]
-	public AIHomeBase ParentHome { get; set; }
+	public HomeBase ParentHome { get; set; }
 
 	#endregion
 
@@ -65,31 +62,36 @@ public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 		base.OnEnable();
 	}
 
-	private void Start()
-	{
-		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.AddListener(OnDaylightTypeChanged);
-		UpdateByDaylightType(DayCycleControllerSingleton.Instance.Time.daylightType);
-	}
-
 
 	// Update
+	protected override void Update()
+	{
+		if (goHomeBackTimer.Tick())
+			mustGoHomeBack = true;
+
+		// If it currently chasing something, do not go home and protect your family at what it costs!
+		if (targetInRangeSet.Count > 0)
+			mustGoHomeBack = false;
+
+		base.Update();
+	}
+
 	protected override void DoIdle()
 	{
 		bool isGoingHome = false;
 
-		if (mustGoHomeBack || IsCaughtMeal)
+		if (mustGoHomeBack)
 			isGoingHome = TrySetDestinationToHome();
 		
 		if (!isGoingHome)
 			base.DoIdle();
 	}
 
-	protected override void Update()
+	protected override void OnStateChangedToDead()
 	{
-		if (goHomeBackTimer.Tick())
-			mustGoHomeBack = true;
-
-		base.Update();
+		GameControllerSingleton.Instance.onFoxDeath?.Invoke();
+		ReleaseOrDestroySelf();
+		base.OnStateChangedToDead();
 	}
 
 	protected override void OnChangedDestination(Vector2? newDestination)
@@ -113,13 +115,12 @@ public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 		return isDestinationSet;
 	}
 
-	public void OnEnteredAIHome(AIHomeBase home)
+	public void OnEnteredAIHome(HomeBase home)
 	{
-		IsCaughtMeal = false;
 		ReleaseOrDestroySelf();
 	}
 
-	public void OnLeftFromAIHome(AIHomeBase home)
+	public void OnLeftFromAIHome(HomeBase home)
 	{
 		OpenAIHomeGate = false;
 	}
@@ -153,10 +154,6 @@ public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 
 	private void OnKilledTarget(ITarget target)
 	{
-		// If target is a chicken or chicken home, it means it caught a chicken
-		if (target.TargetTag is TargetType.Chicken or TargetType.ChickenHome)
-			IsCaughtMeal = true;
-
 		TrySetDestinationToHome();
 	}
 
@@ -221,9 +218,8 @@ public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 			if ((runawayTargetsInRangeSet.Count > 0) && TrySetDestinationAwayFromNearestIn(runawayTargetsInRangeSet))
 				return;
 
-			// If didnt caught any meal, try catch the nearest enemy
-			if (!IsCaughtMeal)
-				TrySetDestinationToNearestIn(targetInRangeSet);
+			// Try catch the nearest enemy
+			TrySetDestinationToNearestIn(targetInRangeSet);
 		}
 	}
 
@@ -237,57 +233,23 @@ public partial class BabyFoxAI : GroundedAIBase, IAIHomeAccesser
 		}
 	}
 
-	private void OnDaylightTypeChanged(DaylightType newDaylightType)
-	{
-		UpdateByDaylightType(newDaylightType);
-	}
-
-	private void UpdateByDaylightType(DaylightType newDaylightType)
-	{
-		switch (newDaylightType)
-		{
-			case DaylightType.Light:
-			{
-				acceptedTargetTypeList.Remove(TargetType.ChickenHome);
-			}
-			break;
-
-			case DaylightType.Night:
-			{
-				if (!acceptedTargetTypeList.Contains(TargetType.ChickenHome))
-					acceptedTargetTypeList.Add(TargetType.ChickenHome);
-			}
-			break;
-		}
-	}
-
 	public override void CopyTo(in AIBase main)
 	{
-		if (main is BabyFoxAI babyFoxAI)
+		if (main is WarrirorChickenAI warrirorChickenAI)
 		{
-			babyFoxAI.normalAttackTimer = this.normalAttackTimer;
-			babyFoxAI.normalAttackDamage = this.normalAttackDamage;
-			babyFoxAI.goHomeBackTimer = this.goHomeBackTimer;
+			warrirorChickenAI.normalAttackTimer = this.normalAttackTimer;
+			warrirorChickenAI.normalAttackDamage = this.normalAttackDamage;
+			warrirorChickenAI.goHomeBackTimer = this.goHomeBackTimer;
 		}
 
 		base.CopyTo(main);
-	}
-
-
-	// Dispose
-	private void OnDestroy()
-	{
-		if (AppStateControllerSingleton.IsQuitting)
-			return;
-
-		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.RemoveListener(OnDaylightTypeChanged);
 	}
 }
 
 
 #if UNITY_EDITOR
 
-public partial class BabyFoxAI
+public partial class WarrirorChickenAI
 { }
 
 #endif

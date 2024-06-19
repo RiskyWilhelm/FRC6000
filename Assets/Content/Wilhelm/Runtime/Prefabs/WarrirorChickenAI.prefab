@@ -10,11 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 7173585969489889783}
   - component: {fileID: 7973699907714518999}
-  - component: {fileID: 4028007122091320076}
+  - component: {fileID: 3095688449028363923}
   - component: {fileID: 1005912783288694528}
   - component: {fileID: 2130061696637265959}
   m_Layer: 0
-  m_Name: BabyFoxAI
+  m_Name: WarrirorChickenAI
   m_TagString: FoxAI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -66,7 +66,7 @@ Rigidbody2D:
   m_SleepingMode: 0
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!114 &4028007122091320076
+--- !u!114 &3095688449028363923
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -75,15 +75,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 2669454140272425697}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 088396ca7cb8e904a9ca5154c4d4cccb, type: 3}
+  m_Script: {fileID: 11500000, guid: c4032e36aeda9c54a8409773e73b49fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
   raycastBounds: {x: 0.75, y: 1.75}
-  <TargetTag>k__BackingField: 0
-  <Health>k__BackingField: 2
-  <MaxHealth>k__BackingField: 2
-  acceptedTargetTypeList: 01000000
+  <TargetTag>k__BackingField: 3
+  <Health>k__BackingField: 5
+  <MaxHealth>k__BackingField: 5
+  acceptedTargetTypeList: 0000000004000000
   runawayTargetTypeList: 
   movementForce: 0.5
   maxVelocityX: 5
@@ -96,13 +96,13 @@ MonoBehaviour:
   goHomeBackTimer:
     minInclusiveTickTime: 10
     maxInclusiveTickTime: 20
-    tickTime: 10
+    tickTime: 13.82493
     isRandomized: 1
   normalAttackDamage: 1
   normalAttackTimer:
     minInclusiveTickTime: 0.5
     maxInclusiveTickTime: 0.75
-    tickTime: 0.4
+    tickTime: 0.6392425
     isRandomized: 1
 --- !u!114 &1005912783288694528
 MonoBehaviour:
@@ -206,7 +206,7 @@ SpriteRenderer:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
-  m_Color: {r: 0.6037736, g: 0.319661, b: 0.27625492, a: 1}
+  m_Color: {r: 0.54251033, g: 0.6039216, b: 0.27450982, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -311,8 +311,8 @@ MonoBehaviour:
   raised:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4028007122091320076}
-        m_TargetAssemblyTypeName: BabyFoxAI, FRC.AI.Runtime
+      - m_Target: {fileID: 3095688449028363923}
+        m_TargetAssemblyTypeName: WarrirorChickenAI, FRC.AI.Runtime
         m_MethodName: OnNormalAttackTriggerStay2D
         m_Mode: 0
         m_Arguments:
@@ -338,8 +338,8 @@ MonoBehaviour:
   raised:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4028007122091320076}
-        m_TargetAssemblyTypeName: BabyFoxAI, FRC.AI.Runtime
+      - m_Target: {fileID: 3095688449028363923}
+        m_TargetAssemblyTypeName: WarrirorChickenAI, FRC.AI.Runtime
         m_MethodName: OnNormalAttackTriggerExit2D
         m_Mode: 0
         m_Arguments:
@@ -528,8 +528,8 @@ MonoBehaviour:
   raised:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4028007122091320076}
-        m_TargetAssemblyTypeName: BabyFoxAI, FRC.AI.Runtime
+      - m_Target: {fileID: 3095688449028363923}
+        m_TargetAssemblyTypeName: WarrirorChickenAI, FRC.AI.Runtime
         m_MethodName: OnEnemyTriggerStay2D
         m_Mode: 0
         m_Arguments:
@@ -555,8 +555,8 @@ MonoBehaviour:
   raised:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 4028007122091320076}
-        m_TargetAssemblyTypeName: BabyFoxAI, FRC.AI.Runtime
+      - m_Target: {fileID: 3095688449028363923}
+        m_TargetAssemblyTypeName: WarrirorChickenAI, FRC.AI.Runtime
         m_MethodName: OnEnemyTriggerExit2D
         m_Mode: 0
         m_Arguments:

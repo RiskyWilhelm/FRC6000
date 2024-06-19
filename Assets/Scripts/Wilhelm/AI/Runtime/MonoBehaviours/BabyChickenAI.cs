@@ -1,15 +1,15 @@
 using System;
 using UnityEngine;
 
-public partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
+public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 {
 	#region BabyChickenAI Other
 
-	[field: SerializeField]
+	[field: NonSerialized]
 	public bool OpenAIHomeGate { get; protected set; }
 
 	[field: NonSerialized]
-	public AIHomeBase ParentHome { get; set; }
+	public HomeBase ParentHome { get; set; }
 
 	#endregion
 
@@ -44,6 +44,13 @@ public partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
 		}
 	}
 
+	protected override void OnStateChangedToDead()
+	{
+		GameControllerSingleton.Instance.onChickenDeath?.Invoke();
+		ReleaseOrDestroySelf();
+		base.OnStateChangedToDead();
+	}
+
 	public bool TrySetDestinationToHome()
 	{
 		var isDestinationSet = false;
@@ -65,12 +72,6 @@ public partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
 		base.OnChangedDestination(newDestination);
 	}
 
-	protected override void OnStateChangedToDead()
-	{
-		ReleaseOrDestroySelf();
-		base.OnStateChangedToDead();
-	}
-
 	public void OnRunawayTriggerStay2D(Collider2D collider)
 	{
 		// If there is any AI that is powerful than self nearby, run!
@@ -84,12 +85,12 @@ public partial class BabyChickenAI : GroundedAIBase, IAIHomeAccesser
 		}
 	}
 
-	public void OnEnteredAIHome(AIHomeBase home)
+	public void OnEnteredAIHome(HomeBase home)
 	{
 		ReleaseOrDestroySelf();
 	}
 
-	public void OnLeftFromAIHome(AIHomeBase home)
+	public void OnLeftFromAIHome(HomeBase home)
 	{
 		OpenAIHomeGate = false;
 	}

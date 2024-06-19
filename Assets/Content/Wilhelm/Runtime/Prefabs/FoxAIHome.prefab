@@ -303,7 +303,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   luckAIPoolList: []
-  acceptedTargetTypeList: 00000000
+  acceptedTargetTypeList: 0000000004000000
   spawnTimer:
     minInclusiveTickTime: 10
     maxInclusiveTickTime: 20

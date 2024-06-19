@@ -1,6 +1,12 @@
 public enum TargetType
 {
-	Fox,
-	Chicken,
+	BabyFox,
+
+	BabyChicken,
+
 	ChickenHome,
+
+	WarrirorChicken,
+
+	WarrirorFox
 }

@@ -382,7 +382,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   luckAIPoolList: []
-  acceptedTargetTypeList: 01000000
+  acceptedTargetTypeList: 0100000003000000
   lightSpawnTimer:
     minInclusiveTickTime: 10
     maxInclusiveTickTime: 20

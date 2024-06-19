@@ -42,7 +42,8 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 	#endregion
 
-	#region AIBase Destination & Target Verify
+	[Header("AIBase Target Verify")]
+	#region AIBase Target Verify
 
 	public List<TargetType> acceptedTargetTypeList = new();
 
@@ -82,6 +83,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	protected virtual void OnEnable()
 	{
 		State = PlayerStateType.Idle;
+		OnStateChanged(State);
 	}
 
 

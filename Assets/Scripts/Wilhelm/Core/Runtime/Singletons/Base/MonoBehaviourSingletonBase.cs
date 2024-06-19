@@ -16,9 +16,9 @@ public abstract partial class MonoBehaviourSingletonBase<T> : MonoBehaviour
         }
     }
 
-    protected string GameObjectName => typeof(T).Name;
-
     public static bool IsInstanceLiving => _instance;
+
+    protected virtual string GameObjectName => typeof(T).Name;
 
 
 	// Initialize

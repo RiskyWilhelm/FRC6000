@@ -1,15 +1,25 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 
-public sealed partial class AppStateControllerSingleton : MonoBehaviourSingletonBase<AppStateControllerSingleton>
+public sealed partial class GameControllerSingleton : MonoBehaviourSingletonBase<GameControllerSingleton>
 {
-	#region Javascript States
+	#region GameControllerSingleton Javascript States
 
 	[field: NonSerialized]
 	public static JSVisibilityStateType VisibilityState { get; private set; }
 
 	[field: NonSerialized]
 	public static bool IsQuitting { get; private set; }
+
+	#endregion
+
+	#region GameControllerSingleton Events
+
+	public UnityEvent onChickenDeath = new();
+
+	public UnityEvent onFoxDeath = new();
+
 
 	#endregion
 
@@ -43,7 +53,7 @@ public sealed partial class AppStateControllerSingleton : MonoBehaviourSingleton
 
 #if UNITY_EDITOR
 
-public sealed partial class AppStateControllerSingleton
+public sealed partial class GameControllerSingleton
 {
 	private void OnApplicationPause(bool pause)
 	{
