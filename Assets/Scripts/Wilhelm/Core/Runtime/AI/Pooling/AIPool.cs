@@ -23,8 +23,8 @@ public partial class AIPool : MonoBehaviourPoolBase<AIBase>
 
 	protected override void OnGetPooledObject(AIBase pooledObject)
 	{
-		pooledObject.Copy(prefab);
 		pooledObject.gameObject.SetActive(true);
+		base.OnGetPooledObject(pooledObject);
 	}
 
 
@@ -32,6 +32,7 @@ public partial class AIPool : MonoBehaviourPoolBase<AIBase>
 	protected override void OnReleasePooledObject(AIBase pooledObject)
 	{
 		pooledObject.gameObject.SetActive(false);
+		base.OnReleasePooledObject(pooledObject);
 	}
 
 	protected override void OnDestroyPooledObject(AIBase pooledObject)

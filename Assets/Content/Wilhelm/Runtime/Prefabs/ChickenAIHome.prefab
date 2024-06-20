@@ -381,17 +381,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8c33a47411de51489cb8afc52fa5c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  luckAIPoolList: []
+  lightDaySpawnPoolList: []
+  nightDaySpawnPoolList: []
+  lightDaySpawnTimer:
+    minInclusiveTickSeconds: 10
+    maxInclusiveTickSeconds: 20
+    tickSecond: 19.42276
+    isRandomized: 1
+  nightDaySpawnTimer:
+    minInclusiveTickSeconds: 10
+    maxInclusiveTickSeconds: 20
+    tickSecond: 13.17249
+    isRandomized: 1
   acceptedTargetTypeList: 0100000003000000
-  lightSpawnTimer:
-    minInclusiveTickTime: 10
-    maxInclusiveTickTime: 20
-    tickTime: 10
-    isRandomized: 1
   restoreHealthTimer:
-    minInclusiveTickTime: 0
-    maxInclusiveTickTime: 5
-    tickTime: 5
+    minInclusiveTickSeconds: 0
+    maxInclusiveTickSeconds: 5
+    tickSecond: 1.1122708
     isRandomized: 1
-  <Health>k__BackingField: 10
-  <MaxHealth>k__BackingField: 10
+  <Health>k__BackingField: 2
+  <MaxHealth>k__BackingField: 2

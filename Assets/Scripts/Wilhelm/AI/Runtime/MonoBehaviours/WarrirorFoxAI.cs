@@ -10,6 +10,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 	[SerializeField]
 	private Timer goHomeBackTimer = new(10f, 10f, 20f);
 
+	[NonSerialized]
 	private bool mustGoHomeBack;
 
 
@@ -59,7 +60,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 	{
 		mustGoHomeBack = false;
 		goHomeBackTimer.Reset();
-		ClearDestination();
+		UpdateByDaylightType(DayCycleControllerSingleton.Instance.Time.daylightType);
 		RefreshAttackState();
 
 		base.OnEnable();
@@ -68,7 +69,6 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 	private void Start()
 	{
 		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.AddListener(OnDaylightTypeChanged);
-		UpdateByDaylightType(DayCycleControllerSingleton.Instance.Time.daylightType);
 	}
 
 
@@ -77,6 +77,10 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 	{
 		if (goHomeBackTimer.Tick())
 			mustGoHomeBack = true;
+
+		// If it currently chasing something, do not go home and protect your family at what it costs!
+		if (targetInRangeSet.Count > 0)
+			mustGoHomeBack = false;
 
 		base.Update();
 	}
@@ -162,9 +166,10 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 	{
 		// If target is a chicken or chicken home, it means it caught a chicken
 		if (target.TargetTag is TargetType.BabyChicken or TargetType.ChickenHome)
+		{
 			IsCaughtMeal = true;
-
-		TrySetDestinationToHome();
+			TrySetDestinationToHome();
+		}
 	}
 
 	private void RefreshAttackState()
@@ -210,15 +215,18 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 
 	public void OnEnemyTriggerStay2D(Collider2D collider)
 	{
-		// If the GameObject is a AI Target, add to range list
 		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget foundTarget))
 		{
 			// Update enemies in range
 			if (acceptedTargetTypeList.Contains(foundTarget.TargetTag))
 				targetInRangeSet.Add(foundTarget);
+			else
+				targetInRangeSet.Remove(foundTarget);
 
 			if (runawayTargetTypeList.Contains(foundTarget.TargetTag))
 				runawayTargetsInRangeSet.Add(foundTarget);
+			else
+				runawayTargetsInRangeSet.Remove(foundTarget);
 
 			// Let the blocked states take control
 			if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Dead)
@@ -236,11 +244,11 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 
 	public void OnEnemyTriggerExit2D(Collider2D collider)
 	{
-		// If the GameObject is a AI Target, remove from the range list
 		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget foundTarget))
 		{
-			runawayTargetsInRangeSet.Remove(foundTarget);
+			// Update enemies in range
 			targetInRangeSet.Remove(foundTarget);
+			runawayTargetsInRangeSet.Remove(foundTarget);
 		}
 	}
 

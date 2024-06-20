@@ -7,10 +7,10 @@ public sealed partial class FoxAIHome : HomeBase
 	[Header("FoxAIHome Spawn")]
 	#region FoxAIHome Spawn
 
-	public List<LuckValue<AIPool>> spawnPoolList = new();
+	public List<LuckValue<AIPool>> nightDaySpawnPoolList = new();
 
 	[SerializeField]
-	private Timer spawnTimer = new(10f, 10f, 20f);
+	private Timer nightDaySpawnTimer = new(10f, 10f, 20f);
 
 
 	#endregion
@@ -34,8 +34,8 @@ public sealed partial class FoxAIHome : HomeBase
 	{
 		spawnedAI = null;
 
-		if (spawnTimer.Tick())
-			return TrySpawnFromLuckList(spawnPoolList, out spawnedAI);
+		if ((DayCycleControllerSingleton.Instance.Time.daylightType is DaylightType.Night) && nightDaySpawnTimer.Tick())
+			return TrySpawnFromLuckList(nightDaySpawnPoolList, out spawnedAI);
 
 		return false;
 	}

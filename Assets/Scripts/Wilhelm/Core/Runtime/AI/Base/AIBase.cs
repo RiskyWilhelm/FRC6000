@@ -82,8 +82,14 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	// Initialize
 	protected virtual void OnEnable()
 	{
+		ClearDestination();
 		State = PlayerStateType.Idle;
 		OnStateChanged(State);
+	}
+
+	public virtual void OnTakenFromPool(IPool<AIBase> pool)
+	{
+		RestoreHealth();
 	}
 
 
@@ -235,6 +241,11 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	public void TakeDamage(uint damage, Vector2 occuredWorldPosition)
 	{
 		Health = (ushort)Math.Clamp(Health - (int)damage, ushort.MinValue, ushort.MaxValue);
+	}
+
+	protected void RestoreHealth()
+	{
+		Health = MaxHealth;
 	}
 
 	protected virtual void OnChangedDestination(Vector2? newDestination)
@@ -431,7 +442,6 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	{
 		if (TryGetNearestChaseableTargetIn(targetEnumerable, out ITarget nearestTarget, out _))
 		{
-			// TODO: What if nearestTarget is not a component?
 			SetDestinationTo((nearestTarget as Component).transform, destinationApproachThreshold);
 			return true;
 		}
@@ -447,7 +457,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 		// Copy the enemyInRangeDict to the pooled dictionary while taking the enemy's transform
 		foreach (var iteratedTarget in targetEnumerable)
-			cachedNearestTargetDict.Add((iteratedTarget as Component).transform, iteratedTarget);
+			cachedNearestTargetDict.TryAdd((iteratedTarget as Component).transform, iteratedTarget);
 
 		// Get nearest target
 		if (this.transform.TryGetNearestTransform(cachedNearestTargetDict.Keys, out Transform nearestTransform,
@@ -571,6 +581,11 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 			ParentPool.Release(this);
 		else
 			Destroy(this.gameObject);
+	}
+
+	public virtual void OnReleaseToPool(IPool<AIBase> pool)
+	{
+
 	}
 }
 

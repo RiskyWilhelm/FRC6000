@@ -5,6 +5,7 @@ using UnityEngine;
 
 public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 {
+	[Header("WarrirorChickenAI Movement")]
 	#region WarrirorChickenAI Movement
 
 	[SerializeField]
@@ -56,7 +57,6 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 	{
 		mustGoHomeBack = false;
 		goHomeBackTimer.Reset();
-		ClearDestination();
 		RefreshAttackState();
 
 		base.OnEnable();
@@ -235,11 +235,11 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 
 	public override void CopyTo(in AIBase main)
 	{
-		if (main is WarrirorChickenAI warrirorChickenAI)
+		if (main is WarrirorChickenAI foundSelf)
 		{
-			warrirorChickenAI.normalAttackTimer = this.normalAttackTimer;
-			warrirorChickenAI.normalAttackDamage = this.normalAttackDamage;
-			warrirorChickenAI.goHomeBackTimer = this.goHomeBackTimer;
+			foundSelf.normalAttackTimer = this.normalAttackTimer;
+			foundSelf.normalAttackDamage = this.normalAttackDamage;
+			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
 		}
 
 		base.CopyTo(main);

@@ -5,14 +5,14 @@ using UnityEngine;
 public struct Timer : IEquatable<Timer>
 {
 	[Tooltip("If isRandomized set to true, used to set TickTime on Reset() or when the timer finishes")]
-	public float minInclusiveTickTime;
+	public float minInclusiveTickSeconds;
 
 	[Tooltip("If isRandomized set to true, used to set TickTime on Reset() or when the timer finishes")]
-	public float maxInclusiveTickTime;
+	public float maxInclusiveTickSeconds;
 
-	private float currentTime;
+	private float currentSecond;
 
-    public float tickTime;
+    public float tickSecond;
 
 	public bool isRandomized;
 
@@ -22,33 +22,33 @@ public struct Timer : IEquatable<Timer>
     // Initialize
     public Timer(float tickTime)
     {
-		this.minInclusiveTickTime = 0;
-		this.maxInclusiveTickTime = 0;
-        this.tickTime = tickTime;
-        this.currentTime = 0;
+		this.minInclusiveTickSeconds = 0;
+		this.maxInclusiveTickSeconds = 0;
+        this.tickSecond = tickTime;
+        this.currentSecond = 0;
 		this.isRandomized = false;
     }
 
 	public Timer(float tickTime, float minInclusiveTickTime, float maxInclusiveTickTime, bool isRandomized = true)
 	{
-		this.minInclusiveTickTime = minInclusiveTickTime;
-		this.maxInclusiveTickTime = maxInclusiveTickTime;
+		this.minInclusiveTickSeconds = minInclusiveTickTime;
+		this.maxInclusiveTickSeconds = maxInclusiveTickTime;
 
 		if (isRandomized)
-			this.tickTime = Mathf.Abs((float)mainRandomizer.NextDouble(minInclusiveTickTime, maxInclusiveTickTime));
+			this.tickSecond = Mathf.Abs((float)mainRandomizer.NextDouble(minInclusiveTickTime, maxInclusiveTickTime));
 		else
-			this.tickTime = tickTime;
+			this.tickSecond = tickTime;
 
-		this.currentTime = 0;
+		this.currentSecond = 0;
 		this.isRandomized = isRandomized;
 	}
 
 	public Timer(float minInclusiveTickTime, float maxInclusiveTickTime)
 	{
-		this.minInclusiveTickTime = minInclusiveTickTime;
-		this.maxInclusiveTickTime = maxInclusiveTickTime;
-		this.tickTime = Mathf.Abs((float)mainRandomizer.NextDouble(minInclusiveTickTime, maxInclusiveTickTime));
-		this.currentTime = 0;
+		this.minInclusiveTickSeconds = minInclusiveTickTime;
+		this.maxInclusiveTickSeconds = maxInclusiveTickTime;
+		this.tickSecond = Mathf.Abs((float)mainRandomizer.NextDouble(minInclusiveTickTime, maxInclusiveTickTime));
+		this.currentSecond = 0;
 		this.isRandomized = true;
 	}
 
@@ -58,9 +58,9 @@ public struct Timer : IEquatable<Timer>
 	/// <returns> true if ended </returns>
 	public bool Tick()
     {
-        currentTime += Time.deltaTime;
+        currentSecond += Time.deltaTime;
             
-        if (currentTime >= tickTime)
+        if (currentSecond >= tickSecond)
         {
             Reset();
             return true;
@@ -72,9 +72,9 @@ public struct Timer : IEquatable<Timer>
     public void Reset()
     {
 		if (isRandomized)
-			tickTime = Mathf.Abs(UnityEngine.Random.Range(minInclusiveTickTime, maxInclusiveTickTime));
+			tickSecond = Mathf.Abs(UnityEngine.Random.Range(minInclusiveTickSeconds, maxInclusiveTickSeconds));
 
-        currentTime = 0;
+        currentSecond = 0;
     }
 
 	public override bool Equals(object obj)
@@ -84,13 +84,13 @@ public struct Timer : IEquatable<Timer>
 
 	public bool Equals(Timer other)
 	{
-		return currentTime == other.currentTime &&
-			   tickTime == other.tickTime;
+		return currentSecond == other.currentSecond &&
+			   tickSecond == other.tickSecond;
 	}
 
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(currentTime, tickTime);
+		return HashCode.Combine(currentSecond, tickSecond);
 	}
 
 	public static bool operator ==(Timer left, Timer right)

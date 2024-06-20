@@ -3,6 +3,16 @@ using UnityEngine;
 
 public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 {
+	#region BabyChickenAI Movement
+
+	[SerializeField]
+	private Timer goHomeBackTimer = new(10f, 10f, 60f);
+
+	private bool mustGoHomeBack;
+
+
+	#endregion
+
 	#region BabyChickenAI Other
 
 	[field: NonSerialized]
@@ -17,7 +27,10 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	// Initialize
 	protected override void OnEnable()
 	{
+		mustGoHomeBack = false;
+		goHomeBackTimer.Reset();
 		ClearDestination();
+
 		base.OnEnable();
 	}
 
@@ -25,23 +38,21 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	// Update
 	protected override void DoIdle()
 	{
-		// If the time is night-time, try go to the base. If there is no base, do the idle
-		switch (DayCycleControllerSingleton.Instance.Time.daylightType)
-		{
-			case DaylightType.Light:
-				goto default;
+		bool isGoingHome = false;
 
-			case DaylightType.Night:
-			{
-				if (!TrySetDestinationToHome())
-					goto default;
-			}
-			break;
+		if (mustGoHomeBack)
+			isGoingHome = TrySetDestinationToHome();
 
-			default:
-				base.DoIdle();
-			break;
-		}
+		if (!isGoingHome)
+			base.DoIdle();
+	}
+
+	protected override void Update()
+	{
+		if ((DayCycleControllerSingleton.Instance.Time.daylightType is DaylightType.Night) || goHomeBackTimer.Tick())
+			mustGoHomeBack = true;
+
+		base.Update();
 	}
 
 	protected override void OnStateChangedToDead()
@@ -93,6 +104,14 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	public void OnLeftFromAIHome(HomeBase home)
 	{
 		OpenAIHomeGate = false;
+	}
+
+	public override void CopyTo(in AIBase main)
+	{
+		if (main is BabyChickenAI foundSelf)
+			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
+
+		base.CopyTo(main);
 	}
 }
 

@@ -80,18 +80,23 @@ MonoBehaviour:
   selfRigidbody: {fileID: 7973699907714518999}
   raycastBounds: {x: 0.75, y: 1.75}
   <TargetTag>k__BackingField: 1
-  <Health>k__BackingField: 2
-  <MaxHealth>k__BackingField: 2
+  <Health>k__BackingField: 1
+  <MaxHealth>k__BackingField: 1
   acceptedTargetTypeList: 
   runawayTargetTypeList: 0000000004000000
   movementForce: 0.5
   maxVelocityX: 2.5
   idleMaxDistance: 10
   idleTimer:
-    minInclusiveTickTime: 0
-    maxInclusiveTickTime: 0
-    tickTime: 2
+    minInclusiveTickSeconds: 0
+    maxInclusiveTickSeconds: 0
+    tickSecond: 2
     isRandomized: 0
+  goHomeBackTimer:
+    minInclusiveTickSeconds: 10
+    maxInclusiveTickSeconds: 60
+    tickSecond: 15.40667
+    isRandomized: 1
 --- !u!114 &1005912783288694528
 MonoBehaviour:
   m_ObjectHideFlags: 0

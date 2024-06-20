@@ -22,7 +22,11 @@ public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBeha
 
 	protected abstract PooledObjectType OnCreatePooledObject();
 
-	protected abstract void OnGetPooledObject(PooledObjectType pooledObject);
+	protected virtual void OnGetPooledObject(PooledObjectType pooledObject)
+	{
+		if (pooledObject is IPooledObject<PooledObjectType> foundObject)
+			foundObject.OnTakenFromPool(this);
+	}
 
 
 	// Update
@@ -72,7 +76,11 @@ public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBeha
 
 	protected abstract void OnDestroyPooledObject(PooledObjectType pooledObject);
 
-	protected abstract void OnReleasePooledObject(PooledObjectType pooledObject);
+	protected virtual void OnReleasePooledObject(PooledObjectType pooledObject)
+	{
+		if (pooledObject is IPooledObject<PooledObjectType> foundObject)
+			foundObject.OnReleaseToPool(this);
+	}
 }
 
 

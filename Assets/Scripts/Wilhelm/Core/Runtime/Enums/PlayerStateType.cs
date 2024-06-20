@@ -10,5 +10,7 @@ public enum PlayerStateType
 
 	Attacking,
 
+	Defending,
+
 	Dead,
 }

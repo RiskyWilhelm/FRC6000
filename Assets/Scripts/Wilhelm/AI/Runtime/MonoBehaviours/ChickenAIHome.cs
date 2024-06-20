@@ -13,10 +13,10 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 	public List<LuckValue<AIPool>> nightDaySpawnPoolList = new();
 
 	[SerializeField]
-	private Timer lightSpawnTimer = new(10f, 10f, 20f);
+	private Timer lightDaySpawnTimer = new(10f, 10f, 20f);
 
 	[SerializeField]
-	private Timer nightSpawnTimer = new(10f, 10f, 20f);
+	private Timer nightDaySpawnTimer = new(10f, 10f, 20f);
 
 
 	#endregion
@@ -39,6 +39,7 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 	[field: SerializeField]
 	public uint MaxHealth { get; private set; }
 
+	[field: NonSerialized]
 	public bool IsDead { get; private set; }
 
 	public TargetType TargetTag => TargetType.ChickenHome;
@@ -62,14 +63,14 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 		{
 			case DaylightType.Light:
 			{
-				if (lightSpawnTimer.Tick())
+				if (lightDaySpawnTimer.Tick())
 					return TrySpawnFromLuckList(in lightDaySpawnPoolList, out spawnedAI);
 			}
 			break;
 
 			case DaylightType.Night:
 			{
-				if (nightSpawnTimer.Tick())
+				if (nightDaySpawnTimer.Tick())
 					return TrySpawnFromLuckList(in nightDaySpawnPoolList, out spawnedAI);
 			}
 			break;
