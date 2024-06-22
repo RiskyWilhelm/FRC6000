@@ -10,7 +10,7 @@ public sealed partial class FoxAIHome : HomeBase
 	public List<LuckValue<AIPool>> nightDaySpawnPoolList = new();
 
 	[SerializeField]
-	private Timer nightDaySpawnTimer = new(10f, 10f, 20f);
+	private TimerRandomized nightDaySpawnTimer = new(10f, 10f, 20f);
 
 
 	#endregion

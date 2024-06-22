@@ -51,10 +51,10 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 7
   m_LinearDrag: 5
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 28
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -86,25 +86,26 @@ MonoBehaviour:
   acceptedTargetTypeList: 0100000003000000
   runawayTargetTypeList: 
   _state: 0
-  movementForce: 0.5
-  maxVelocityX: 5
   idleMaxDistance: 10
   idleTimer:
-    minInclusiveTickSeconds: 0
-    maxInclusiveTickSeconds: 0
-    tickSecond: 2
-    isRandomized: 0
+    _tickSecond: 2
+  walkForce: 20
+  walkMaxVelocity: {x: 4, y: 0}
+  runningForce: 20
+  runningMaxVelocity: {x: 12, y: 0}
+  jumpReleaseStateTimer:
+    _tickSecond: 0.5
+  jumpForce: 200
+  jumpAngle: 45
   goHomeBackTimer:
-    minInclusiveTickSeconds: 10
-    maxInclusiveTickSeconds: 20
-    tickSecond: 15.51941
-    isRandomized: 1
+    _tickSecond: 10
+    _minInclusiveTickSeconds: 10
+    _maxExclusiveTickSeconds: 20
   normalAttackDamage: 1
   normalAttackTimer:
-    minInclusiveTickSeconds: 0.5
-    maxInclusiveTickSeconds: 0.75
-    tickSecond: 0.6213059
-    isRandomized: 1
+    _tickSecond: 0.7324469
+    _minInclusiveTickSeconds: 0.5
+    _maxExclusiveTickSeconds: 0.75
 --- !u!114 &1005912783288694528
 MonoBehaviour:
   m_ObjectHideFlags: 0

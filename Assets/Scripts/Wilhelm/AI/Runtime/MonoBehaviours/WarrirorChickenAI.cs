@@ -9,9 +9,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 	#region WarrirorChickenAI Movement
 
 	[SerializeField]
-	private Timer goHomeBackTimer = new(10f, 10f, 20f);
-
-	private bool mustGoHomeBack;
+	private TimerRandomized goHomeBackTimer = new(10f, 10f, 20f);
 
 
 	#endregion
@@ -23,7 +21,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 	private uint normalAttackDamage = 1;
 
 	[SerializeField]
-	private Timer normalAttackTimer = new(0.5f, 0.75f);
+	private TimerRandomized normalAttackTimer = new(0.5f, 0.75f);
 
 	[NonSerialized]
 	private ValueTuple<ITarget, Coroutine> currentNormalAttack;
@@ -55,8 +53,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 	// Initialize
 	protected override void OnEnable()
 	{
-		mustGoHomeBack = false;
-		goHomeBackTimer.Reset();
+		goHomeBackTimer.ResetAndRandomize();
 		RefreshAttackState();
 
 		base.OnEnable();
@@ -66,25 +63,38 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 	// Update
 	protected override void Update()
 	{
-		if (goHomeBackTimer.Tick())
-			mustGoHomeBack = true;
+		goHomeBackTimer.Tick();
 
 		// If it currently chasing something, do not go home and protect your family at what it costs!
 		if (targetInRangeSet.Count > 0)
-			mustGoHomeBack = false;
+			goHomeBackTimer.Reset();
 
 		base.Update();
 	}
 
 	protected override void DoIdle()
 	{
-		bool isGoingHome = false;
+		// If not grounded, set state to Flying
+		if (!IsGrounded())
+		{
+			State = PlayerStateType.Flying;
+			return;
+		}
 
-		if (mustGoHomeBack)
-			isGoingHome = TrySetDestinationToHome();
-		
-		if (!isGoingHome)
-			base.DoIdle();
+		// If wants to go home, set state to walking
+		if (goHomeBackTimer.HasEnded)
+		{
+			if (TrySetDestinationToHome())
+			{
+				State = PlayerStateType.Walking;
+				return;
+			}
+			else
+				goHomeBackTimer.ResetAndRandomize();
+		}
+
+		// Otherwise, continue old idle
+		base.DoIdle();
 	}
 
 	protected override void OnStateChangedToDead()
@@ -168,7 +178,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 		}
 
 		currentNormalAttack = default;
-		normalAttackTimer.Reset();
+		normalAttackTimer.ResetAndRandomize();
 	}
 
 	public void OnNormalAttackTriggerStay2D(Collider2D collider)
@@ -211,7 +221,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 				runawayTargetsInRangeSet.Add(foundTarget);
 
 			// Let the blocked states take control
-			if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Dead)
+			if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Defending or PlayerStateType.Dead)
 				return;
 
 			// If there is any powerful enemy in range, runaway from it and discard other targets

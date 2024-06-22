@@ -13,10 +13,10 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 	public List<LuckValue<AIPool>> nightDaySpawnPoolList = new();
 
 	[SerializeField]
-	private Timer lightDaySpawnTimer = new(10f, 10f, 20f);
+	private TimerRandomized lightDaySpawnTimer = new(10f, 10f, 20f);
 
 	[SerializeField]
-	private Timer nightDaySpawnTimer = new(10f, 10f, 20f);
+	private TimerRandomized nightDaySpawnTimer = new(10f, 10f, 20f);
 
 
 	#endregion
@@ -31,7 +31,7 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 	#region ChickenAIHome Stats
 
 	[SerializeField]
-	private Timer restoreHealthTimer = new(5f, 0f, 5f);
+	private TimerRandomized restoreHealthTimer = new(5f, 0f, 5f);
 
 	[field: SerializeField]
 	public uint Health { get; private set; }
@@ -64,14 +64,20 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 			case DaylightType.Light:
 			{
 				if (lightDaySpawnTimer.Tick())
+				{
+					lightDaySpawnTimer.ResetAndRandomize();
 					return TrySpawnFromLuckList(in lightDaySpawnPoolList, out spawnedAI);
+				}
 			}
 			break;
 
 			case DaylightType.Night:
 			{
 				if (nightDaySpawnTimer.Tick())
+				{
+					nightDaySpawnTimer.ResetAndRandomize();
 					return TrySpawnFromLuckList(in nightDaySpawnPoolList, out spawnedAI);
+				}
 			}
 			break;
 		}

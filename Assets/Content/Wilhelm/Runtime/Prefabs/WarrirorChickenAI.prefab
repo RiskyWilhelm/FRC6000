@@ -86,13 +86,14 @@ MonoBehaviour:
   acceptedTargetTypeList: 0000000004000000
   runawayTargetTypeList: 
   movementForce: 0.5
-  maxVelocityX: 5
+  maxVelocity: {x: 5, y: 0}
   idleMaxDistance: 10
   idleTimer:
     minInclusiveTickSeconds: 0
     maxInclusiveTickSeconds: 0
     tickSecond: 2
     isRandomized: 0
+  jumpAngle: 45
   goHomeBackTimer:
     minInclusiveTickSeconds: 10
     maxInclusiveTickSeconds: 20

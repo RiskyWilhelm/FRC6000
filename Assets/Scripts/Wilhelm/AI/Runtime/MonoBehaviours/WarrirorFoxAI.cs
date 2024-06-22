@@ -5,33 +5,31 @@ using UnityEngine;
 
 public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 {
+	[Header("WarrirorFoxAI Movement")]
 	#region BabyFoxAI Movement
 
 	[SerializeField]
-	private Timer goHomeBackTimer = new(10f, 10f, 20f);
-
-	[NonSerialized]
-	private bool mustGoHomeBack;
+	private TimerRandomized goHomeBackTimer = new(10f, 10f, 20f);
 
 
 	#endregion
 
-	[Header("BabyFoxAI Normal Attack")]
-	#region BabyFoxAI Normal Attack
+	[Header("WarrirorFoxAI Normal Attack")]
+	#region WarrirorFoxAI Normal Attack
 
 	[SerializeField]
 	private uint normalAttackDamage = 1;
 
 	[SerializeField]
-	private Timer normalAttackTimer = new(0.5f, 0.75f);
+	private TimerRandomized normalAttackTimer = new(0.5f, 0.75f);
 
 	[NonSerialized]
 	private ValueTuple<ITarget, Coroutine> currentNormalAttack;
 
 	#endregion
 
-	[Header("BabyFoxAI Enemy")]
-	#region BabyFoxAI Enemy
+	[Header("WarrirorFoxAI Enemy")]
+	#region WarrirorFoxAI Enemy
 
 	[NonSerialized]
 	private readonly HashSet<ITarget> targetInRangeSet = new();
@@ -41,7 +39,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 
 	#endregion
 
-	#region BabyFoxAI Other
+	#region WarrirorFoxAI Other
 
 	[field: NonSerialized]
 	public bool IsCaughtMeal {  get; private set; }
@@ -58,8 +56,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 	// Initialize
 	protected override void OnEnable()
 	{
-		mustGoHomeBack = false;
-		goHomeBackTimer.Reset();
+		goHomeBackTimer.ResetAndRandomize();
 		UpdateByDaylightType(DayCycleControllerSingleton.Instance.Time.daylightType);
 		RefreshAttackState();
 
@@ -75,25 +72,42 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 	// Update
 	protected override void Update()
 	{
-		if (goHomeBackTimer.Tick())
-			mustGoHomeBack = true;
+		goHomeBackTimer.Tick();
 
 		// If it currently chasing something, do not go home and protect your family at what it costs!
 		if (targetInRangeSet.Count > 0)
-			mustGoHomeBack = false;
+			goHomeBackTimer.Reset();
 
 		base.Update();
 	}
 
 	protected override void DoIdle()
 	{
-		bool isGoingHome = false;
+		// If not grounded, set state to Flying
+		if (!IsGrounded())
+		{
+			State = PlayerStateType.Flying;
+			return;
+		}
 
-		if (mustGoHomeBack || IsCaughtMeal)
-			isGoingHome = TrySetDestinationToHome();
-		
-		if (!isGoingHome)
-			base.DoIdle();
+		// If wants to go home, set state to walking or running depending on the meal state
+		if (goHomeBackTimer.HasEnded || IsCaughtMeal)
+		{
+			if (TrySetDestinationToHome())
+			{
+				if (IsCaughtMeal)
+					State = PlayerStateType.Running;
+				else
+					State = PlayerStateType.Walking;
+
+				return;
+			}
+			else
+				goHomeBackTimer.ResetAndRandomize();
+		}
+
+		// Otherwise, continue old idle
+		base.DoIdle();
 	}
 
 	protected override void OnStateChangedToDead()
@@ -183,7 +197,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 		}
 
 		currentNormalAttack = default;
-		normalAttackTimer.Reset();
+		normalAttackTimer.ResetAndRandomize();
 	}
 
 	public void OnNormalAttackTriggerStay2D(Collider2D collider)
@@ -229,16 +243,22 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 				runawayTargetsInRangeSet.Remove(foundTarget);
 
 			// Let the blocked states take control
-			if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Dead)
+			if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Defending or PlayerStateType.Dead)
 				return;
 
 			// If there is any powerful enemy in range, runaway from it and discard other targets
 			if ((runawayTargetsInRangeSet.Count > 0) && TrySetDestinationAwayFromNearestIn(runawayTargetsInRangeSet))
+			{
+				State = PlayerStateType.Running;
 				return;
+			}
 
 			// If didnt caught any meal, try catch the nearest enemy
 			if (!IsCaughtMeal)
-				TrySetDestinationToNearestIn(targetInRangeSet);
+			{
+				if (TrySetDestinationToNearestIn(targetInRangeSet))
+					State = PlayerStateType.Running;
+			}
 		}
 	}
 
@@ -280,9 +300,12 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 	{
 		if (main is WarrirorFoxAI foundSelf)
 		{
+			// Movement
+			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
+
+			// Normal Attack
 			foundSelf.normalAttackTimer = this.normalAttackTimer;
 			foundSelf.normalAttackDamage = this.normalAttackDamage;
-			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
 		}
 
 		base.CopyTo(main);

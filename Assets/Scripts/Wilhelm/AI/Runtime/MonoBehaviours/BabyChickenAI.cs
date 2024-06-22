@@ -3,12 +3,11 @@ using UnityEngine;
 
 public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 {
+	[Header("BabyChickenAI Movement")]
 	#region BabyChickenAI Movement
 
 	[SerializeField]
-	private Timer goHomeBackTimer = new(10f, 10f, 60f);
-
-	private bool mustGoHomeBack;
+	private TimerRandomized goHomeBackTimer = new(10f, 10f, 60f);
 
 
 	#endregion
@@ -27,8 +26,7 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	// Initialize
 	protected override void OnEnable()
 	{
-		mustGoHomeBack = false;
-		goHomeBackTimer.Reset();
+		goHomeBackTimer.ResetAndRandomize();
 		ClearDestination();
 
 		base.OnEnable();
@@ -38,19 +36,33 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	// Update
 	protected override void DoIdle()
 	{
-		bool isGoingHome = false;
+		// If not grounded, set state to Flying
+		if (!IsGrounded())
+		{
+			State = PlayerStateType.Flying;
+			return;
+		}
 
-		if (mustGoHomeBack)
-			isGoingHome = TrySetDestinationToHome();
+		// If wants to go home, set state to walking
+		if (goHomeBackTimer.HasEnded)
+		{
+			if (TrySetDestinationToHome())
+			{
+				State = PlayerStateType.Walking;
+				return;
+			}
+			else
+				goHomeBackTimer.ResetAndRandomize();
+		}
 
-		if (!isGoingHome)
-			base.DoIdle();
+		// Otherwise, continue old idle
+		base.DoIdle();
 	}
 
 	protected override void Update()
 	{
-		if ((DayCycleControllerSingleton.Instance.Time.daylightType is DaylightType.Night) || goHomeBackTimer.Tick())
-			mustGoHomeBack = true;
+		if (DayCycleControllerSingleton.Instance.Time.daylightType is DaylightType.Night)
+			goHomeBackTimer.Tick();
 
 		base.Update();
 	}
@@ -85,12 +97,14 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 
 	public void OnRunawayTriggerStay2D(Collider2D collider)
 	{
-		// If there is any AI that is powerful than self nearby, run!
 		if (EventReflectorUtils.TryGetComponentByEventReflector<AIBase>(collider.gameObject, out AIBase foundTarget))
 		{
-			if (runawayTargetTypeList.Contains(foundTarget.TargetTag))
+			if (!runawayTargetTypeList.Contains(foundTarget.TargetTag))
+				return;
+				
+			if (TrySetDestinationAwayFrom(foundTarget.transform))
 			{
-				TrySetDestinationAwayFrom(foundTarget.transform.position);
+				State = PlayerStateType.Running;
 				OpenAIHomeGate = true;
 			}
 		}

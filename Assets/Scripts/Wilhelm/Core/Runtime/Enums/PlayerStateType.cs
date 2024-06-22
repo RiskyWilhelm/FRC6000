@@ -2,6 +2,8 @@ public enum PlayerStateType
 {
 	Idle,
 
+	Walking,
+
 	Running,
 
 	Flying,

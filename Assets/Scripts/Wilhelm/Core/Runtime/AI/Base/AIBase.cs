@@ -20,7 +20,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	[Tooltip("You should set this nearly but not same as the collider size")]
 	protected Vector2 raycastBounds = new(1f, 1f);
 
-	/// <summary> World Destination, Transform Destination, Consider as reached when approaching the target </summary>
+	/// <summary> 1: World Destination, 2: Transform Destination, 3: Consider as reached when approaching the target </summary>
 	[NonSerialized]
 	private ValueTuple<Vector2?, Transform, float> currentDestination;
 
@@ -56,7 +56,11 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 	#region AIBase Other
 
+#if UNITY_EDITOR
+	[SerializeField]
+#else
 	[NonSerialized]
+#endif
 	private PlayerStateType _state;
 
 	protected PlayerStateType State
@@ -76,7 +80,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	public IPool<AIBase> ParentPool { get; set; }
 
 
-	#endregion
+#endregion
 
 
 	// Initialize
@@ -98,13 +102,15 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	{
 		if (IsReachedToDestination())
 		{
-			TryGetDestination(out Vector2 reachedDestination);
-			OnReachedToDestination(reachedDestination);
+			if (currentDestination.Item1.HasValue)
+				OnReachedToDestination(currentDestination.Item1.Value);
+			else
+				OnReachedToDestination(currentDestination.Item2);
+
 			ClearDestination();
 		}
 
 		DetectObstacles();
-		UpdateState();
 		DoState();
 	}
 
@@ -118,36 +124,16 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 			ClearDestination();
 	}
 
-	private void UpdateState()
-	{
-		// Freeze the state machine when these happens
-		if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Dead)
-			return;
-
-		// Dead priority is highest
-		if ((this as ITarget).IsDead)
-		{
-			State = PlayerStateType.Dead;
-			return;
-		}
-
-		if (!IsReachedToDestination())
-		{
-			if (!IsGrounded())
-				State = PlayerStateType.Flying;
-			else
-				State = PlayerStateType.Running;
-		}
-		else
-			State = PlayerStateType.Idle;
-	}
-
 	private void DoState()
 	{
 		switch (State)
 		{
 			case PlayerStateType.Idle:
 			DoIdle();
+			break;
+
+			case PlayerStateType.Walking:
+			DoWalking();
 			break;
 
 			case PlayerStateType.Running:
@@ -166,6 +152,10 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 			DoAttacking();
 			break;
 
+			case PlayerStateType.Defending:
+			DoDefending();
+			break;
+
 			case PlayerStateType.Dead:
 			DoDead();
 			break;
@@ -178,6 +168,10 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		{
 			case PlayerStateType.Idle:
 			OnStateChangedToIdle();
+			break;
+
+			case PlayerStateType.Walking:
+			OnStateChangedToWalking();
 			break;
 
 			case PlayerStateType.Running:
@@ -196,6 +190,10 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 			OnStateChangedToAttacking();
 			break;
 
+			case PlayerStateType.Defending:
+			OnStateChangedToDefending();
+			break;
+
 			case PlayerStateType.Dead:
 			OnStateChangedToDead();
 			break;
@@ -205,34 +203,46 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	protected virtual void DoIdle()
 	{ }
 
-	protected virtual void OnStateChangedToIdle()
+	protected virtual void DoWalking()
 	{ }
 
 	protected virtual void DoRunning()
 	{ }
 
-	protected virtual void OnStateChangedToRunning()
-	{ }
-
 	protected virtual void DoFlying()
-	{ }
-
-	protected virtual void OnStateChangedToFlying()
 	{ }
 
 	protected virtual void DoJumping()
 	{ }
 
-	protected virtual void OnStateChangedToJumping()
+	protected virtual void DoAttacking()
+	{ }
+	
+	protected virtual void DoDefending()
 	{ }
 
-	protected virtual void DoAttacking()
+	protected virtual void DoDead()
+	{ }
+
+	protected virtual void OnStateChangedToIdle()
+	{ }
+
+	protected virtual void OnStateChangedToWalking()
+	{ }
+
+	protected virtual void OnStateChangedToRunning()
+	{ }
+
+	protected virtual void OnStateChangedToFlying()
+	{ }
+
+	protected virtual void OnStateChangedToJumping()
 	{ }
 
 	protected virtual void OnStateChangedToAttacking()
 	{ }
 
-	protected virtual void DoDead()
+	protected virtual void OnStateChangedToDefending()
 	{ }
 
 	protected virtual void OnStateChangedToDead()
@@ -240,7 +250,20 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 	public void TakeDamage(uint damage, Vector2 occuredWorldPosition)
 	{
-		Health = (ushort)Math.Clamp(Health - (int)damage, ushort.MinValue, ushort.MaxValue);
+		// Check for System.OverflowException. This is because the health may become negative and this is unwanted behaviour
+		try
+		{
+			Health = checked(Health - damage);
+		}
+		catch
+		{
+			Health = 0;
+		}
+		finally
+		{
+			if ((this as ITarget).IsDead)
+				State = PlayerStateType.Dead;
+		}
 	}
 
 	protected void RestoreHealth()
@@ -249,6 +272,9 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	}
 
 	protected virtual void OnChangedDestination(Vector2? newDestination)
+	{ }
+
+	protected virtual void OnReachedToDestination(Transform reachedDestinationTarget)
 	{ }
 
 	protected virtual void OnReachedToDestination(Vector2 reachedDestination)
@@ -306,22 +332,33 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		OnChangedDestination(null);
 	}
 
-	/// <summary> Gets target transform position or normal destination. If none set, returns <see cref="Vector2.zero"/> </summary>
+	/// <summary> Gets target transform position or normal destination. If none set, returns false and <see cref="Vector2.zero"/> </summary>
 	public bool TryGetDestination(out Vector2 worldDestination)
 	{
+		worldDestination = Vector2.zero;
+
 		if (currentDestination.Item1.HasValue)
 		{
 			worldDestination = currentDestination.Item1.Value;
 			return true;
 		}
-		else if (currentDestination.Item2 && currentDestination.Item2.gameObject.activeSelf)
+		else if (TryGetDestinationTarget(out Transform destinationTarget))
 		{
-			worldDestination = currentDestination.Item2.position;
+			worldDestination = destinationTarget.position;
 			return true;
 		}
 
-		worldDestination = Vector2.zero;
 		return false;
+	}
+
+	public bool TryGetDestinationTarget(out Transform worldDestinationTarget)
+	{
+		worldDestinationTarget = null;
+
+		if (currentDestination.Item2 && currentDestination.Item2.gameObject.activeSelf)
+			worldDestinationTarget = currentDestination.Item2;
+
+		return worldDestinationTarget != null;
 	}
 
 	public bool TrySetDestinationAwayFrom(Transform target, float destinationApproachThreshold = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
@@ -343,7 +380,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 		// Get direction of 'target to self' and its angle in radians
 		var norDirTargetToSelf = (selfRigidbody.position - target).normalized;
-		var radTargetToSelfAngle = MathfUtils.Atan2_360(norDirTargetToSelf.y, norDirTargetToSelf.x);
+		var radTargetToSelfAngle = norDirTargetToSelf.ToAngle_360();
 
 		// Get starting and ending point in radians
 		var radStartAngle = radTargetToSelfAngle - (radCheckInDegree * 0.5f);
@@ -357,7 +394,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		while (radCurrentAngle <= radEndAngle)
 		{
 			// nor stands for "normalized". Multiplying the Bounds with random value because there should be no conflict between Bounds'es
-			var norCurrentAngle = new Vector2(MathF.Cos(radCurrentAngle), MathF.Sin(radCurrentAngle));
+			var norCurrentAngle = VectorUtils.AngleToVector(radCurrentAngle);
 			var newDestination = selfRigidbody.position + (norCurrentAngle * (raycastBounds * 3));
 
 			// If nothing is on the way, add to look directions based on grounded state on newDestination
@@ -584,9 +621,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	}
 
 	public virtual void OnReleaseToPool(IPool<AIBase> pool)
-	{
-
-	}
+	{ }
 }
 
 
@@ -594,9 +629,23 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 public abstract partial class AIBase
 {
-	private void OnDrawGizmosSelected()
+	protected virtual void OnDrawGizmosSelected()
 	{
-		// Display the explosion radius when selected
+		DrawRaycastBoundsGizmos();
+		DrawDestinationGizmos();
+	}
+
+	private void DrawDestinationGizmos()
+	{
+		if (TryGetDestination(out Vector2 worldDestination))
+		{
+			Gizmos.color = new Color(0f, 1f, 0f, 0.25f);
+			Gizmos.DrawSphere(worldDestination, currentDestination.Item3);
+		}
+	}
+
+	private void DrawRaycastBoundsGizmos()
+	{
 		Gizmos.color = new Color(1f, 0f, 0f, 0.25f);
 		Gizmos.DrawCube(this.transform.position, raycastBounds);
 	}

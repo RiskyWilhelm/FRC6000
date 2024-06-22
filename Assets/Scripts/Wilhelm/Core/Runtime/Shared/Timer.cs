@@ -2,95 +2,72 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public struct Timer : IEquatable<Timer>
+public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 {
-	[Tooltip("If isRandomized set to true, used to set TickTime on Reset() or when the timer finishes")]
-	public float minInclusiveTickSeconds;
+	private float _currentSecond;
 
-	[Tooltip("If isRandomized set to true, used to set TickTime on Reset() or when the timer finishes")]
-	public float maxInclusiveTickSeconds;
+	[SerializeField]
+    private float _tickSecond;
 
-	private float currentSecond;
+	public readonly float CurrentSecond => _currentSecond;
 
-    public float tickSecond;
+	public readonly bool HasEnded => (_currentSecond >= _tickSecond);
 
-	public bool isRandomized;
-
-	private static readonly System.Random mainRandomizer = new ();
+	public float TickSecond
+	{
+		readonly get => _tickSecond;
+		set => _tickSecond = value;
+	}
 
 
     // Initialize
-    public Timer(float tickTime)
+    public Timer(float tickSecond)
     {
-		this.minInclusiveTickSeconds = 0;
-		this.maxInclusiveTickSeconds = 0;
-        this.tickSecond = tickTime;
-        this.currentSecond = 0;
-		this.isRandomized = false;
+        this._tickSecond = tickSecond;
+        this._currentSecond = 0;
     }
-
-	public Timer(float tickTime, float minInclusiveTickTime, float maxInclusiveTickTime, bool isRandomized = true)
-	{
-		this.minInclusiveTickSeconds = minInclusiveTickTime;
-		this.maxInclusiveTickSeconds = maxInclusiveTickTime;
-
-		if (isRandomized)
-			this.tickSecond = Mathf.Abs((float)mainRandomizer.NextDouble(minInclusiveTickTime, maxInclusiveTickTime));
-		else
-			this.tickSecond = tickTime;
-
-		this.currentSecond = 0;
-		this.isRandomized = isRandomized;
-	}
-
-	public Timer(float minInclusiveTickTime, float maxInclusiveTickTime)
-	{
-		this.minInclusiveTickSeconds = minInclusiveTickTime;
-		this.maxInclusiveTickSeconds = maxInclusiveTickTime;
-		this.tickSecond = Mathf.Abs((float)mainRandomizer.NextDouble(minInclusiveTickTime, maxInclusiveTickTime));
-		this.currentSecond = 0;
-		this.isRandomized = true;
-	}
 
 
 	// Update
-	/// <summary> Resets when timer ends otherwise ticks </summary>
-	/// <returns> true if ended </returns>
+	/// <returns> true if timer has ended </returns>
 	public bool Tick()
     {
-        currentSecond += Time.deltaTime;
-            
-        if (currentSecond >= tickSecond)
-        {
-            Reset();
-            return true;
-        }
+		if (_currentSecond < _tickSecond)
+			_currentSecond += Time.deltaTime;
 
-        return false;
+        return _currentSecond >= _tickSecond;
     }
 
-    public void Reset()
+	/// <summary> Sets the <see cref="_currentSecond"/> to zero </summary>
+	public void Reset()
     {
-		if (isRandomized)
-			tickSecond = Mathf.Abs(UnityEngine.Random.Range(minInclusiveTickSeconds, maxInclusiveTickSeconds));
-
-        currentSecond = 0;
+        _currentSecond = 0;
     }
 
 	public override bool Equals(object obj)
 	{
-		return (obj is Timer timer) && Equals(timer);
+		if (obj is TimerRandomized randomized)
+			return Equals(randomized);
+
+		if (obj is Timer timer)
+			return Equals(timer);
+
+		return false;
 	}
 
 	public bool Equals(Timer other)
 	{
-		return currentSecond == other.currentSecond &&
-			   tickSecond == other.tickSecond;
+		return (_currentSecond, _tickSecond) == (other._currentSecond, other._tickSecond);
+	}
+
+	public bool Equals(TimerRandomized other)
+	{
+		return (_currentSecond, _tickSecond) == (other.CurrentSecond, other.TickSecond);
 	}
 
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(currentSecond, tickSecond);
+		return HashCode.Combine(_currentSecond, _tickSecond);
 	}
 
 	public static bool operator ==(Timer left, Timer right)
@@ -98,7 +75,17 @@ public struct Timer : IEquatable<Timer>
 		return left.Equals(right);
 	}
 
+	public static bool operator ==(Timer left, TimerRandomized right)
+	{
+		return left.Equals(right);
+	}
+
 	public static bool operator !=(Timer left, Timer right)
+	{
+		return !(left == right);
+	}
+
+	public static bool operator !=(Timer left, TimerRandomized right)
 	{
 		return !(left == right);
 	}
