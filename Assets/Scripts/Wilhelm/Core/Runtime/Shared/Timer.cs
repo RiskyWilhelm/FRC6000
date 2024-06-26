@@ -46,11 +46,11 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 
 	public override bool Equals(object obj)
 	{
-		if (obj is TimerRandomized randomized)
-			return Equals(randomized);
-
 		if (obj is Timer timer)
 			return Equals(timer);
+
+		if (obj is TimerRandomized randomized)
+			return Equals(randomized);
 
 		return false;
 	}

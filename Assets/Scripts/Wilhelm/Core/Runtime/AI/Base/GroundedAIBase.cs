@@ -101,6 +101,7 @@ public abstract partial class GroundedAIBase : AIBase
 		// If not grounded, set state to Flying
 		if (!IsGrounded())
 		{
+			idleTimer.Reset();
 			State = PlayerStateType.Flying;
 			return;
 		}
@@ -115,35 +116,42 @@ public abstract partial class GroundedAIBase : AIBase
 			newDestination.x += randomHorizontalPosition;
 
 			if (TrySetDestinationTo(newDestination, raycastBounds.x))
+			{
 				State = PlayerStateType.Walking;
-			else
-				base.DoIdle();
+				return;
+			}
 		}
+
+		// Otherwise, continue old idle
+		base.DoIdle();
 	}
 
 	protected override void DoWalking()
 	{
-		// If cant get destination, set state to Idle
-		if (!TryGetDestination(out Vector2 worldDestination))
+		// If not grounded, set state to flying
+		if (!IsGrounded())
 		{
-			if (IsGrounded())
-				State = PlayerStateType.Idle;
-			else
-				State = PlayerStateType.Flying;
-
+			State = PlayerStateType.Flying;
 			return;
 		}
 
-		// If wants to jump, jump
-		if (IsAbleToJumpToDestination())
+		// If destination available, set state to walking
+		if (TryGetDestination(out Vector2 worldDestination))
 		{
-			Jump();
+			// If wants to jump, jump
+			if (IsAbleToJumpTowardsDestination())
+			{
+				Jump();
+				return;
+			}
+
+			// Set the horizontal direction that mirrors to FixedUpdate
+			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
 			return;
 		}
 
-		// Set the horizontal direction that mirrors to FixedUpdate
-		norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
-		base.DoWalking();
+		// If there is no destination set, set state to idle
+		State = PlayerStateType.Idle;
 	}
 
 	protected virtual void DoWalkingFixedUpdate()
@@ -153,27 +161,30 @@ public abstract partial class GroundedAIBase : AIBase
 
 	protected override void DoRunning()
 	{
-		// If cant get destination, set state to Idle
-		if (!TryGetDestination(out Vector2 worldDestination))
+		// If not grounded, set state to flying
+		if (!IsGrounded())
 		{
-			if (IsGrounded())
-				State = PlayerStateType.Idle;
-			else
-				State = PlayerStateType.Flying;
-
+			State = PlayerStateType.Flying;
 			return;
 		}
 
-		// If wants to jump, jump
-		if (IsAbleToJumpToDestination())
+		// If destination available, set state to walking
+		if (TryGetDestination(out Vector2 worldDestination))
 		{
-			Jump();
+			// If wants to jump, jump
+			if (IsAbleToJumpTowardsDestination())
+			{
+				Jump();
+				return;
+			}
+
+			// Set the horizontal direction that mirrors to FixedUpdate
+			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
 			return;
 		}
 
-		// Set the horizontal direction that mirrors to FixedUpdate
-		norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
-		base.DoRunning();
+		// If there is no destination set, set state to idle
+		State = PlayerStateType.Idle;
 	}
 
 	protected virtual void DoRunningFixedUpdate()
@@ -188,8 +199,6 @@ public abstract partial class GroundedAIBase : AIBase
 			State = PlayerStateType.Idle;
 			return;
 		}
-
-		base.DoFlying();
 	}
 
 	protected override void DoJumping()
@@ -205,8 +214,6 @@ public abstract partial class GroundedAIBase : AIBase
 			else
 				State = PlayerStateType.Flying;
 		}
-
-		base.DoJumping();
 	}
 
 	public void Jump()
@@ -231,7 +238,7 @@ public abstract partial class GroundedAIBase : AIBase
 			selfRigidbody.velocityY = Math.Clamp(selfRigidbody.velocityY, -maxVelocity.y, maxVelocity.y);
 	}
 
-	public bool IsAbleToJumpToDestination()
+	public bool IsAbleToJumpTowardsDestination()
 	{
 		// If destination set or self didnt reached to destination, check if direction is facing to given angle
 		if (IsReachedToDestination())
@@ -240,10 +247,10 @@ public abstract partial class GroundedAIBase : AIBase
 		if (!TryGetDestination(out Vector2 worldDestination))
 			return false;
 
-		return IsAbleToJumpTo(worldDestination);
+		return IsAbleToJumpTowards(worldDestination);
 	}
 
-	public bool IsAbleToJumpTo(Vector2 worldPosition)
+	public bool IsAbleToJumpTowards(Vector2 worldPosition)
 	{
 		// Prepare values
 		var distSelfToDestination = (worldPosition - selfRigidbody.position);
@@ -266,6 +273,10 @@ public abstract partial class GroundedAIBase : AIBase
 			// Walking
 			groundedAI.walkForce = this.walkForce;
 			groundedAI.walkMaxVelocity = this.walkMaxVelocity;
+
+			// Running
+			groundedAI.runningForce = this.runningForce;
+			groundedAI.runningMaxVelocity = this.runningMaxVelocity;
 
 			// Jump
 			groundedAI.jumpForce = this.jumpForce;

@@ -21,7 +21,7 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	public HomeBase ParentHome { get; set; }
 
 	#endregion
-
+	
 
 	// Initialize
 	protected override void OnEnable()
@@ -39,6 +39,7 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 		// If not grounded, set state to Flying
 		if (!IsGrounded())
 		{
+			goHomeBackTimer.ResetAndRandomize();
 			State = PlayerStateType.Flying;
 			return;
 		}
@@ -46,13 +47,13 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 		// If wants to go home, set state to walking
 		if (goHomeBackTimer.HasEnded)
 		{
+			goHomeBackTimer.ResetAndRandomize();
+
 			if (TrySetDestinationToHome())
 			{
 				State = PlayerStateType.Walking;
 				return;
 			}
-			else
-				goHomeBackTimer.ResetAndRandomize();
 		}
 
 		// Otherwise, continue old idle
@@ -69,7 +70,7 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 
 	protected override void OnStateChangedToDead()
 	{
-		GameControllerSingleton.Instance.onChickenDeath?.Invoke();
+		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.BabyChicken]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
 	}
@@ -118,6 +119,12 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	public void OnLeftFromAIHome(HomeBase home)
 	{
 		OpenAIHomeGate = false;
+	}
+
+	public void OnStolenByFoxHome(FoxAIHome foxAIHome)
+	{
+		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.BabyChicken]?.Invoke();
+		ReleaseOrDestroySelf();
 	}
 
 	public override void CopyTo(in AIBase main)

@@ -20,9 +20,8 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	[Tooltip("You should set this nearly but not same as the collider size")]
 	protected Vector2 raycastBounds = new(1f, 1f);
 
-	/// <summary> 1: World Destination, 2: Transform Destination, 3: Consider as reached when approaching the target </summary>
 	[NonSerialized]
-	private ValueTuple<Vector2?, Transform, float> currentDestination;
+	private (Vector2? worldDestination, Transform targetDestination, float considerAsReachedDistance) currentDestination;
 
 
 	#endregion
@@ -102,10 +101,10 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	{
 		if (IsReachedToDestination())
 		{
-			if (currentDestination.Item1.HasValue)
-				OnReachedToDestination(currentDestination.Item1.Value);
+			if (currentDestination.worldDestination.HasValue)
+				OnReachedToDestination(currentDestination.worldDestination.Value);
 			else
-				OnReachedToDestination(currentDestination.Item2);
+				OnReachedToDestination(currentDestination.targetDestination);
 
 			ClearDestination();
 		}
@@ -281,65 +280,64 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	{ }
 
 	/// <summary> Verifies the <paramref name="target"/> position and sets destination if succeeded </summary>
-	public bool TrySetDestinationTo(Transform target, float destinationApproachThreshold = 1f)
+	public bool TrySetDestinationTo(Transform target, float considerAsReachedDistance = 1f)
 	{
 		// Check if self already reached to or cant go to the newDestination, then clear it
 		if (IsReachedTo(target) || !IsAbleToGoTo(target))
 			return false;
 
 		// Set the new destination
-		SetDestinationTo(target, destinationApproachThreshold);
+		SetDestinationTo(target, considerAsReachedDistance);
 		return true;
 	}
 
 	/// <summary> Verifies the <paramref name="newDestination"/> and sets destination if succeeded </summary>
-	public bool TrySetDestinationTo(Vector2 newDestination, float destinationApproachThreshold = 1f)
+	public bool TrySetDestinationTo(Vector2 newDestination, float considerAsReachedDistance = 1f)
 	{
 		// Check if self already reached to or cant go to the newDestination, then clear it
 		if (IsReachedTo(newDestination) || !IsAbleToGoTo(newDestination))
 			return false;
 
 		// Set the new destination
-		SetDestinationTo(newDestination, destinationApproachThreshold);
+		SetDestinationTo(newDestination, considerAsReachedDistance);
 		return true;
 	}
 
 	/// <remarks> Use if you verified the <paramref name="target"/> position already </remarks>
-	public void SetDestinationTo(Transform target, float destinationApproachThreshold = 1f)
+	public void SetDestinationTo(Transform target, float considerAsReachedDistance = 1f)
 	{
-		currentDestination.Item1 = null;
-		currentDestination.Item2 = target;
-		currentDestination.Item3 = destinationApproachThreshold;
+		currentDestination.worldDestination = null;
+		currentDestination.targetDestination = target;
+		currentDestination.considerAsReachedDistance = considerAsReachedDistance;
 
 		OnChangedDestination(target.position);
 	}
 
 	/// <remarks> Use if you verified the <paramref name="newDestination"/> already </remarks>
-	public void SetDestinationTo(Vector2 newDestination, float destinationApproachThreshold = 1f)
+	public void SetDestinationTo(Vector2 newDestination, float considerAsReachedDistance = 1f)
 	{
-		currentDestination.Item1 = newDestination;
-		currentDestination.Item2 = null;
-		currentDestination.Item3 = destinationApproachThreshold;
+		currentDestination.worldDestination = newDestination;
+		currentDestination.targetDestination = null;
+		currentDestination.considerAsReachedDistance = considerAsReachedDistance;
 
 		OnChangedDestination(newDestination);
 	}
 	
 	public void ClearDestination()
 	{
-		currentDestination.Item1 = null;
-		currentDestination.Item2 = null;
-		currentDestination.Item3 = 0;
+		currentDestination.worldDestination = null;
+		currentDestination.targetDestination = null;
+		currentDestination.considerAsReachedDistance = 0;
 		OnChangedDestination(null);
 	}
 
-	/// <summary> Gets target transform position or normal destination. If none set, returns false and <see cref="Vector2.zero"/> </summary>
 	public bool TryGetDestination(out Vector2 worldDestination)
 	{
 		worldDestination = Vector2.zero;
 
-		if (currentDestination.Item1.HasValue)
+		if (currentDestination.worldDestination.HasValue)
 		{
-			worldDestination = currentDestination.Item1.Value;
+			worldDestination = currentDestination.worldDestination.Value;
 			return true;
 		}
 		else if (TryGetDestinationTarget(out Transform destinationTarget))
@@ -355,17 +353,17 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	{
 		worldDestinationTarget = null;
 
-		if (currentDestination.Item2 && currentDestination.Item2.gameObject.activeSelf)
-			worldDestinationTarget = currentDestination.Item2;
+		if (currentDestination.targetDestination && currentDestination.targetDestination.gameObject.activeSelf)
+			worldDestinationTarget = currentDestination.targetDestination;
 
 		return worldDestinationTarget != null;
 	}
 
-	public bool TrySetDestinationAwayFrom(Transform target, float destinationApproachThreshold = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
-		=> TrySetDestinationAwayFrom(target.position, destinationApproachThreshold, checkInDegree, checkEveryDegree, isGroundedOnly);
+	public bool TrySetDestinationAwayFrom(Transform target, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+		=> TrySetDestinationAwayFrom(target.position, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly);
 
 	/// <param name="isGroundedOnly"> Get the grounded direction only </param>
-	public bool TrySetDestinationAwayFrom(Vector2 target, float destinationApproachThreshold = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+	public bool TrySetDestinationAwayFrom(Vector2 target, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
 	{
 		var isDestinationSet = false;
 
@@ -434,7 +432,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 			Debug.DrawLine(selfRigidbody.position, closestNorDirTuple.Item2, Color.green);
 
 			// Finally, set the new destination
-			SetDestinationTo(closestNorDirTuple.Item2, destinationApproachThreshold);
+			SetDestinationTo(closestNorDirTuple.Item2, considerAsReachedDistance);
 			isDestinationSet = true;
 		}
 
@@ -448,38 +446,35 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		return isDestinationSet;
 	}
 
-	/// <summary> Checks the nearest targets via <see cref="IsAbleToChase(ITarget)"/> </summary>
-	public bool TrySetDestinationToNearestIn(IEnumerable<Transform> transformEnumerable, float destinationApproachThreshold = 1f)
+	public bool TrySetDestinationToNearestIn(IEnumerable<Transform> transformEnumerable, float considerAsReachedDistance = 1f)
 	{
 		if (this.transform.TryGetNearestTransform(transformEnumerable, out Transform nearestTransform,
 			(iteratedTransform) => IsAbleToGoTo(iteratedTransform)))
 		{
-			SetDestinationTo(nearestTransform, destinationApproachThreshold);
+			SetDestinationTo(nearestTransform, considerAsReachedDistance);
 			return true;
 		}
 
 		return false;
 	}
 
-	/// <summary> Checks the nearest targets via <see cref="IsAbleToChase(ITarget)"/> </summary>
-	public bool TrySetDestinationToNearestIn(IEnumerable<Vector2> positionEnumerable, float destinationApproachThreshold = 1f)
+	public bool TrySetDestinationToNearestIn(IEnumerable<Vector2> positionEnumerable, float considerAsReachedDistance = 1f)
 	{
 		if (VectorExtensions.TryGetNearestVector(this.transform.position, positionEnumerable, out Vector2 nearestPosiiton,
 			(iteratedPosition) => IsAbleToGoTo(iteratedPosition)))
 		{
-			SetDestinationTo(nearestPosiiton, destinationApproachThreshold);
+			SetDestinationTo(nearestPosiiton, considerAsReachedDistance);
 			return true;
 		}
 
 		return false;
 	}
 
-	/// <summary> Checks the nearest targets via <see cref="TryGetNearestChaseableTargetIn(IEnumerable{ITarget}, out ITarget, Predicate{ITarget})"/> </summary>
-	public bool TrySetDestinationToNearestIn(IEnumerable<ITarget> targetEnumerable, float destinationApproachThreshold = 1f)
+	public bool TrySetDestinationToNearestIn(IEnumerable<ITarget> targetEnumerable, float considerAsReachedDistance = 1f)
 	{
 		if (TryGetNearestChaseableTargetIn(targetEnumerable, out ITarget nearestTarget, out _))
 		{
-			SetDestinationTo((nearestTarget as Component).transform, destinationApproachThreshold);
+			SetDestinationTo((nearestTarget as Component).transform, considerAsReachedDistance);
 			return true;
 		}
 
@@ -508,61 +503,56 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		return nearestTarget != null;
 	}
 
-	/// <summary> Checks the nearest targets via inverted <see cref="IsAbleToChase(Transform)"/> </summary>
-	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<Transform> targetEnumerable, float destinationApproachThreshold = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<Transform> targetEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
 	{
 		if (this.transform.TryGetNearestTransform(targetEnumerable, out Transform nearestTransform,
 			(iteratedTransform) => IsAbleToGoTo(iteratedTransform)))
-			if (TrySetDestinationAwayFrom(nearestTransform, destinationApproachThreshold, checkInDegree, checkEveryDegree, isGroundedOnly))
+			if (TrySetDestinationAwayFrom(nearestTransform, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
 				return true;
 
 		return false;
 	}
 
-	/// <summary> Checks the nearest positions via inverted <see cref="IsAbleToChase(Vector2)"/> </summary>
-	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<Vector2> vectorEnumerable, float destinationApproachThreshold = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<Vector2> vectorEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
 	{
 		if (VectorExtensions.TryGetNearestVector(this.transform.position, vectorEnumerable, out Vector2 nearestVector,
 			(iteratedPosition) => IsAbleToGoTo(iteratedPosition)))
-			if (TrySetDestinationAwayFrom(nearestVector, destinationApproachThreshold, checkInDegree, checkEveryDegree, isGroundedOnly))
+			if (TrySetDestinationAwayFrom(nearestVector, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
 				return true;
 
 		return false;
 	}
 
-	/// <summary> Checks the nearest targets via inverted <see cref="IsAbleToChase(ITarget)"/> </summary>
-	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<ITarget> targetEnumerable, float destinationApproachThreshold = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<ITarget> targetEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
 	{
 		if (TryGetNearestChaseableTargetIn(targetEnumerable, out var nearestTarget, out _,
 			(iteratedTarget) => (runawayTargetTypeList.Contains(cachedNearestTargetDict[iteratedTarget].TargetTag) && IsAbleToGoTo(iteratedTarget))))
 		{
 			// TODO: What if nearestTarget is not a Component?
-			if (TrySetDestinationAwayFrom((nearestTarget as Component).transform, destinationApproachThreshold, checkInDegree, checkEveryDegree, isGroundedOnly))
+			if (TrySetDestinationAwayFrom((nearestTarget as Component).transform, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
 				return true;
 		}
 
 		return false;
 	}
 
-	/// <summary> Checks if self reached to current destination </summary>
 	/// <remarks> Returns true when there is no destination </remarks>
 	public bool IsReachedToDestination()
 	{
-		// If destination dont have any value, consider as reached
 		if (!TryGetDestination(out Vector2 destination))
 			return true;
 
-		return IsReachedTo(destination, currentDestination.Item3);
+		return IsReachedTo(destination, currentDestination.considerAsReachedDistance);
 	}
 
-	public bool IsReachedTo(Transform target, float destinationApproachThreshold = 1f)
-		=> IsReachedTo(target.position, destinationApproachThreshold);
+	public bool IsReachedTo(Transform target, float considerAsReachedDistance = 1f)
+		=> IsReachedTo(target.position, considerAsReachedDistance);
 
-	public bool IsReachedTo(Vector2 worldPosition, float destinationApproachThreshold = 1f)
+	public bool IsReachedTo(Vector2 worldPosition, float considerAsReachedDistance = 1f)
 	{
 		// If self position equals or inside the threshold of destination, consider as reached
 		var distSelfToDestination = (worldPosition - selfRigidbody.position);
-		return (distSelfToDestination.sqrMagnitude <= (destinationApproachThreshold * destinationApproachThreshold));
+		return (distSelfToDestination.sqrMagnitude <= (considerAsReachedDistance * considerAsReachedDistance));
 	}
 
 	public bool IsGrounded()
@@ -579,7 +569,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		return false;
 	}
 
-	/// <summary> Verifies the position via <see cref="IsAbleToGoTo(Vector2, int)"/> </summary>
+	/// <inheritdoc cref="IsAbleToGoTo(Vector2, int)"/>
 	protected bool IsAbleToGoTo(Transform target, int layerMask = Layers.Mask.Ground)
 		=> IsAbleToGoTo(target.position, layerMask);
 
@@ -640,7 +630,7 @@ public abstract partial class AIBase
 		if (TryGetDestination(out Vector2 worldDestination))
 		{
 			Gizmos.color = new Color(0f, 1f, 0f, 0.25f);
-			Gizmos.DrawSphere(worldDestination, currentDestination.Item3);
+			Gizmos.DrawSphere(worldDestination, currentDestination.considerAsReachedDistance);
 		}
 	}
 

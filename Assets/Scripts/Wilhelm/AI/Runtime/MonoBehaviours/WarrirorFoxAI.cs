@@ -28,8 +28,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 
 	#endregion
 
-	[Header("WarrirorFoxAI Enemy")]
-	#region WarrirorFoxAI Enemy
+	#region WarrirorFoxAI Target Verify
 
 	[NonSerialized]
 	private readonly HashSet<ITarget> targetInRangeSet = new();
@@ -86,6 +85,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 		// If not grounded, set state to Flying
 		if (!IsGrounded())
 		{
+			goHomeBackTimer.ResetAndRandomize();
 			State = PlayerStateType.Flying;
 			return;
 		}
@@ -93,6 +93,8 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 		// If wants to go home, set state to walking or running depending on the meal state
 		if (goHomeBackTimer.HasEnded || IsCaughtMeal)
 		{
+			goHomeBackTimer.ResetAndRandomize();
+
 			if (TrySetDestinationToHome())
 			{
 				if (IsCaughtMeal)
@@ -102,8 +104,6 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 
 				return;
 			}
-			else
-				goHomeBackTimer.ResetAndRandomize();
 		}
 
 		// Otherwise, continue old idle
@@ -112,7 +112,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 
 	protected override void OnStateChangedToDead()
 	{
-		GameControllerSingleton.Instance.onFoxDeath?.Invoke();
+		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.WarrirorFox]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
 	}
@@ -202,6 +202,9 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 
 	public void OnNormalAttackTriggerStay2D(Collider2D collider)
 	{
+		// Prevents StartCoroutine to get called when self is disabled
+		if (!this.gameObject.activeSelf) return;
+
 		// If attacking, let it finish first
 		if (State == PlayerStateType.Attacking)
 			return;
@@ -254,11 +257,8 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser
 			}
 
 			// If didnt caught any meal, try catch the nearest enemy
-			if (!IsCaughtMeal)
-			{
-				if (TrySetDestinationToNearestIn(targetInRangeSet))
-					State = PlayerStateType.Running;
-			}
+			if (!IsCaughtMeal && TrySetDestinationToNearestIn(targetInRangeSet))
+				State = PlayerStateType.Running;
 		}
 	}
 

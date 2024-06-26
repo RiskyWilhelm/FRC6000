@@ -8,5 +8,7 @@ public enum TargetType
 
 	WarrirorChicken,
 
-	WarrirorFox
+	WarrirorFox,
+	
+	Player
 }

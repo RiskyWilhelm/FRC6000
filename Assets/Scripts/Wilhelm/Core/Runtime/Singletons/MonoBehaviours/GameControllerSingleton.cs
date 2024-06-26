@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 public sealed partial class GameControllerSingleton : MonoBehaviourSingletonBase<GameControllerSingleton>
 {
@@ -16,9 +16,9 @@ public sealed partial class GameControllerSingleton : MonoBehaviourSingletonBase
 
 	#region GameControllerSingleton Events
 
-	public UnityEvent onChickenDeath = new();
+	public readonly Dictionary<TargetType, Action> onTargetBirthDict = new();
 
-	public UnityEvent onFoxDeath = new();
+	public readonly Dictionary<TargetType, Action> onTargetDeathDict = new();
 
 
 	#endregion
@@ -31,7 +31,13 @@ public sealed partial class GameControllerSingleton : MonoBehaviourSingletonBase
 		if (!IsInstanceLiving)
 			FindOrCreate();
 
-		Debug.LogFormat("Initialized the bridge GameObject of JS>C# named '{0}'", Instance.GameObjectName);
+        foreach (TargetType iteratedTargetType in Enum.GetValues(typeof(TargetType)))
+        {
+			Instance.onTargetBirthDict.Add(iteratedTargetType, new Action(() => { }));
+			Instance.onTargetDeathDict.Add(iteratedTargetType, new Action(() => { }));
+        }
+
+        Debug.LogFormat("Initialized the bridge GameObject of JS>C# named '{0}'", Instance.GameObjectName);
 	}
 
 	protected override void Awake()

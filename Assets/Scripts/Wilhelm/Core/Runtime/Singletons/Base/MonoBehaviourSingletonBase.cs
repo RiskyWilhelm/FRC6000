@@ -1,11 +1,11 @@
 using UnityEngine;
 
-public abstract partial class MonoBehaviourSingletonBase<T> : MonoBehaviour
-    where T : MonoBehaviourSingletonBase<T>
+public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBehaviour
+    where SingletonType : MonoBehaviourSingletonBase<SingletonType>
 {
-    private static T _instance;
+    private static SingletonType _instance;
 
-    public static T Instance
+    public static SingletonType Instance
     {
         get
         {
@@ -18,7 +18,7 @@ public abstract partial class MonoBehaviourSingletonBase<T> : MonoBehaviour
 
     public static bool IsInstanceLiving => _instance;
 
-    protected virtual string GameObjectName => typeof(T).Name;
+    protected virtual string GameObjectName => typeof(SingletonType).Name;
 
 
 	// Initialize
@@ -31,18 +31,18 @@ public abstract partial class MonoBehaviourSingletonBase<T> : MonoBehaviour
             return;
         }
 
-        _instance = (this as T);
+        _instance = (this as SingletonType);
     }
 
 	protected static void FindOrCreate()
 	{
         // Try to find
-		_instance = FindFirstObjectByType<T>(findObjectsInactive: FindObjectsInactive.Include);
+		_instance = FindFirstObjectByType<SingletonType>(findObjectsInactive: FindObjectsInactive.Include);
 
         // If still cant find, try to create
         if (!_instance)
         {
-            var newSingleton = new GameObject(typeof(T).Name, typeof(T)).GetComponent<T>();
+            var newSingleton = new GameObject(typeof(SingletonType).Name, typeof(SingletonType)).GetComponent<SingletonType>();
             newSingleton.name = newSingleton.GameObjectName;
 
 #if UNITY_EDITOR
@@ -56,7 +56,7 @@ public abstract partial class MonoBehaviourSingletonBase<T> : MonoBehaviour
 
 #if UNITY_EDITOR
 
-public abstract partial class MonoBehaviourSingletonBase<T>
+public abstract partial class MonoBehaviourSingletonBase<SingletonType>
 { }
 
 #endif

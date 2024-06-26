@@ -35,7 +35,10 @@ public sealed partial class FoxAIHome : HomeBase
 		spawnedAI = null;
 
 		if ((DayCycleControllerSingleton.Instance.Time.daylightType is DaylightType.Night) && nightDaySpawnTimer.Tick())
+		{
+			nightDaySpawnTimer.ResetAndRandomize();
 			return TrySpawnFromLuckList(nightDaySpawnPoolList, out spawnedAI);
+		}
 
 		return false;
 	}
@@ -87,6 +90,12 @@ public sealed partial class FoxAIHome : HomeBase
 			if ((foundAccesser.ParentHome == this) && acceptedTargetTypeList.Contains(foundAccesser.TargetTag))
 				foundAccesser.OnEnteredAIHome(this);
 		}
+	}
+
+	public void OnStealBabyChickenTriggerEnter2D(Collider2D collider)
+	{
+		if (EventReflectorUtils.TryGetComponentByEventReflector<BabyChickenAI>(collider.gameObject, out BabyChickenAI foundTarget))
+			foundTarget.OnStolenByFoxHome(this);
 	}
 }
 

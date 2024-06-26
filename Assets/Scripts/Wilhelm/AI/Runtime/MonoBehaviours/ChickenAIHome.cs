@@ -145,7 +145,10 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 	private void TryRestoreHealth()
 	{
 		if (IsDead && restoreHealthTimer.Tick())
+		{
+			restoreHealthTimer.ResetAndRandomize();
 			RestoreHealth();
+		}
 	}
 
 	private void RestoreHealth()
@@ -156,7 +159,7 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 
 	private void OnDead()
 	{
-		GameControllerSingleton.Instance.onChickenDeath?.Invoke();
+		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.ChickenHome]?.Invoke();
 
 		// TODO: Decrease the extinction rate of Chickens
 		IsDead = true;

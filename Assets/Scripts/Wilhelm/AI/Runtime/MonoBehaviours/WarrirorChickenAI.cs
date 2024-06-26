@@ -77,6 +77,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 		// If not grounded, set state to Flying
 		if (!IsGrounded())
 		{
+			goHomeBackTimer.ResetAndRandomize();
 			State = PlayerStateType.Flying;
 			return;
 		}
@@ -84,13 +85,13 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 		// If wants to go home, set state to walking
 		if (goHomeBackTimer.HasEnded)
 		{
+			goHomeBackTimer.ResetAndRandomize();
+
 			if (TrySetDestinationToHome())
 			{
 				State = PlayerStateType.Walking;
 				return;
-			}
-			else
-				goHomeBackTimer.ResetAndRandomize();
+			}	
 		}
 
 		// Otherwise, continue old idle
@@ -99,7 +100,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 
 	protected override void OnStateChangedToDead()
 	{
-		GameControllerSingleton.Instance.onFoxDeath?.Invoke();
+		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.WarrirorChicken]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
 	}
@@ -183,6 +184,9 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 
 	public void OnNormalAttackTriggerStay2D(Collider2D collider)
 	{
+		// Prevents StartCoroutine to get called when self is disabled
+		if (!this.gameObject.activeSelf) return;
+
 		// If attacking, let it finish first
 		if (State == PlayerStateType.Attacking)
 			return;
@@ -226,10 +230,14 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 
 			// If there is any powerful enemy in range, runaway from it and discard other targets
 			if ((runawayTargetsInRangeSet.Count > 0) && TrySetDestinationAwayFromNearestIn(runawayTargetsInRangeSet))
+			{
+				State = PlayerStateType.Running;
 				return;
+			}
 
 			// Try catch the nearest enemy
-			TrySetDestinationToNearestIn(targetInRangeSet);
+			if (TrySetDestinationToNearestIn(targetInRangeSet))
+				State = PlayerStateType.Running;
 		}
 	}
 
