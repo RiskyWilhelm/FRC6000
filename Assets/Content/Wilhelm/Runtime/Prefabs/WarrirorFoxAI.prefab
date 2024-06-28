@@ -103,7 +103,7 @@ MonoBehaviour:
     _maxExclusiveTickSeconds: 20
   singleNormalAttackDamage: 1
   singleNormalAttackTimer:
-    _tickSecond: 0.50157875
+    _tickSecond: 0.5015787
     _minInclusiveTickSeconds: 0.5
     _maxExclusiveTickSeconds: 0.75
 --- !u!114 &1005912783288694528

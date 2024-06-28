@@ -1,10 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
-public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<WarrirorChickenAITriggerType>
+public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<WarrirorChickenAIPhysicsInteractionType>
 {
 	[Header("WarrirorChickenAI Movement")]
 	#region WarrirorChickenAI Movement
@@ -33,10 +32,10 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	#region WarrirorChickenAI Target
 
 	[NonSerialized]
-	private readonly HashSet<ITarget> targetInRangeSet = new();
+	private readonly HashSet<(ITarget target, Transform targetTransform)> targetInRangeSet = new();
 
 	[NonSerialized]
-	private readonly HashSet<ITarget> runawayTargetsInRangeSet = new();
+	private readonly HashSet<(ITarget target, Transform targetTransform)> runawayTargetsInRangeSet = new();
 
 
 	#endregion
@@ -50,7 +49,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	public HomeBase ParentHome { get; set; }
 
 	[NonSerialized]
-	private readonly Queue<(WarrirorChickenAITriggerType triggerType, Collider2D collider2D, Collision2D collision2D)> PhysicsInteractionQueue = new();
+	private readonly Queue<(WarrirorChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D)> PhysicsInteractionQueue = new();
 
 
 	#endregion
@@ -79,22 +78,28 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 		base.Update();
 	}
 
-	public void RegisterToNearTargets(ITarget target)
+	public void RegisterToNearTargets((ITarget target, Transform targetTransform) targetTuple)
 	{
-		if (acceptedTargetTypeList.Contains(target.TargetTag))
-			targetInRangeSet.Add(target);
+		if (acceptedTargetTypeList.Contains(targetTuple.target.TargetTag))
+			targetInRangeSet.Add(targetTuple);
 
-		if (runawayTargetTypeList.Contains(target.TargetTag))
-			runawayTargetsInRangeSet.Add(target);
+		if (runawayTargetTypeList.Contains(targetTuple.target.TargetTag))
+			runawayTargetsInRangeSet.Add(targetTuple);
 	}
 
-	public void UnRegisterFromNearTargets(ITarget target)
+	public void UnRegisterFromNearTargets((ITarget target, Transform targetTransform) targetTuple)
 	{
-		targetInRangeSet.Remove(target);
-		runawayTargetsInRangeSet.Remove(target);
+		targetInRangeSet.Remove(targetTuple);
+		runawayTargetsInRangeSet.Remove(targetTuple);
 	}
 
-	public void RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	public void RemoveNullFromNearTargets()
+	{
+		targetInRangeSet.RemoveWhere((iteratedTargetTuple) => !iteratedTargetTuple.targetTransform);
+		runawayTargetsInRangeSet.RemoveWhere((iteratedTargetTuple) => !iteratedTargetTuple.targetTransform);
+	}
+
+	public void RegisterFrameDependentPhysicsInteraction((WarrirorChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
 	{
 		if (!PhysicsInteractionQueue.Contains(interaction))
 			PhysicsInteractionQueue.Enqueue(interaction);
@@ -210,38 +215,68 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 
 			switch (iteratedPhysicsInteraction.triggerType)
 			{
-				case WarrirorChickenAITriggerType.EnemyTriggerStay:
-				{
-					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
-					{
-						RegisterToNearTargets(foundTarget);
-						TrySetDestinationAwayFromOrToNearestTarget();
-					}
-				}
+				case WarrirorChickenAIPhysicsInteractionType.EnemyTriggerStay2D:
+				DoEnemyTriggerStay2D(iteratedPhysicsInteraction);
 				break;
 
-				case WarrirorChickenAITriggerType.EnemyTriggerExit:
-				{
-					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
-						UnRegisterFromNearTargets(foundTarget);
-				}
+				case WarrirorChickenAIPhysicsInteractionType.EnemyTriggerExit2D:
+				DoEnemyTriggerExit2D(iteratedPhysicsInteraction);
 				break;
 
-				case WarrirorChickenAITriggerType.SingleNormalAttackTriggerStay:
-				{
-					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
-						TryDoSingleNormalAttackTo(foundTarget);
-				}
+				case WarrirorChickenAIPhysicsInteractionType.SingleNormalAttackTriggerStay2D:
+				DoSingleNormalAttackTriggerStay2D(iteratedPhysicsInteraction);
 				break;
 
-				case WarrirorChickenAITriggerType.SingleNormalAttackTriggerExit:
-				{
-					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget escapedTarget))
-						TryCancelSingleNormalAttackFrom(escapedTarget);
-				}
+				case WarrirorChickenAIPhysicsInteractionType.SingleNormalAttackTriggerExit2D:
+				DoSingleNormalAttackTriggerExit2D(iteratedPhysicsInteraction);
 				break;
 			}
 		}
+	}
+
+	private void DoEnemyTriggerStay2D((WarrirorChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) iteratedPhysicsInteraction)
+	{
+		if (!iteratedPhysicsInteraction.collider2D)
+		{
+			RemoveNullFromNearTargets();
+			return;
+		}
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
+		{
+			RegisterToNearTargets((foundTarget, (foundTarget as Component).transform));
+			TrySetDestinationAwayFromOrToNearestTarget();
+		}
+	}
+
+	private void DoEnemyTriggerExit2D((WarrirorChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) iteratedPhysicsInteraction)
+	{
+		if (!iteratedPhysicsInteraction.collider2D)
+		{
+			RemoveNullFromNearTargets();
+			return;
+		}
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
+			UnRegisterFromNearTargets((foundTarget, (foundTarget as Component).transform));
+	}
+
+	private void DoSingleNormalAttackTriggerStay2D((WarrirorChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) iteratedPhysicsInteraction)
+	{
+		if (!iteratedPhysicsInteraction.collider2D)
+			return;
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
+			TryDoSingleNormalAttackTo(foundTarget);
+	}
+
+	private void DoSingleNormalAttackTriggerExit2D((WarrirorChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) iteratedPhysicsInteraction)
+	{
+		if (!iteratedPhysicsInteraction.collider2D)
+			return;
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget escapedTarget))
+			TryCancelSingleNormalAttackFrom(escapedTarget);
 	}
 
 	protected override void DoIdle()
@@ -299,16 +334,16 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	}
 
 	public void OnSingleNormalAttackTriggerStay2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType.SingleNormalAttackTriggerStay, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAIPhysicsInteractionType.SingleNormalAttackTriggerStay2D, collider, null));
 
 	public void OnSingleNormalAttackTriggerExit2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType.SingleNormalAttackTriggerExit, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAIPhysicsInteractionType.SingleNormalAttackTriggerExit2D, collider, null));
 
 	public void OnEnemyTriggerStay2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType.EnemyTriggerStay, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
 
 	public void OnEnemyTriggerExit2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType.EnemyTriggerExit, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAIPhysicsInteractionType.EnemyTriggerExit2D, collider, null));
 
 	[ContextMenu(nameof(LogTargetCount))]
 	public void LogTargetCount()
@@ -336,12 +371,13 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 
 
 	// Dispose
-	private void OnDisable()
+	protected override void OnDisable()
 	{
 		if (GameControllerSingleton.IsQuitting)
 			return;
 
 		DoFrameDependentPhysics();
+		base.OnDisable();
 	}
 }
 

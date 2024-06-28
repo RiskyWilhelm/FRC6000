@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<WarrirorFoxAITriggerType>
+public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<WarrirorFoxAIPhysicsInteractionType>
 {
 	[Header("WarrirorFoxAI Movement")]
 	#region BabyFoxAI Movement
@@ -33,10 +33,10 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDepend
 	#region WarrirorFoxAI Target
 
 	[NonSerialized]
-	private readonly HashSet<ITarget> targetInRangeSet = new();
+	private readonly HashSet<(ITarget target, Transform targetTransform)> targetInRangeSet = new();
 
 	[NonSerialized]
-	private readonly HashSet<ITarget> runawayTargetsInRangeSet = new();
+	private readonly HashSet<(ITarget target, Transform targetTransform)> runawayTargetsInRangeSet = new();
 
 
 	#endregion
@@ -53,7 +53,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDepend
 	public HomeBase ParentHome { get; set; }
 
 	[NonSerialized]
-	private readonly Queue<(WarrirorFoxAITriggerType triggerType, Collider2D collider2D, Collision2D collision2D)> PhysicsInteractionQueue = new();
+	private readonly Queue<(WarrirorFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D)> PhysicsInteractionQueue = new();
 
 
 	#endregion
@@ -107,22 +107,28 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDepend
 		}
 	}
 
-	public void RegisterToNearTargets(ITarget target)
+	public void RegisterToNearTargets((ITarget target, Transform targetTransform) targetTuple)
 	{
-		if (acceptedTargetTypeList.Contains(target.TargetTag))
-			targetInRangeSet.Add(target);
+		if (acceptedTargetTypeList.Contains(targetTuple.target.TargetTag))
+			targetInRangeSet.Add(targetTuple);
 
-		if (runawayTargetTypeList.Contains(target.TargetTag))
-			runawayTargetsInRangeSet.Add(target);
+		if (runawayTargetTypeList.Contains(targetTuple.target.TargetTag))
+			runawayTargetsInRangeSet.Add(targetTuple);
 	}
 
-	public void UnRegisterFromNearTargets(ITarget target)
+	public void UnRegisterFromNearTargets((ITarget target, Transform targetTransform) targetTuple)
 	{
-		targetInRangeSet.Remove(target);
-		runawayTargetsInRangeSet.Remove(target);
+		targetInRangeSet.Remove(targetTuple);
+		runawayTargetsInRangeSet.Remove(targetTuple);
 	}
 
-	public void RegisterFrameDependentPhysicsInteraction((WarrirorFoxAITriggerType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	public void RemoveNullFromNearTargets()
+	{
+		targetInRangeSet.RemoveWhere((iteratedTargetTuple) => !iteratedTargetTuple.targetTransform);
+		runawayTargetsInRangeSet.RemoveWhere((iteratedTargetTuple) => !iteratedTargetTuple.targetTransform);
+	}
+
+	public void RegisterFrameDependentPhysicsInteraction((WarrirorFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
 	{
 		if (!PhysicsInteractionQueue.Contains(interaction))
 			PhysicsInteractionQueue.Enqueue(interaction);
@@ -238,38 +244,68 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDepend
 
 			switch (iteratedPhysicsInteraction.triggerType)
 			{
-				case WarrirorFoxAITriggerType.EnemyTriggerStay:
-				{
-					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
-					{
-						RegisterToNearTargets(foundTarget);
-						TrySetDestinationAwayFromOrToNearestTarget();
-					}
-				}
+				case WarrirorFoxAIPhysicsInteractionType.EnemyTriggerStay2D:
+				DoEnemyTriggerStay2D(iteratedPhysicsInteraction);
 				break;
 
-				case WarrirorFoxAITriggerType.EnemyTriggerExit:
-				{
-					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
-						UnRegisterFromNearTargets(foundTarget);
-				}
+				case WarrirorFoxAIPhysicsInteractionType.EnemyTriggerExit2D:
+				DoEnemyTriggerExit2D(iteratedPhysicsInteraction);
 				break;
 
-				case WarrirorFoxAITriggerType.SingleNormalAttackTriggerStay:
-				{
-					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
-						TryDoSingleNormalAttackTo(foundTarget);
-				}
+				case WarrirorFoxAIPhysicsInteractionType.SingleNormalAttackTriggerStay2D:
+				DoSingleNormalAttackTriggerStay2D(iteratedPhysicsInteraction);
 				break;
 
-				case WarrirorFoxAITriggerType.SingleNormalAttackTriggerExit:
-				{
-					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget escapedTarget))
-						TryCancelSingleNormalAttackFrom(escapedTarget);
-				}
+				case WarrirorFoxAIPhysicsInteractionType.SingleNormalAttackTriggerExit2D:
+				DoSingleNormalAttackTriggerExit2D(iteratedPhysicsInteraction);
 				break;
 			}
 		}
+	}
+
+	private void DoEnemyTriggerStay2D((WarrirorFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	{
+		if (!interaction.collider2D)
+		{
+			RemoveNullFromNearTargets();
+			return;
+		}
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(interaction.collider2D.gameObject, out ITarget foundTarget))
+		{
+			RegisterToNearTargets((foundTarget, (foundTarget as Component).transform));
+			TrySetDestinationAwayFromOrToNearestTarget();
+		}
+	}
+
+	private void DoEnemyTriggerExit2D((WarrirorFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) iteratedPhysicsInteraction)
+	{
+		if (!iteratedPhysicsInteraction.collider2D)
+		{
+			RemoveNullFromNearTargets();
+			return;
+		}
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
+			UnRegisterFromNearTargets((foundTarget, (foundTarget as Component).transform));
+	}
+
+	private void DoSingleNormalAttackTriggerStay2D((WarrirorFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) iteratedPhysicsInteraction)
+	{
+		if (!iteratedPhysicsInteraction.collider2D)
+			return;
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
+			TryDoSingleNormalAttackTo(foundTarget);
+	}
+
+	private void DoSingleNormalAttackTriggerExit2D((WarrirorFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) iteratedPhysicsInteraction)
+	{
+		if (!iteratedPhysicsInteraction.collider2D)
+			return;
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget escapedTarget))
+			TryCancelSingleNormalAttackFrom(escapedTarget);
 	}
 
 	protected override void DoIdle()
@@ -342,16 +378,16 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDepend
 	}
 
 	public void OnSingleNormalAttackTriggerStay2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((WarrirorFoxAITriggerType.SingleNormalAttackTriggerStay, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorFoxAIPhysicsInteractionType.SingleNormalAttackTriggerStay2D, collider, null));
 
 	public void OnSingleNormalAttackTriggerExit2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((WarrirorFoxAITriggerType.SingleNormalAttackTriggerExit, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorFoxAIPhysicsInteractionType.SingleNormalAttackTriggerExit2D, collider, null));
 
 	public void OnEnemyTriggerStay2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((WarrirorFoxAITriggerType.EnemyTriggerStay, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorFoxAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
 
 	public void OnEnemyTriggerExit2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((WarrirorFoxAITriggerType.EnemyTriggerExit, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorFoxAIPhysicsInteractionType.EnemyTriggerExit2D, collider, null));
 
 	public override void CopyTo(in AIBase main)
 	{
@@ -372,7 +408,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDepend
 	public void LogTargetCount()
 	{
 		Debug.LogFormat("Target In Range Count: {0}", targetInRangeSet.Count);
-	}
+    }
 
 	[ContextMenu(nameof(LogPhysicsInteractionCount))]
 	public void LogPhysicsInteractionCount()
@@ -382,12 +418,13 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDepend
 
 
 	// Dispose
-	private void OnDisable()
+	protected override void OnDisable()
 	{
 		if (GameControllerSingleton.IsQuitting)
 			return;
 
 		DoFrameDependentPhysics();
+		base.OnDisable();
 	}
 
 	private void OnDestroy()

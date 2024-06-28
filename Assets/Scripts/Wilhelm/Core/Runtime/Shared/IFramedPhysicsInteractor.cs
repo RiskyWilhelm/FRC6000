@@ -3,7 +3,7 @@ using UnityEngine;
 
 public interface IFrameDependentPhysicsInteractor
 {
-	/// <summary> Must be used in Update or LateUpdate </summary>
+	/// <summary> Must not be used in MonoBehaviour.FixedUpdate() </summary>
 	public void DoFrameDependentPhysics();
 }
 

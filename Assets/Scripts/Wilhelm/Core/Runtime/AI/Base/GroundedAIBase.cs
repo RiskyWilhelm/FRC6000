@@ -63,36 +63,10 @@ public abstract partial class GroundedAIBase : AIBase
 	#endregion
 
 
-	// Initialize
-	protected override void OnEnable()
-	{
-		ResetPhysicsSyncGarbages();
-		base.OnEnable();
-	}
-
-
 	// Update
 	protected virtual void FixedUpdate()
 	{
-		// Use state garbages to use states
-		switch (State)
-		{
-			case PlayerStateType.Walking:
-			{
-				DoWalkingFixedUpdate();
-				LimitVelocity(walkMaxVelocity);
-			}
-			break;
-
-			case PlayerStateType.Running:
-			{
-				DoRunningFixedUpdate();
-				LimitVelocity(runningMaxVelocity);
-			}
-			break;
-		}
-
-		ResetPhysicsSyncGarbages();
+		DoStateFixedUpdate();
 	}
 
 	protected void ResetPhysicsSyncGarbages()
@@ -116,6 +90,23 @@ public abstract partial class GroundedAIBase : AIBase
 	}
 
 	// TODO: This will get broken when there is a ladder
+	private void DoStateFixedUpdate()
+	{
+		// Use state garbages to use states
+		switch (State)
+		{
+			case PlayerStateType.Walking:
+			DoWalkingFixedUpdate();
+			break;
+
+			case PlayerStateType.Running:
+			DoRunningFixedUpdate();
+			break;
+		}
+
+		ResetPhysicsSyncGarbages();
+	}
+
 	protected override void DoIdle()
 	{
 		// If not grounded, set state to Flying
@@ -177,6 +168,7 @@ public abstract partial class GroundedAIBase : AIBase
 	protected virtual void DoWalkingFixedUpdate()
 	{
 		selfRigidbody.AddForceX(walkForce * norDirHorizontal, ForceMode2D.Impulse);
+		LimitVelocity(walkMaxVelocity);
 	}
 
 	protected override void DoRunning()
@@ -210,6 +202,7 @@ public abstract partial class GroundedAIBase : AIBase
 	protected virtual void DoRunningFixedUpdate()
 	{
 		selfRigidbody.AddForceX(runningForce * norDirHorizontal, ForceMode2D.Impulse);
+		LimitVelocity(runningMaxVelocity);
 	}
 
 	protected override void DoFlying()
@@ -283,6 +276,14 @@ public abstract partial class GroundedAIBase : AIBase
 		}
 
 		base.CopyTo(main);
+	}
+
+
+	// Dispose
+	protected override void OnDisable()
+	{
+		ResetPhysicsSyncGarbages();
+		base.OnDisable();
 	}
 }
 

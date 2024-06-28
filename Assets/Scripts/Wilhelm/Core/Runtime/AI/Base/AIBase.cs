@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -21,7 +22,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	protected Vector2 raycastBounds = new(1f, 1f);
 
 	[NonSerialized]
-	private (Vector2? worldDestination, Transform targetDestination, float considerAsReachedDistance) currentDestination;
+	private (Vector2? worldDestination, Transform targetDestination, float considerAsReachedDistance) currentDestinationTuple;
 
 
 	#endregion
@@ -47,8 +48,6 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	public List<TargetType> acceptedTargetTypeList = new();
 
 	public List<TargetType> runawayTargetTypeList = new();
-
-	private readonly Dictionary<Transform, ITarget> cachedNearestTargetDict = new();
 
 
 	#endregion
@@ -85,8 +84,6 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	// Initialize
 	protected virtual void OnEnable()
 	{
-		ClearDestination();
-		State = PlayerStateType.Idle;
 		OnStateChanged(State);
 	}
 
@@ -141,8 +138,8 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	{
 		worldDestinationTarget = null;
 
-		if (currentDestination.targetDestination && currentDestination.targetDestination.gameObject.activeSelf)
-			worldDestinationTarget = currentDestination.targetDestination;
+		if (currentDestinationTuple.targetDestination && currentDestinationTuple.targetDestination.gameObject.activeSelf)
+			worldDestinationTarget = currentDestinationTuple.targetDestination;
 
 		return worldDestinationTarget != null;
 	}
@@ -151,9 +148,9 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	{
 		worldDestination = Vector2.zero;
 
-		if (currentDestination.worldDestination.HasValue)
+		if (currentDestinationTuple.worldDestination.HasValue)
 		{
-			worldDestination = currentDestination.worldDestination.Value;
+			worldDestination = currentDestinationTuple.worldDestination.Value;
 			return true;
 		}
 		else if (TryGetDestinationTarget(out Transform destinationTarget))
@@ -168,9 +165,9 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	/// <remarks> Use if you verified the <paramref name="target"/> position already </remarks>
 	public void SetDestinationTo(Transform target, float considerAsReachedDistance = 1f)
 	{
-		currentDestination.worldDestination = null;
-		currentDestination.targetDestination = target;
-		currentDestination.considerAsReachedDistance = considerAsReachedDistance;
+		currentDestinationTuple.worldDestination = null;
+		currentDestinationTuple.targetDestination = target;
+		currentDestinationTuple.considerAsReachedDistance = considerAsReachedDistance;
 
 		OnChangedDestination(target.position);
 	}
@@ -178,9 +175,9 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	/// <remarks> Use if you verified the <paramref name="newDestination"/> already </remarks>
 	public void SetDestinationTo(Vector2 newDestination, float considerAsReachedDistance = 1f)
 	{
-		currentDestination.worldDestination = newDestination;
-		currentDestination.targetDestination = null;
-		currentDestination.considerAsReachedDistance = considerAsReachedDistance;
+		currentDestinationTuple.worldDestination = newDestination;
+		currentDestinationTuple.targetDestination = null;
+		currentDestinationTuple.considerAsReachedDistance = considerAsReachedDistance;
 
 		OnChangedDestination(newDestination);
 	}
@@ -233,11 +230,12 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		return false;
 	}
 
-	public bool TrySetDestinationToNearestIn(IEnumerable<ITarget> targetEnumerable, float considerAsReachedDistance = 1f)
+	public bool TrySetDestinationToNearestIn(IEnumerable<(ITarget target, Transform targetTransform)> targetTupleEnumerable, float considerAsReachedDistance = 1f)
 	{
-		if (TryGetNearestChaseableTargetIn(targetEnumerable, out ITarget nearestTarget, out _))
+		if (TryGetNearestTargetIn(targetTupleEnumerable, out var nearestTarget,
+			(iteratedTargetTuple) => acceptedTargetTypeList.Contains(iteratedTargetTuple.target.TargetTag) && IsAbleToGoTo(iteratedTargetTuple.targetTransform)))
 		{
-			SetDestinationTo((nearestTarget as Component).transform, considerAsReachedDistance);
+			SetDestinationTo(nearestTarget.targetTransform, considerAsReachedDistance);
 			return true;
 		}
 
@@ -347,13 +345,13 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		return false;
 	}
 
-	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<ITarget> targetEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<(ITarget target, Transform targetTransform)> targetTupleEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
 	{
-		if (TryGetNearestChaseableTargetIn(targetEnumerable, out var nearestTarget, out _,
-			(iteratedTarget) => (runawayTargetTypeList.Contains(cachedNearestTargetDict[iteratedTarget].TargetTag) && IsAbleToGoTo(iteratedTarget))))
+		if (TryGetNearestTargetIn(targetTupleEnumerable, out var nearestTarget,
+			(iteratedTargetTuple) => (runawayTargetTypeList.Contains(iteratedTargetTuple.target.TargetTag) && IsAbleToGoTo(iteratedTargetTuple.targetTransform))))
 		{
 			// TODO: What if nearestTarget is not a Component?
-			if (TrySetDestinationAwayFrom((nearestTarget as Component).transform.position, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
+			if (TrySetDestinationAwayFrom(nearestTarget.targetTransform.position, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
 				return true;
 		}
 
@@ -362,32 +360,37 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 	public void ClearDestination()
 	{
-		currentDestination.worldDestination = null;
-		currentDestination.targetDestination = null;
-		currentDestination.considerAsReachedDistance = 0;
+		currentDestinationTuple.worldDestination = null;
+		currentDestinationTuple.targetDestination = null;
+		currentDestinationTuple.considerAsReachedDistance = 0;
 		OnChangedDestination(null);
 	}
 
-	/// <param name="nearestTargetAccessDict"> Stores all current nearest targets. Do not use outside of the method call </param>
-	public bool TryGetNearestChaseableTargetIn(IEnumerable<ITarget> targetEnumerable, out ITarget nearestTarget, out Dictionary<Transform, ITarget> nearestTargetAccessDict, Predicate<Transform> predicateNearest = null)
+	public bool TryGetNearestTargetIn(IEnumerable<(ITarget target, Transform targetTransform)> targetTupleEnumerable, out (ITarget target, Transform targetTransform) nearestTarget, Predicate<(ITarget target, Transform targetTransform)> predicateNearest = null)
 	{
-		nearestTargetAccessDict = cachedNearestTargetDict;
-		nearestTarget = null;
+		var isFoundNearest = false;
+		nearestTarget = default;
 
-		// Copy the enemyInRangeDict to the pooled dictionary while taking the enemy's transform
-		foreach (var iteratedTarget in targetEnumerable)
-			cachedNearestTargetDict.TryAdd((iteratedTarget as Component).transform, iteratedTarget);
+		if (targetTupleEnumerable.Count() == 0)
+			return isFoundNearest;
 
-		// Get nearest target
-		if (this.transform.TryGetNearestTransform(cachedNearestTargetDict.Keys, out Transform nearestTransform,
-			predicateNearest
-			?? ((iteratedTarget) => (acceptedTargetTypeList.Contains(cachedNearestTargetDict[iteratedTarget].TargetTag) && IsAbleToGoTo(iteratedTarget)))))
+		float nearestHorizontalDistance = ((Vector2)(targetTupleEnumerable.First().targetTransform.position - this.transform.position)).sqrMagnitude;
+		float iteratedDistance;
+
+		// Check sqr distances and select nearest chicken
+		foreach (var iteratedTargetTuple in targetTupleEnumerable)
 		{
-			nearestTarget = cachedNearestTargetDict[nearestTransform];
+			iteratedDistance = ((Vector2)(iteratedTargetTuple.targetTransform.position - this.transform.position)).sqrMagnitude;
+
+			if ((iteratedDistance <= nearestHorizontalDistance) && (predicateNearest == null || predicateNearest.Invoke(iteratedTargetTuple)))
+			{
+				nearestTarget = iteratedTargetTuple;
+				nearestHorizontalDistance = iteratedDistance;
+				isFoundNearest = true;
+			}
 		}
 
-		cachedNearestTargetDict.Clear();
-		return nearestTarget != null;
+		return isFoundNearest;
 	}
 
 	private void DoState()
@@ -518,10 +521,10 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	{
 		if (IsReachedToDestination())
 		{
-			if (currentDestination.worldDestination.HasValue)
-				OnReachedToDestination(currentDestination.worldDestination.Value);
-			else if (currentDestination.targetDestination)
-				OnReachedToDestination(currentDestination.targetDestination);
+			if (currentDestinationTuple.worldDestination.HasValue)
+				OnReachedToDestination(currentDestinationTuple.worldDestination.Value);
+			else if (currentDestinationTuple.targetDestination)
+				OnReachedToDestination(currentDestinationTuple.targetDestination);
 
 			ClearDestination();
 		}
@@ -542,7 +545,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		if (!TryGetDestination(out Vector2 destination))
 			return true;
 
-		return IsReachedTo(destination, currentDestination.considerAsReachedDistance);
+		return IsReachedTo(destination, currentDestinationTuple.considerAsReachedDistance);
 	}
 
 	public bool IsReachedTo(Transform target, float considerAsReachedDistance = 1f)
@@ -599,6 +602,12 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 
 	// Dispose
+	protected virtual void OnDisable()
+	{
+		ClearDestination();
+		State = PlayerStateType.Idle;
+	}
+
 	public void ReleaseOrDestroySelf()
 	{
 		if (ParentPool != null)
@@ -627,7 +636,7 @@ public abstract partial class AIBase
 		if (TryGetDestination(out Vector2 worldDestination))
 		{
 			Gizmos.color = new Color(0f, 1f, 0f, 0.25f);
-			Gizmos.DrawSphere(worldDestination, currentDestination.considerAsReachedDistance);
+			Gizmos.DrawSphere(worldDestination, currentDestinationTuple.considerAsReachedDistance);
 		}
 	}
 

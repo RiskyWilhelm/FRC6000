@@ -36,11 +36,12 @@ public static class VectorExtensions
 			return isFoundNearest;
 
 		float nearestHorizontalDistance = (vectorEnumerable.First() - relativeTo).sqrMagnitude;
+		float iteratedDistance;
 
 		// Check sqr distances and select nearest chicken
 		foreach (var iteratedVector in vectorEnumerable)
 		{
-			var iteratedDistance = (iteratedVector - relativeTo).sqrMagnitude;
+			iteratedDistance = (iteratedVector - relativeTo).sqrMagnitude;
 
 			if ((iteratedDistance <= nearestHorizontalDistance) && (predicateNearest == null || predicateNearest.Invoke(iteratedVector)))
 			{
@@ -62,11 +63,12 @@ public static class VectorExtensions
 			return isFoundNearest;
 
 		float nearestHorizontalDistance = (vectorEnumerable.First() - relativeTo).sqrMagnitude;
+		float iteratedDistance;
 
 		// Check sqr distances and select nearest chicken
 		foreach (var iteratedVector in vectorEnumerable)
 		{
-			var iteratedDistance = (iteratedVector - relativeTo).sqrMagnitude;
+			iteratedDistance = (iteratedVector - relativeTo).sqrMagnitude;
 
 			if ((iteratedDistance <= nearestHorizontalDistance) && (predicateNearest == null || predicateNearest.Invoke(iteratedVector)))
 			{
@@ -88,11 +90,12 @@ public static class VectorExtensions
 			return isFoundNearest;
 
 		float nearestHorizontalDistance = (vectorEnumerable.First() - relativeTo).sqrMagnitude;
+		float iteratedDistance;
 
 		// Check sqr distances and select nearest chicken
 		foreach (var iteratedVector in vectorEnumerable)
 		{
-			var iteratedDistance = (iteratedVector - relativeTo).sqrMagnitude;
+			iteratedDistance = (iteratedVector - relativeTo).sqrMagnitude;
 
 			if ((iteratedDistance <= nearestHorizontalDistance) && (predicateNearest == null || predicateNearest.Invoke(iteratedVector)))
 			{

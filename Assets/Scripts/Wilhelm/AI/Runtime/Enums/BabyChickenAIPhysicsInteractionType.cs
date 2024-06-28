@@ -1,7 +1,7 @@
 using System;
 
 [Flags]
-public enum BabyChickenAITriggerType
+public enum BabyChickenAIPhysicsInteractionType
 {
 	None = 0,
 

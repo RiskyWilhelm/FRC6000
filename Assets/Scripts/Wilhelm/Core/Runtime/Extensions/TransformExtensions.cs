@@ -1,28 +1,34 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Pool;
 
 public static class TransformExtensions
 {
 	public static bool TryGetNearestTransform(this Transform relativeTo, IEnumerable<Transform> transformEnumerable, out Transform nearestTransform, Predicate<Transform> predicateNearest = null)
 	{
+		var isFoundNearest = false;
 		nearestTransform = default;
 
-		// Convert transformEnumerable to vectorEnumerable
-		var cachedVectorDict = DictionaryPool<Vector3, Transform>.Get();
+		if (transformEnumerable.Count() == 0)
+			return isFoundNearest;
 
-        foreach (var iteratedTransform in transformEnumerable)
-			cachedVectorDict.TryAdd(iteratedTransform.position, iteratedTransform);
+		float nearestHorizontalDistance = (transformEnumerable.First().position - relativeTo.position).sqrMagnitude;
+		float iteratedDistance;
 
-		// Get nearest if possible
-		if (VectorExtensions.TryGetNearestVector(relativeTo.position, cachedVectorDict.Keys, out Vector3 nearestVector,
-			(predicateNearest != null) ? (iteratedVector) => predicateNearest.Invoke(cachedVectorDict[iteratedVector]) : null))
+		// Check sqr distances and select nearest chicken
+		foreach (var iteratedTransform in transformEnumerable)
 		{
-			nearestTransform = cachedVectorDict[nearestVector];
+			iteratedDistance = (iteratedTransform.position - relativeTo.position).sqrMagnitude;
+
+			if ((iteratedDistance <= nearestHorizontalDistance) && (predicateNearest == null || predicateNearest.Invoke(iteratedTransform)))
+			{
+				nearestTransform = iteratedTransform;
+				nearestHorizontalDistance = iteratedDistance;
+				isFoundNearest = true;
+			}
 		}
 
-		DictionaryPool<Vector3, Transform>.Release(cachedVectorDict);
-		return nearestTransform != default;
+		return isFoundNearest;
 	}
 }
