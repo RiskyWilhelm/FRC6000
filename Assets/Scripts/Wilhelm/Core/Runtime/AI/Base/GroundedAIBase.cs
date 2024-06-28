@@ -39,19 +39,19 @@ public abstract partial class GroundedAIBase : AIBase
 
 	#endregion
 
-	[Header("GroundedAIBase Jump")]
-	#region GroundedAIBase Jump
+	[Header("GroundedAIBase Jumping")]
+	#region GroundedAIBase Jumping
 
 	[SerializeField]
-	private Timer jumpReleaseStateTimer = new(0.5f);
+	private Timer jumpingReleaseStateTimer = new(0.5f);
 
 	[SerializeField]
-	private uint jumpForce;
+	private uint jumpingForce;
 
 	[SerializeField]
 	[Range(0, 360)]
 	[Tooltip("Decides what angle should be considered as jumpable")]
-	protected float jumpAngle = 45f;
+	protected float jumpingAngle = 45f;
 
 	#endregion
 
@@ -66,7 +66,7 @@ public abstract partial class GroundedAIBase : AIBase
 	// Initialize
 	protected override void OnEnable()
 	{
-		ResetStateGarbages();
+		ResetPhysicsSyncGarbages();
 		base.OnEnable();
 	}
 
@@ -92,7 +92,27 @@ public abstract partial class GroundedAIBase : AIBase
 			break;
 		}
 
-		ResetStateGarbages();
+		ResetPhysicsSyncGarbages();
+	}
+
+	protected void ResetPhysicsSyncGarbages()
+	{
+		norDirHorizontal = 0;
+	}
+
+	protected void LimitVelocity(Vector2 maxVelocity)
+	{
+		if (maxVelocity.x != 0)
+			selfRigidbody.velocityX = Math.Clamp(selfRigidbody.velocityX, -maxVelocity.x, maxVelocity.x);
+
+		if (maxVelocity.y != 0)
+			selfRigidbody.velocityY = Math.Clamp(selfRigidbody.velocityY, -maxVelocity.y, maxVelocity.y);
+	}
+
+	public void Jump()
+	{
+		selfRigidbody.AddForceY(jumpingForce, ForceMode2D.Impulse);
+		State = PlayerStateType.Jumping;
 	}
 
 	// TODO: This will get broken when there is a ladder
@@ -205,37 +225,15 @@ public abstract partial class GroundedAIBase : AIBase
 	{
 		var isGrounded = IsGrounded();
 
-		if (jumpReleaseStateTimer.Tick() || isGrounded)
+		if (jumpingReleaseStateTimer.Tick() || isGrounded)
 		{
-			jumpReleaseStateTimer.Reset();
+			jumpingReleaseStateTimer.Reset();
 
 			if (isGrounded)
 				State = PlayerStateType.Idle;
 			else
 				State = PlayerStateType.Flying;
 		}
-	}
-
-	public void Jump()
-	{
-		selfRigidbody.AddForceY(jumpForce, ForceMode2D.Impulse);
-		State = PlayerStateType.Jumping;
-	}
-
-	/// <summary> Resets values that used to create synchronization with FixedUpdate Physics </summary>
-	protected void ResetStateGarbages()
-	{
-		norDirHorizontal = 0;
-	}
-
-	/// <param name="maxVelocity"> If you want single axis limited only, set other axis to zero </param>
-	protected void LimitVelocity(Vector2 maxVelocity)
-	{
-		if (maxVelocity.x != 0)
-			selfRigidbody.velocityX = Math.Clamp(selfRigidbody.velocityX, -maxVelocity.x, maxVelocity.x);
-
-		if (maxVelocity.y != 0)
-			selfRigidbody.velocityY = Math.Clamp(selfRigidbody.velocityY, -maxVelocity.y, maxVelocity.y);
 	}
 
 	public bool IsAbleToJumpTowardsDestination()
@@ -256,7 +254,7 @@ public abstract partial class GroundedAIBase : AIBase
 		var distSelfToDestination = (worldPosition - selfRigidbody.position);
 
 		// Prepare check values
-		var isInsideAngle = Vector3.Angle(Vector2.up, distSelfToDestination) <= (jumpAngle * 0.5f);
+		var isInsideAngle = Vector3.Angle(Vector2.up, distSelfToDestination) <= (jumpingAngle * 0.5f);
 		var isNotTallerThanPlayer = distSelfToDestination.sqrMagnitude <= (raycastBounds.y * raycastBounds.y);
 
 		return isInsideAngle && isNotTallerThanPlayer;
@@ -279,9 +277,9 @@ public abstract partial class GroundedAIBase : AIBase
 			groundedAI.runningMaxVelocity = this.runningMaxVelocity;
 
 			// Jump
-			groundedAI.jumpForce = this.jumpForce;
-			groundedAI.jumpAngle = this.jumpAngle;
-			groundedAI.jumpReleaseStateTimer = this.jumpReleaseStateTimer;
+			groundedAI.jumpingForce = this.jumpingForce;
+			groundedAI.jumpingAngle = this.jumpingAngle;
+			groundedAI.jumpingReleaseStateTimer = this.jumpingReleaseStateTimer;
 		}
 
 		base.CopyTo(main);
@@ -309,7 +307,7 @@ public abstract partial class GroundedAIBase
 
 		// Draw
 		Handles.color = new Color(0.5f, 0.5f, 0, 0.25f);
-		Handles.DrawWireArc(selfRigidbody.position, Vector3.forward, Vector3.up.Rotate(-jumpAngle * 0.5f, Vector3.forward), jumpAngle, Mathf.Clamp(distSelfToDestination, 1f, distSelfToDestination), Mathf.Clamp(distSelfToDestination, 1f, 5f));
+		Handles.DrawWireArc(selfRigidbody.position, Vector3.forward, Vector3.up.Rotate(-jumpingAngle * 0.5f, Vector3.forward), jumpingAngle, Mathf.Clamp(distSelfToDestination, 1f, distSelfToDestination), Mathf.Clamp(distSelfToDestination, 1f, 5f));
 	}
 }
 

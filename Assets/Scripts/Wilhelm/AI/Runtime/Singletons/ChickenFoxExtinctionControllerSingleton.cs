@@ -44,7 +44,7 @@ public sealed partial class ChickenFoxExtinctionControllerSingleton : Extinction
 		GameControllerSingleton.Instance.onTargetBirthDict[TargetType.BabyChicken] += DecreaseRate;
 		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.BabyChicken] += IncreaseRate;
 
-		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.ChickenHome] += DecreaseRate;
+		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.ChickenHome] += IncreaseRate;
 
 		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.WarrirorChicken] += IncreaseRate;
 
@@ -95,7 +95,7 @@ public sealed partial class ChickenFoxExtinctionControllerSingleton : Extinction
 		GameControllerSingleton.Instance.onTargetBirthDict[TargetType.BabyChicken] -= DecreaseRate;
 		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.BabyChicken] -= IncreaseRate;
 
-		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.ChickenHome] -= DecreaseRate;
+		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.ChickenHome] -= IncreaseRate;
 
 		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.WarrirorChicken] -= IncreaseRate;
 

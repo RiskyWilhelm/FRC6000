@@ -41,8 +41,8 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 	#endregion
 
-	[Header("AIBase Target Verify")]
-	#region AIBase Target Verify
+	[Header("AIBase Target")]
+	#region AIBase Target
 
 	public List<TargetType> acceptedTargetTypeList = new();
 
@@ -99,21 +99,12 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	// Update
 	protected virtual void Update()
 	{
-		if (IsReachedToDestination())
-		{
-			if (currentDestination.worldDestination.HasValue)
-				OnReachedToDestination(currentDestination.worldDestination.Value);
-			else
-				OnReachedToDestination(currentDestination.targetDestination);
-
-			ClearDestination();
-		}
-
+		CheckDestinationState();
 		DetectObstacles();
 		DoState();
 	}
 
-	private void DetectObstacles()
+	protected void DetectObstacles()
 	{
 		// If not able to go to next position and destination, clear destination and set position to last position. Useful for where player cant fall to bottom from an edge and obstacle detection
 		var nextPredictedPosition = selfRigidbody.position + (selfRigidbody.velocity * Time.deltaTime);
@@ -121,6 +112,282 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 		if (!IsAbleToGoTo(nextPredictedPosition) || (hasDestination && !IsAbleToGoTo(destination)))
 			ClearDestination();
+	}
+
+	public void TakeDamage(uint damage, Vector2 occuredWorldPosition)
+	{
+		// Check for System.OverflowException. This is because the health may become negative and this is unwanted behaviour
+		try
+		{
+			Health = checked(Health - damage);
+		}
+		catch
+		{
+			Health = 0;
+		}
+		finally
+		{
+			if ((this as ITarget).IsDead)
+				State = PlayerStateType.Dead;
+		}
+	}
+
+	protected void RestoreHealth()
+	{
+		Health = MaxHealth;
+	}
+
+	public bool TryGetDestinationTarget(out Transform worldDestinationTarget)
+	{
+		worldDestinationTarget = null;
+
+		if (currentDestination.targetDestination && currentDestination.targetDestination.gameObject.activeSelf)
+			worldDestinationTarget = currentDestination.targetDestination;
+
+		return worldDestinationTarget != null;
+	}
+
+	public bool TryGetDestination(out Vector2 worldDestination)
+	{
+		worldDestination = Vector2.zero;
+
+		if (currentDestination.worldDestination.HasValue)
+		{
+			worldDestination = currentDestination.worldDestination.Value;
+			return true;
+		}
+		else if (TryGetDestinationTarget(out Transform destinationTarget))
+		{
+			worldDestination = destinationTarget.position;
+			return true;
+		}
+
+		return false;
+	}
+
+	/// <remarks> Use if you verified the <paramref name="target"/> position already </remarks>
+	public void SetDestinationTo(Transform target, float considerAsReachedDistance = 1f)
+	{
+		currentDestination.worldDestination = null;
+		currentDestination.targetDestination = target;
+		currentDestination.considerAsReachedDistance = considerAsReachedDistance;
+
+		OnChangedDestination(target.position);
+	}
+
+	/// <remarks> Use if you verified the <paramref name="newDestination"/> already </remarks>
+	public void SetDestinationTo(Vector2 newDestination, float considerAsReachedDistance = 1f)
+	{
+		currentDestination.worldDestination = newDestination;
+		currentDestination.targetDestination = null;
+		currentDestination.considerAsReachedDistance = considerAsReachedDistance;
+
+		OnChangedDestination(newDestination);
+	}
+
+	/// <summary> Verifies the <paramref name="target"/> position and sets destination if succeeded </summary>
+	public bool TrySetDestinationTo(Transform target, float considerAsReachedDistance = 1f)
+	{
+		// Check if self already reached to or cant go to the newDestination, then clear it
+		if (IsReachedTo(target) || !IsAbleToGoTo(target))
+			return false;
+
+		// Set the new destination
+		SetDestinationTo(target, considerAsReachedDistance);
+		return true;
+	}
+
+	/// <summary> Verifies the <paramref name="newDestination"/> and sets destination if succeeded </summary>
+	public bool TrySetDestinationTo(Vector2 newDestination, float considerAsReachedDistance = 1f)
+	{
+		// Check if self already reached to or cant go to the newDestination, then clear it
+		if (IsReachedTo(newDestination) || !IsAbleToGoTo(newDestination))
+			return false;
+
+		// Set the new destination
+		SetDestinationTo(newDestination, considerAsReachedDistance);
+		return true;
+	}
+
+	public bool TrySetDestinationToNearestIn(IEnumerable<Transform> transformEnumerable, float considerAsReachedDistance = 1f)
+	{
+		if (this.transform.TryGetNearestTransform(transformEnumerable, out Transform nearestTransform,
+			(iteratedTransform) => IsAbleToGoTo(iteratedTransform)))
+		{
+			SetDestinationTo(nearestTransform, considerAsReachedDistance);
+			return true;
+		}
+
+		return false;
+	}
+
+	public bool TrySetDestinationToNearestIn(IEnumerable<Vector2> positionEnumerable, float considerAsReachedDistance = 1f)
+	{
+		if (VectorExtensions.TryGetNearestVector(this.transform.position, positionEnumerable, out Vector2 nearestPosiiton,
+			(iteratedPosition) => IsAbleToGoTo(iteratedPosition)))
+		{
+			SetDestinationTo(nearestPosiiton, considerAsReachedDistance);
+			return true;
+		}
+
+		return false;
+	}
+
+	public bool TrySetDestinationToNearestIn(IEnumerable<ITarget> targetEnumerable, float considerAsReachedDistance = 1f)
+	{
+		if (TryGetNearestChaseableTargetIn(targetEnumerable, out ITarget nearestTarget, out _))
+		{
+			SetDestinationTo((nearestTarget as Component).transform, considerAsReachedDistance);
+			return true;
+		}
+
+		return false;
+	}
+
+	public bool TrySetDestinationAwayFrom(Vector2 worldPosition, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isAcceptGroundedDirOnly = false)
+	{
+		var isDestinationSet = false;
+
+		// Prevent from no check by keeping the values positive
+		// Clamp checkInAngle and checkInEveryDegree to 360
+		checkInDegree = MathF.Abs(checkInDegree) % 360f;
+		checkEveryDegree = Math.Clamp(MathF.Abs(checkEveryDegree) % checkInDegree, 1f, 360f);
+
+		// We will work with radians to prevent unnecessary conversion so convert the method parameters to radians
+		var radCheckInDegree = checkInDegree * Mathf.Deg2Rad;
+		var radCheckEveryDegree = checkEveryDegree * Mathf.Deg2Rad;
+
+		// Get direction of 'target to self' and its angle in radians
+		var norDirTargetToSelf = (selfRigidbody.position - worldPosition).normalized;
+		var radTargetToSelfAngle = norDirTargetToSelf.ToAngle_360();
+
+		// Get starting and ending point in radians
+		var radStartAngle = radTargetToSelfAngle - (radCheckInDegree * 0.5f);
+		var radEndAngle = radTargetToSelfAngle + (radCheckInDegree * 0.5f);
+		var radCurrentAngle = radStartAngle;
+
+		// Ready the list for storing the look directions. ValueTuple<float, Vector2> stores <DotProductLookDir, WorldPositionDestination>
+		var lookDirPooledList = ListPool<ValueTuple<float, Vector2>>.Get();
+
+		// Do cast for every radCheckForEveryDegree and store valid one(s) look direction to check which angle is close enough to the norDirTargetToSelf direction
+		while (radCurrentAngle <= radEndAngle)
+		{
+			// nor stands for "normalized". Multiplying the Bounds with random value because there should be no conflict between Bounds'es
+			var norCurrentAngle = VectorUtils.AngleToVector(radCurrentAngle);
+			var newDestination = selfRigidbody.position + (norCurrentAngle * (raycastBounds * 3));
+
+			// If nothing is on the way, add to look directions based on grounded state on newDestination
+			if (IsAbleToGoTo(newDestination))
+			{
+				var newLookDirTuple = new ValueTuple<float, Vector2>(Vector2.Dot(norDirTargetToSelf, norCurrentAngle), newDestination);
+
+				// If direction only accepts the grounded, check it
+				if (isAcceptGroundedDirOnly)
+				{
+					if (IsGroundedAt(newDestination))
+						lookDirPooledList.Add(newLookDirTuple);
+				}
+				else
+					lookDirPooledList.Add(newLookDirTuple);
+			}
+
+			// DEBUG
+			Debug.DrawLine(selfRigidbody.position, selfRigidbody.position + norCurrentAngle, new Color(0.75f, 0.75f, 0.75f, 0.5f));
+
+			radCurrentAngle += radCheckEveryDegree;
+		}
+
+		// Select the one which is close enough to pointing the same way as norDirTargetToSelf direction
+		if (lookDirPooledList.Count > 0)
+		{
+			var closestNorDirTuple = lookDirPooledList[0];
+
+			for (int i = 1; i < lookDirPooledList.Count; i++)
+			{
+				// Checks if iterated lookDirection facing the same direction as norDirTargetToSelf more than current closestNorDirTuple
+				if (lookDirPooledList[i].Item1 > closestNorDirTuple.Item1)
+					closestNorDirTuple = lookDirPooledList[i];
+			}
+
+			// DEBUG
+			Debug.DrawLine(selfRigidbody.position, closestNorDirTuple.Item2, Color.green);
+
+			// Finally, set the new destination
+			SetDestinationTo(closestNorDirTuple.Item2, considerAsReachedDistance);
+			isDestinationSet = true;
+		}
+
+		// DEBUG
+		/*Debug.DrawLine(selfRigidbody.position, selfRigidbody.position + new Vector2(MathF.Cos(radTargetToSelfAngle), MathF.Sin(radTargetToSelfAngle)));
+		Debug.DrawLine(selfRigidbody.position, selfRigidbody.position + new Vector2(MathF.Cos(radStartAngle), MathF.Sin(radStartAngle)), Color.cyan);
+		Debug.DrawLine(selfRigidbody.position, selfRigidbody.position + new Vector2(MathF.Cos(radEndAngle), MathF.Sin(radEndAngle)), Color.red);*/
+
+		// Dispose the list
+		ListPool<ValueTuple<float, Vector2>>.Release(lookDirPooledList);
+		return isDestinationSet;
+	}
+
+	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<Transform> targetEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+	{
+		if (this.transform.TryGetNearestTransform(targetEnumerable, out Transform nearestTransform,
+			(iteratedTransform) => IsAbleToGoTo(iteratedTransform)))
+			if (TrySetDestinationAwayFrom(nearestTransform.position, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
+				return true;
+
+		return false;
+	}
+
+	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<Vector2> vectorEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+	{
+		if (VectorExtensions.TryGetNearestVector(this.transform.position, vectorEnumerable, out Vector2 nearestVector,
+			(iteratedPosition) => IsAbleToGoTo(iteratedPosition)))
+			if (TrySetDestinationAwayFrom(nearestVector, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
+				return true;
+
+		return false;
+	}
+
+	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<ITarget> targetEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
+	{
+		if (TryGetNearestChaseableTargetIn(targetEnumerable, out var nearestTarget, out _,
+			(iteratedTarget) => (runawayTargetTypeList.Contains(cachedNearestTargetDict[iteratedTarget].TargetTag) && IsAbleToGoTo(iteratedTarget))))
+		{
+			// TODO: What if nearestTarget is not a Component?
+			if (TrySetDestinationAwayFrom((nearestTarget as Component).transform.position, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
+				return true;
+		}
+
+		return false;
+	}
+
+	public void ClearDestination()
+	{
+		currentDestination.worldDestination = null;
+		currentDestination.targetDestination = null;
+		currentDestination.considerAsReachedDistance = 0;
+		OnChangedDestination(null);
+	}
+
+	/// <param name="nearestTargetAccessDict"> Stores all current nearest targets. Do not use outside of the method call </param>
+	public bool TryGetNearestChaseableTargetIn(IEnumerable<ITarget> targetEnumerable, out ITarget nearestTarget, out Dictionary<Transform, ITarget> nearestTargetAccessDict, Predicate<Transform> predicateNearest = null)
+	{
+		nearestTargetAccessDict = cachedNearestTargetDict;
+		nearestTarget = null;
+
+		// Copy the enemyInRangeDict to the pooled dictionary while taking the enemy's transform
+		foreach (var iteratedTarget in targetEnumerable)
+			cachedNearestTargetDict.TryAdd((iteratedTarget as Component).transform, iteratedTarget);
+
+		// Get nearest target
+		if (this.transform.TryGetNearestTransform(cachedNearestTargetDict.Keys, out Transform nearestTransform,
+			predicateNearest
+			?? ((iteratedTarget) => (acceptedTargetTypeList.Contains(cachedNearestTargetDict[iteratedTarget].TargetTag) && IsAbleToGoTo(iteratedTarget)))))
+		{
+			nearestTarget = cachedNearestTargetDict[nearestTransform];
+		}
+
+		cachedNearestTargetDict.Clear();
+		return nearestTarget != null;
 	}
 
 	private void DoState()
@@ -161,6 +428,30 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		}
 	}
 
+	protected virtual void DoIdle()
+	{ }
+
+	protected virtual void DoWalking()
+	{ }
+
+	protected virtual void DoRunning()
+	{ }
+
+	protected virtual void DoFlying()
+	{ }
+
+	protected virtual void DoJumping()
+	{ }
+
+	protected virtual void DoAttacking()
+	{ }
+	
+	protected virtual void DoDefending()
+	{ }
+
+	protected virtual void DoDead()
+	{ }
+
 	private void OnStateChanged(PlayerStateType newState)
 	{
 		switch (newState)
@@ -199,30 +490,6 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		}
 	}
 
-	protected virtual void DoIdle()
-	{ }
-
-	protected virtual void DoWalking()
-	{ }
-
-	protected virtual void DoRunning()
-	{ }
-
-	protected virtual void DoFlying()
-	{ }
-
-	protected virtual void DoJumping()
-	{ }
-
-	protected virtual void DoAttacking()
-	{ }
-	
-	protected virtual void DoDefending()
-	{ }
-
-	protected virtual void DoDead()
-	{ }
-
 	protected virtual void OnStateChangedToIdle()
 	{ }
 
@@ -247,27 +514,17 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 	protected virtual void OnStateChangedToDead()
 	{ }
 
-	public void TakeDamage(uint damage, Vector2 occuredWorldPosition)
+	protected void CheckDestinationState()
 	{
-		// Check for System.OverflowException. This is because the health may become negative and this is unwanted behaviour
-		try
+		if (IsReachedToDestination())
 		{
-			Health = checked(Health - damage);
-		}
-		catch
-		{
-			Health = 0;
-		}
-		finally
-		{
-			if ((this as ITarget).IsDead)
-				State = PlayerStateType.Dead;
-		}
-	}
+			if (currentDestination.worldDestination.HasValue)
+				OnReachedToDestination(currentDestination.worldDestination.Value);
+			else if (currentDestination.targetDestination)
+				OnReachedToDestination(currentDestination.targetDestination);
 
-	protected void RestoreHealth()
-	{
-		Health = MaxHealth;
+			ClearDestination();
+		}
 	}
 
 	protected virtual void OnChangedDestination(Vector2? newDestination)
@@ -278,264 +535,7 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 
 	protected virtual void OnReachedToDestination(Vector2 reachedDestination)
 	{ }
-
-	/// <summary> Verifies the <paramref name="target"/> position and sets destination if succeeded </summary>
-	public bool TrySetDestinationTo(Transform target, float considerAsReachedDistance = 1f)
-	{
-		// Check if self already reached to or cant go to the newDestination, then clear it
-		if (IsReachedTo(target) || !IsAbleToGoTo(target))
-			return false;
-
-		// Set the new destination
-		SetDestinationTo(target, considerAsReachedDistance);
-		return true;
-	}
-
-	/// <summary> Verifies the <paramref name="newDestination"/> and sets destination if succeeded </summary>
-	public bool TrySetDestinationTo(Vector2 newDestination, float considerAsReachedDistance = 1f)
-	{
-		// Check if self already reached to or cant go to the newDestination, then clear it
-		if (IsReachedTo(newDestination) || !IsAbleToGoTo(newDestination))
-			return false;
-
-		// Set the new destination
-		SetDestinationTo(newDestination, considerAsReachedDistance);
-		return true;
-	}
-
-	/// <remarks> Use if you verified the <paramref name="target"/> position already </remarks>
-	public void SetDestinationTo(Transform target, float considerAsReachedDistance = 1f)
-	{
-		currentDestination.worldDestination = null;
-		currentDestination.targetDestination = target;
-		currentDestination.considerAsReachedDistance = considerAsReachedDistance;
-
-		OnChangedDestination(target.position);
-	}
-
-	/// <remarks> Use if you verified the <paramref name="newDestination"/> already </remarks>
-	public void SetDestinationTo(Vector2 newDestination, float considerAsReachedDistance = 1f)
-	{
-		currentDestination.worldDestination = newDestination;
-		currentDestination.targetDestination = null;
-		currentDestination.considerAsReachedDistance = considerAsReachedDistance;
-
-		OnChangedDestination(newDestination);
-	}
 	
-	public void ClearDestination()
-	{
-		currentDestination.worldDestination = null;
-		currentDestination.targetDestination = null;
-		currentDestination.considerAsReachedDistance = 0;
-		OnChangedDestination(null);
-	}
-
-	public bool TryGetDestination(out Vector2 worldDestination)
-	{
-		worldDestination = Vector2.zero;
-
-		if (currentDestination.worldDestination.HasValue)
-		{
-			worldDestination = currentDestination.worldDestination.Value;
-			return true;
-		}
-		else if (TryGetDestinationTarget(out Transform destinationTarget))
-		{
-			worldDestination = destinationTarget.position;
-			return true;
-		}
-
-		return false;
-	}
-
-	public bool TryGetDestinationTarget(out Transform worldDestinationTarget)
-	{
-		worldDestinationTarget = null;
-
-		if (currentDestination.targetDestination && currentDestination.targetDestination.gameObject.activeSelf)
-			worldDestinationTarget = currentDestination.targetDestination;
-
-		return worldDestinationTarget != null;
-	}
-
-	public bool TrySetDestinationAwayFrom(Transform target, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
-		=> TrySetDestinationAwayFrom(target.position, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly);
-
-	/// <param name="isGroundedOnly"> Get the grounded direction only </param>
-	public bool TrySetDestinationAwayFrom(Vector2 target, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
-	{
-		var isDestinationSet = false;
-
-		// Prevent from no check by keeping the values positive
-		// Clamp checkInAngle and checkInEveryDegree to 360
-		checkInDegree = MathF.Abs(checkInDegree) % 360f;
-		checkEveryDegree = Math.Clamp(MathF.Abs(checkEveryDegree) % checkInDegree, 1f, 360f);
-
-		// We will work with radians to prevent unnecessary conversion so convert the method parameters to radians
-		var radCheckInDegree = checkInDegree * Mathf.Deg2Rad;
-		var radCheckEveryDegree = checkEveryDegree * Mathf.Deg2Rad;
-
-		// Get direction of 'target to self' and its angle in radians
-		var norDirTargetToSelf = (selfRigidbody.position - target).normalized;
-		var radTargetToSelfAngle = norDirTargetToSelf.ToAngle_360();
-
-		// Get starting and ending point in radians
-		var radStartAngle = radTargetToSelfAngle - (radCheckInDegree * 0.5f);
-		var radEndAngle = radTargetToSelfAngle + (radCheckInDegree * 0.5f);
-		var radCurrentAngle = radStartAngle;
-
-		// Ready the list for storing the look directions. ValueTuple<float, Vector2> stores <DotProductLookDir, WorldPositionDestination>
-		var lookDirPooledList = ListPool<ValueTuple<float, Vector2>>.Get();
-
-		// Do cast for every radCheckForEveryDegree and store valid one(s) look direction to check which angle is close enough to the norDirTargetToSelf direction
-		while (radCurrentAngle <= radEndAngle)
-		{
-			// nor stands for "normalized". Multiplying the Bounds with random value because there should be no conflict between Bounds'es
-			var norCurrentAngle = VectorUtils.AngleToVector(radCurrentAngle);
-			var newDestination = selfRigidbody.position + (norCurrentAngle * (raycastBounds * 3));
-
-			// If nothing is on the way, add to look directions based on grounded state on newDestination
-			if (IsAbleToGoTo(newDestination))
-			{
-				var newLookDirTuple = new ValueTuple<float, Vector2>(Vector2.Dot(norDirTargetToSelf, norCurrentAngle), newDestination);
-
-				// If direction only accepts the grounded, check it
-				if (isGroundedOnly)
-				{
-					if (IsGroundedAt(newDestination))
-						lookDirPooledList.Add(newLookDirTuple);
-				}
-				else
-					lookDirPooledList.Add(newLookDirTuple);
-			}
-
-			// DEBUG
-			Debug.DrawLine(selfRigidbody.position, selfRigidbody.position + norCurrentAngle, new Color(0.75f, 0.75f, 0.75f, 0.5f));
-
-			radCurrentAngle += radCheckEveryDegree;
-		}
-
-		// Select the one which is close enough to pointing the same way as norDirTargetToSelf direction
-		if (lookDirPooledList.Count > 0)
-		{
-			var closestNorDirTuple = lookDirPooledList[0];
-
-            for (int i = 1; i < lookDirPooledList.Count; i++)
-            {
-				// Checks if iterated lookDirection facing the same direction as norDirTargetToSelf more than current closestNorDirTuple
-				if (lookDirPooledList[i].Item1 > closestNorDirTuple.Item1)
-					closestNorDirTuple = lookDirPooledList[i];
-            }
-
-			// DEBUG
-			Debug.DrawLine(selfRigidbody.position, closestNorDirTuple.Item2, Color.green);
-
-			// Finally, set the new destination
-			SetDestinationTo(closestNorDirTuple.Item2, considerAsReachedDistance);
-			isDestinationSet = true;
-		}
-
-		// DEBUG
-		/*Debug.DrawLine(selfRigidbody.position, selfRigidbody.position + new Vector2(MathF.Cos(radTargetToSelfAngle), MathF.Sin(radTargetToSelfAngle)));
-		Debug.DrawLine(selfRigidbody.position, selfRigidbody.position + new Vector2(MathF.Cos(radStartAngle), MathF.Sin(radStartAngle)), Color.cyan);
-		Debug.DrawLine(selfRigidbody.position, selfRigidbody.position + new Vector2(MathF.Cos(radEndAngle), MathF.Sin(radEndAngle)), Color.red);*/
-
-		// Dispose the list
-		ListPool<ValueTuple<float, Vector2>>.Release(lookDirPooledList);
-		return isDestinationSet;
-	}
-
-	public bool TrySetDestinationToNearestIn(IEnumerable<Transform> transformEnumerable, float considerAsReachedDistance = 1f)
-	{
-		if (this.transform.TryGetNearestTransform(transformEnumerable, out Transform nearestTransform,
-			(iteratedTransform) => IsAbleToGoTo(iteratedTransform)))
-		{
-			SetDestinationTo(nearestTransform, considerAsReachedDistance);
-			return true;
-		}
-
-		return false;
-	}
-
-	public bool TrySetDestinationToNearestIn(IEnumerable<Vector2> positionEnumerable, float considerAsReachedDistance = 1f)
-	{
-		if (VectorExtensions.TryGetNearestVector(this.transform.position, positionEnumerable, out Vector2 nearestPosiiton,
-			(iteratedPosition) => IsAbleToGoTo(iteratedPosition)))
-		{
-			SetDestinationTo(nearestPosiiton, considerAsReachedDistance);
-			return true;
-		}
-
-		return false;
-	}
-
-	public bool TrySetDestinationToNearestIn(IEnumerable<ITarget> targetEnumerable, float considerAsReachedDistance = 1f)
-	{
-		if (TryGetNearestChaseableTargetIn(targetEnumerable, out ITarget nearestTarget, out _))
-		{
-			SetDestinationTo((nearestTarget as Component).transform, considerAsReachedDistance);
-			return true;
-		}
-
-		return false;
-	}
-
-	/// <param name="nearestTargetAccessDict"> Stores all current nearest targets. Do not use outside of the method call </param>
-	public bool TryGetNearestChaseableTargetIn(IEnumerable<ITarget> targetEnumerable, out ITarget nearestTarget, out Dictionary<Transform, ITarget> nearestTargetAccessDict, Predicate<Transform> predicateNearest = null)
-	{
-		nearestTargetAccessDict = cachedNearestTargetDict;
-		nearestTarget = null;
-
-		// Copy the enemyInRangeDict to the pooled dictionary while taking the enemy's transform
-		foreach (var iteratedTarget in targetEnumerable)
-			cachedNearestTargetDict.TryAdd((iteratedTarget as Component).transform, iteratedTarget);
-
-		// Get nearest target
-		if (this.transform.TryGetNearestTransform(cachedNearestTargetDict.Keys, out Transform nearestTransform,
-			predicateNearest
-			?? ((iteratedTarget) => (acceptedTargetTypeList.Contains(cachedNearestTargetDict[iteratedTarget].TargetTag) && IsAbleToGoTo(iteratedTarget)))))
-		{
-			nearestTarget = cachedNearestTargetDict[nearestTransform];
-		}
-
-		cachedNearestTargetDict.Clear();
-		return nearestTarget != null;
-	}
-
-	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<Transform> targetEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
-	{
-		if (this.transform.TryGetNearestTransform(targetEnumerable, out Transform nearestTransform,
-			(iteratedTransform) => IsAbleToGoTo(iteratedTransform)))
-			if (TrySetDestinationAwayFrom(nearestTransform, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
-				return true;
-
-		return false;
-	}
-
-	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<Vector2> vectorEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
-	{
-		if (VectorExtensions.TryGetNearestVector(this.transform.position, vectorEnumerable, out Vector2 nearestVector,
-			(iteratedPosition) => IsAbleToGoTo(iteratedPosition)))
-			if (TrySetDestinationAwayFrom(nearestVector, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
-				return true;
-
-		return false;
-	}
-
-	public bool TrySetDestinationAwayFromNearestIn(IEnumerable<ITarget> targetEnumerable, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
-	{
-		if (TryGetNearestChaseableTargetIn(targetEnumerable, out var nearestTarget, out _,
-			(iteratedTarget) => (runawayTargetTypeList.Contains(cachedNearestTargetDict[iteratedTarget].TargetTag) && IsAbleToGoTo(iteratedTarget))))
-		{
-			// TODO: What if nearestTarget is not a Component?
-			if (TrySetDestinationAwayFrom((nearestTarget as Component).transform, considerAsReachedDistance, checkInDegree, checkEveryDegree, isGroundedOnly))
-				return true;
-		}
-
-		return false;
-	}
-
 	/// <remarks> Returns true when there is no destination </remarks>
 	public bool IsReachedToDestination()
 	{
@@ -569,12 +569,9 @@ public abstract partial class AIBase : MonoBehaviour, ITarget, IPooledObject<AIB
 		return false;
 	}
 
-	/// <inheritdoc cref="IsAbleToGoTo(Vector2, int)"/>
 	protected bool IsAbleToGoTo(Transform target, int layerMask = Layers.Mask.Ground)
 		=> IsAbleToGoTo(target.position, layerMask);
 
-	// TODO: This one COULD act like path finder but for V1, it will stay as normal obstacle detector
-	/// <summary> Verifies position whether self can go without any obstacles </summary>
 	protected bool IsAbleToGoTo(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)
 	{
 		// Check if there is any obstacle in front of self

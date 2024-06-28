@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
+public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<WarrirorChickenAITriggerType>
 {
 	[Header("WarrirorChickenAI Movement")]
 	#region WarrirorChickenAI Movement
@@ -14,28 +15,29 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 
 	#endregion
 
-	[Header("WarrirorChickenAI Normal Attack")]
-	#region WarrirorChickenAI Normal Attack
+	[Header("WarrirorChickenAI Single Normal Attack")]
+	#region WarrirorChickenAI Single Normal Attack
 
 	[SerializeField]
-	private uint normalAttackDamage = 1;
+	private uint singleNormalAttackDamage = 1;
 
 	[SerializeField]
-	private TimerRandomized normalAttackTimer = new(0.5f, 0.75f);
+	private TimerRandomized singleNormalAttackTimer = new(0.5f, 0.75f);
 
 	[NonSerialized]
-	private ValueTuple<ITarget, Coroutine> currentNormalAttack;
+	private (ITarget target, Coroutine coroutine) currentSingleNormalAttack;
+
 
 	#endregion
 
-	[Header("WarrirorChickenAI Enemy")]
-	#region WarrirorChickenAI Enemy
+	#region WarrirorChickenAI Target
 
 	[NonSerialized]
 	private readonly HashSet<ITarget> targetInRangeSet = new();
 
 	[NonSerialized]
 	private readonly HashSet<ITarget> runawayTargetsInRangeSet = new();
+
 
 	#endregion
 
@@ -46,6 +48,10 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 
 	[field: NonSerialized]
 	public HomeBase ParentHome { get; set; }
+
+	[NonSerialized]
+	private readonly Queue<(WarrirorChickenAITriggerType triggerType, Collider2D collider2D, Collision2D collision2D)> PhysicsInteractionQueue = new();
+
 
 	#endregion
 
@@ -67,9 +73,175 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 
 		// If it currently chasing something, do not go home and protect your family at what it costs!
 		if (targetInRangeSet.Count > 0)
-			goHomeBackTimer.Reset();
+            goHomeBackTimer.Reset();
 
+		DoFrameDependentPhysics();
 		base.Update();
+	}
+
+	public void RegisterToNearTargets(ITarget target)
+	{
+		if (acceptedTargetTypeList.Contains(target.TargetTag))
+			targetInRangeSet.Add(target);
+
+		if (runawayTargetTypeList.Contains(target.TargetTag))
+			runawayTargetsInRangeSet.Add(target);
+	}
+
+	public void UnRegisterFromNearTargets(ITarget target)
+	{
+		targetInRangeSet.Remove(target);
+		runawayTargetsInRangeSet.Remove(target);
+	}
+
+	public void RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	{
+		if (!PhysicsInteractionQueue.Contains(interaction))
+			PhysicsInteractionQueue.Enqueue(interaction);
+	}
+
+	public bool TrySetDestinationToHome()
+	{
+		if (ParentHome != null)
+			return OpenAIHomeGate = TrySetDestinationTo(ParentHome.transform, 0.1f);
+
+		return false;
+	}
+
+	public bool TrySetDestinationAwayFromOrToNearestTarget()
+	{
+		// Let the blocked states take control
+		if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Defending or PlayerStateType.Dead)
+			return false;
+
+		// If there is any powerful enemy in range, runaway from it and discard other targets
+		if ((runawayTargetsInRangeSet.Count > 0) && TrySetDestinationAwayFromNearestIn(runawayTargetsInRangeSet))
+		{
+			State = PlayerStateType.Running;
+			return true;
+		}
+
+		// Try catch the nearest enemy
+		if (TrySetDestinationToNearestIn(targetInRangeSet))
+		{
+			State = PlayerStateType.Running;
+			return true;
+		}
+
+		return false;
+	}
+
+	private bool TryDoSingleNormalAttackTo(ITarget target)
+	{
+		// Prevents StartCoroutine to get called when self is disabled
+		if (!this.gameObject.activeSelf)
+			return false;
+
+		// If attacking, let it finish first
+		if (State == PlayerStateType.Attacking)
+			return false;
+
+		// If target is not accepted, return
+		if (!acceptedTargetTypeList.Contains(target.TargetTag))
+			return false;
+
+		// Do the attack
+		currentSingleNormalAttack.target = target;
+		currentSingleNormalAttack.coroutine = StartCoroutine(DoSingleNormalAttack(target));
+		return true;
+	}
+
+	private bool TryCancelSingleNormalAttackFrom(ITarget target)
+	{
+		if (target == currentSingleNormalAttack.target)
+		{
+			RefreshAttackState();
+			return true;
+		}
+
+		return false;
+	}
+
+	private void RefreshAttackState()
+	{
+		if (State == PlayerStateType.Attacking)
+		{
+			if (currentSingleNormalAttack.coroutine != null)
+				StopCoroutine(currentSingleNormalAttack.coroutine);
+
+			State = PlayerStateType.Idle;
+		}
+
+		currentSingleNormalAttack = default;
+		singleNormalAttackTimer.ResetAndRandomize();
+	}
+
+	private IEnumerator DoSingleNormalAttack(ITarget target)
+	{
+		// Cant attack the dead
+		if (target.IsDead)
+			yield break;
+
+		// Take full control over the body by setting state to attacking, ready timer
+		State = PlayerStateType.Attacking;
+
+		// Do the attack
+		target.TakeDamage(singleNormalAttackDamage, selfRigidbody.position);
+
+		if (target.IsDead)
+		{
+			RefreshAttackState();
+			OnKilledTarget(target);
+			yield break;
+		}
+
+		// Lock the state to Attacking until timer ends
+		while (!singleNormalAttackTimer.Tick())
+			yield return null;
+
+		RefreshAttackState();
+	}
+
+	public void DoFrameDependentPhysics()
+	{
+		for (int i = PhysicsInteractionQueue.Count - 1; i >= 0; i--)
+		{
+			var iteratedPhysicsInteraction = PhysicsInteractionQueue.Dequeue();
+
+			switch (iteratedPhysicsInteraction.triggerType)
+			{
+				case WarrirorChickenAITriggerType.EnemyTriggerStay:
+				{
+					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
+					{
+						RegisterToNearTargets(foundTarget);
+						TrySetDestinationAwayFromOrToNearestTarget();
+					}
+				}
+				break;
+
+				case WarrirorChickenAITriggerType.EnemyTriggerExit:
+				{
+					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
+						UnRegisterFromNearTargets(foundTarget);
+				}
+				break;
+
+				case WarrirorChickenAITriggerType.SingleNormalAttackTriggerStay:
+				{
+					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget foundTarget))
+						TryDoSingleNormalAttackTo(foundTarget);
+				}
+				break;
+
+				case WarrirorChickenAITriggerType.SingleNormalAttackTriggerExit:
+				{
+					if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(iteratedPhysicsInteraction.collider2D.gameObject, out ITarget escapedTarget))
+						TryCancelSingleNormalAttackFrom(escapedTarget);
+				}
+				break;
+			}
+		}
 	}
 
 	protected override void DoIdle()
@@ -111,19 +283,9 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 		base.OnChangedDestination(newDestination);
 	}
 
-	public bool TrySetDestinationToHome()
+	private void OnKilledTarget(ITarget target)
 	{
-		var isDestinationSet = false;
-
-		if (ParentHome != null)
-		{
-			isDestinationSet = TrySetDestinationTo(ParentHome.transform, 0.1f);
-
-			if (isDestinationSet)
-				OpenAIHomeGate = true;
-		}
-
-		return isDestinationSet;
+		TrySetDestinationToHome();
 	}
 
 	public void OnEnteredAIHome(HomeBase home)
@@ -136,131 +298,50 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser
 		OpenAIHomeGate = false;
 	}
 
-	/// <summary> Attacks single target </summary>
-	private IEnumerator DoNormalAttack(ITarget target)
-	{
-		// Cant attack the dead
-		if (target.IsDead)
-			yield break;
+	public void OnSingleNormalAttackTriggerStay2D(Collider2D collider)
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType.SingleNormalAttackTriggerStay, collider, null));
 
-		// Take full control over the body by setting state to attacking, ready timer
-		State = PlayerStateType.Attacking;
-
-		// Do the attack
-		target.TakeDamage(normalAttackDamage, selfRigidbody.position);
-
-		if (target.IsDead)
-		{
-			RefreshAttackState();
-			OnKilledTarget(target);
-			yield break;
-		}
-
-		// Lock the state to Attacking until timer ends
-		while (!normalAttackTimer.Tick())
-			yield return null;
-
-		RefreshAttackState();
-	}
-
-	private void OnKilledTarget(ITarget target)
-	{
-		TrySetDestinationToHome();
-	}
-
-	private void RefreshAttackState()
-	{
-		if (State == PlayerStateType.Attacking)
-		{
-			if (currentNormalAttack.Item2 != null)
-				StopCoroutine(currentNormalAttack.Item2);
-
-			State = PlayerStateType.Idle;
-		}
-
-		currentNormalAttack = default;
-		normalAttackTimer.ResetAndRandomize();
-	}
-
-	public void OnNormalAttackTriggerStay2D(Collider2D collider)
-	{
-		// Prevents StartCoroutine to get called when self is disabled
-		if (!this.gameObject.activeSelf) return;
-
-		// If attacking, let it finish first
-		if (State == PlayerStateType.Attacking)
-			return;
-
-		// Do the attack
-		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget foundTarget))
-		{
-			// If target is not accepted, return
-			if (!acceptedTargetTypeList.Contains(foundTarget.TargetTag))
-				return;
-
-			currentNormalAttack.Item1 = foundTarget;
-			currentNormalAttack.Item2 = StartCoroutine(DoNormalAttack(foundTarget));
-		}
-	}
-
-	public void OnNormalAttackTriggerExit2D(Collider2D collider)
-	{
-		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget escapedTarget))
-		{
-			if (escapedTarget == currentNormalAttack.Item1)
-				RefreshAttackState();
-		}
-	}
+	public void OnSingleNormalAttackTriggerExit2D(Collider2D collider)
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType.SingleNormalAttackTriggerExit, collider, null));
 
 	public void OnEnemyTriggerStay2D(Collider2D collider)
-	{
-		// If the GameObject is a AI Target, add to range list
-		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget foundTarget))
-		{
-			// Update enemies in range
-			if (acceptedTargetTypeList.Contains(foundTarget.TargetTag))
-				targetInRangeSet.Add(foundTarget);
-
-			if (runawayTargetTypeList.Contains(foundTarget.TargetTag))
-				runawayTargetsInRangeSet.Add(foundTarget);
-
-			// Let the blocked states take control
-			if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Defending or PlayerStateType.Dead)
-				return;
-
-			// If there is any powerful enemy in range, runaway from it and discard other targets
-			if ((runawayTargetsInRangeSet.Count > 0) && TrySetDestinationAwayFromNearestIn(runawayTargetsInRangeSet))
-			{
-				State = PlayerStateType.Running;
-				return;
-			}
-
-			// Try catch the nearest enemy
-			if (TrySetDestinationToNearestIn(targetInRangeSet))
-				State = PlayerStateType.Running;
-		}
-	}
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType.EnemyTriggerStay, collider, null));
 
 	public void OnEnemyTriggerExit2D(Collider2D collider)
+		=> RegisterFrameDependentPhysicsInteraction((WarrirorChickenAITriggerType.EnemyTriggerExit, collider, null));
+
+	[ContextMenu(nameof(LogTargetCount))]
+	public void LogTargetCount()
 	{
-		// If the GameObject is a AI Target, remove from the range list
-		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(collider.gameObject, out ITarget foundTarget))
-		{
-			runawayTargetsInRangeSet.Remove(foundTarget);
-			targetInRangeSet.Remove(foundTarget);
-		}
+		Debug.LogFormat("Target In Range Count: {0}", targetInRangeSet.Count);
+	}
+
+	[ContextMenu(nameof(LogPhysicsInteractionCount))]
+	public void LogPhysicsInteractionCount()
+	{
+		Debug.LogFormat("Target In Range Count: {0}", PhysicsInteractionQueue.Count);
 	}
 
 	public override void CopyTo(in AIBase main)
 	{
 		if (main is WarrirorChickenAI foundSelf)
 		{
-			foundSelf.normalAttackTimer = this.normalAttackTimer;
-			foundSelf.normalAttackDamage = this.normalAttackDamage;
+			foundSelf.singleNormalAttackTimer = this.singleNormalAttackTimer;
+			foundSelf.singleNormalAttackDamage = this.singleNormalAttackDamage;
 			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
 		}
 
 		base.CopyTo(main);
+	}
+
+
+	// Dispose
+	private void OnDisable()
+	{
+		if (GameControllerSingleton.IsQuitting)
+			return;
+
+		DoFrameDependentPhysics();
 	}
 }
 

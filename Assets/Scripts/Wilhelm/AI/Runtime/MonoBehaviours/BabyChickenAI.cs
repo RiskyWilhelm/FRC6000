@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
+public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 {
 	[Header("BabyChickenAI Movement")]
 	#region BabyChickenAI Movement
@@ -15,10 +16,11 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	#region BabyChickenAI Other
 
 	[field: NonSerialized]
-	public bool OpenAIHomeGate { get; protected set; }
+	public bool OpenAIHomeGate { get; private set; }
 
 	[field: NonSerialized]
 	public HomeBase ParentHome { get; set; }
+
 
 	#endregion
 	
@@ -26,6 +28,7 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	// Initialize
 	protected override void OnEnable()
 	{
+		GameControllerSingleton.Instance.onTargetBirthDict[TargetType.BabyChicken]?.Invoke();
 		goHomeBackTimer.ResetAndRandomize();
 		ClearDestination();
 
@@ -34,6 +37,12 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 
 
 	// Update
+	protected override void Update()
+	{
+		goHomeBackTimer.Tick();
+		base.Update();
+	}
+
 	protected override void DoIdle()
 	{
 		// If not grounded, set state to Flying
@@ -60,14 +69,6 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 		base.DoIdle();
 	}
 
-	protected override void Update()
-	{
-		if (DayCycleControllerSingleton.Instance.Time.daylightType is DaylightType.Night)
-			goHomeBackTimer.Tick();
-
-		base.Update();
-	}
-
 	protected override void OnStateChangedToDead()
 	{
 		GameControllerSingleton.Instance.onTargetDeathDict[TargetType.BabyChicken]?.Invoke();
@@ -77,17 +78,10 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 
 	public bool TrySetDestinationToHome()
 	{
-		var isDestinationSet = false;
-
 		if (ParentHome != null)
-		{
-			isDestinationSet = TrySetDestinationTo(ParentHome.transform, 0.1f);
+			return OpenAIHomeGate = TrySetDestinationTo(ParentHome.transform, 0.1f);
 
-			if (isDestinationSet)
-				OpenAIHomeGate = true;
-		}
-
-		return isDestinationSet;
+		return false;
 	}
 
 	protected override void OnChangedDestination(Vector2? newDestination)
@@ -99,16 +93,22 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	public void OnRunawayTriggerStay2D(Collider2D collider)
 	{
 		if (EventReflectorUtils.TryGetComponentByEventReflector<AIBase>(collider.gameObject, out AIBase foundTarget))
+			TryRunawayFrom(foundTarget);
+	}
+
+	private bool TryRunawayFrom(AIBase otherAI)
+	{
+		if (!runawayTargetTypeList.Contains(otherAI.TargetTag))
+			return false;
+
+		if (TrySetDestinationAwayFrom(otherAI.transform.position))
 		{
-			if (!runawayTargetTypeList.Contains(foundTarget.TargetTag))
-				return;
-				
-			if (TrySetDestinationAwayFrom(foundTarget.transform))
-			{
-				State = PlayerStateType.Running;
-				OpenAIHomeGate = true;
-			}
+			State = PlayerStateType.Running;
+			OpenAIHomeGate = true;
+			return true;
 		}
+
+		return false;
 	}
 
 	public void OnEnteredAIHome(HomeBase home)
@@ -139,7 +139,7 @@ public partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 
 #if UNITY_EDITOR
 
-public partial class BabyChickenAI
+public sealed partial class BabyChickenAI
 { }
 
 #endif

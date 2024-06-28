@@ -93,17 +93,17 @@ MonoBehaviour:
   walkMaxVelocity: {x: 4, y: 0}
   runningForce: 10
   runningMaxVelocity: {x: 10, y: 0}
-  jumpReleaseStateTimer:
+  jumpingReleaseStateTimer:
     _tickSecond: 0.5
-  jumpForce: 160
-  jumpAngle: 45
+  jumpingForce: 0
+  jumpingAngle: 45
   goHomeBackTimer:
     _tickSecond: 10
     _minInclusiveTickSeconds: 10
     _maxExclusiveTickSeconds: 20
-  normalAttackDamage: 1
-  normalAttackTimer:
-    _tickSecond: 0.5
+  singleNormalAttackDamage: 1
+  singleNormalAttackTimer:
+    _tickSecond: 0.6600974
     _minInclusiveTickSeconds: 0.5
     _maxExclusiveTickSeconds: 0.75
 --- !u!114 &1005912783288694528
@@ -231,7 +231,7 @@ GameObject:
   - component: {fileID: 6659747044206583017}
   - component: {fileID: 8141789435931607941}
   m_Layer: 7
-  m_Name: NormalAttackTrigger
+  m_Name: SingleNormalAttackTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -268,7 +268,7 @@ BoxCollider2D:
     m_Bits: 64
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 63
+    m_Bits: 191
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -315,7 +315,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3095688449028363923}
         m_TargetAssemblyTypeName: WarrirorChickenAI, FRC.AI.Runtime
-        m_MethodName: OnNormalAttackTriggerStay2D
+        m_MethodName: OnSingleNormalAttackTriggerStay2D
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -342,7 +342,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 3095688449028363923}
         m_TargetAssemblyTypeName: WarrirorChickenAI, FRC.AI.Runtime
-        m_MethodName: OnNormalAttackTriggerExit2D
+        m_MethodName: OnSingleNormalAttackTriggerExit2D
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
