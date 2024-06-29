@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 
 public readonly struct GameTime : IEquatable<GameTime>
 {
@@ -9,38 +8,50 @@ public readonly struct GameTime : IEquatable<GameTime>
 
 	public readonly byte second;
 
-	public readonly DaylightType daylightType;
-
 	public readonly bool isDayChangeHour;
 
-	private static readonly StringBuilder timeBuilder = new();
+	public readonly bool is12HourTime;
+
+	public readonly DayType dayType;
+
+	public readonly DaylightType daylightType;
 
 
-	public override string ToString()
+	/// <summary> Accepts 24-hour time </summary>
+	public GameTime(byte hour, byte minute, byte second, bool convertTo12HourTime = false)
 	{
-		timeBuilder.Clear();
-		return timeBuilder.AppendFormat("{0:00}:{1:00}:{2:00}", hour, minute, second).ToString();
-	}
-
-	/// <summary> Accepts 24-clock hour time </summary>
-	/// <param name="convertToPM"> Converts to 12-hour clock </param>
-	public GameTime(byte hour, byte minute, byte second, bool convertToPM = false)
-	{
+		this.hour = (byte)(hour % 24);
 		this.minute = (byte)(minute % 60);
 		this.second = (byte)(second % 60);
-		isDayChangeHour = (hour == 0);
+		this.is12HourTime = convertTo12HourTime;
+		this.isDayChangeHour = (hour == 0);
 
-		// Check if it is night time or not
+		// Check day type
+		if ((hour >= 0) && (hour <= 11))
+			this.dayType = DayType.AM;
+		else
+			this.dayType = DayType.PM;
+
+		// Check daylight type
 		if ((hour >= 19) || (hour <= 5))
 			this.daylightType = DaylightType.Night;
 		else
 			this.daylightType = DaylightType.Light;
 
 		// Convert if desired
-		if (convertToPM)
+		if (convertTo12HourTime)
 			this.hour = (byte)(hour % 12);
-		else
-			this.hour = hour;
+	}
+
+	public GameTime(GameTime otherTime, bool convertTo12HourTime = false)
+		: this(otherTime.hour, otherTime.minute, otherTime.second, convertTo12HourTime) { }
+
+	public override string ToString()
+	{
+		if (is12HourTime)
+			return string.Format("{0:00}:{1:00}:{2:00} {3}", hour, minute, second, dayType).ToString();
+
+		return string.Format("{0:00}:{1:00}:{2:00}", hour, minute, second).ToString();
 	}
 
 	public override bool Equals(object obj)
