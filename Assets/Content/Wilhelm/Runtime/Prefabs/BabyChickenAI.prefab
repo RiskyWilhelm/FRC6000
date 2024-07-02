@@ -79,9 +79,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
   raycastBounds: {x: 0.75, y: 1.75}
-  <TargetTag>k__BackingField: 1
   <Health>k__BackingField: 1
   <MaxHealth>k__BackingField: 1
+  <TargetTag>k__BackingField: 1
   acceptedTargetTypeList: 
   runawayTargetTypeList: 0000000004000000
   _state: 0
@@ -92,10 +92,10 @@ MonoBehaviour:
   walkMaxVelocity: {x: 2.5, y: 0}
   runningForce: 10
   runningMaxVelocity: {x: 5, y: 0}
-  jumpReleaseStateTimer:
+  jumpingReleaseStateTimer:
     _tickSecond: 0.5
-  jumpForce: 160
-  jumpAngle: 45
+  jumpingForce: 0
+  jumpingAngle: 45
   goHomeBackTimer:
     _tickSecond: 10
     _minInclusiveTickSeconds: 10
@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 5747292688927411197}
   - component: {fileID: 7863816199902176656}
   m_Layer: 0
-  m_Name: Visual
+  m_Name: Visual2D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -224,7 +224,7 @@ GameObject:
   - component: {fileID: 6886931853449807190}
   - component: {fileID: 8200733951105208569}
   m_Layer: 6
-  m_Name: MainCollider
+  m_Name: MainCollider2D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -307,7 +307,7 @@ GameObject:
   - component: {fileID: 2614751270683377832}
   - component: {fileID: 7133292710129551134}
   m_Layer: 7
-  m_Name: RunawayTrigger
+  m_Name: EnemyTrigger2D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -381,7 +381,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: -9038861455327793708}
         m_TargetAssemblyTypeName: BabyChickenAI, FRC.AI.Runtime
-        m_MethodName: OnRunawayTriggerStay2D
+        m_MethodName: OnEnemyTriggerStay2D
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

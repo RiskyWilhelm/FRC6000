@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
+public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
 {
 	[Header("BabyChickenAI Movement")]
 	#region BabyChickenAI Movement
@@ -21,16 +21,18 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	[field: NonSerialized]
 	public HomeBase ParentHome { get; set; }
 
+	[NonSerialized]
+	private readonly Queue<(BabyChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D)> physicsInteractionQueue = new();
+
 
 	#endregion
-	
+
 
 	// Initialize
 	protected override void OnEnable()
 	{
 		GameControllerSingleton.Instance.onTargetBirthDict[TargetType.BabyChicken]?.Invoke();
 		goHomeBackTimer.ResetAndRandomize();
-		ClearDestination();
 
 		base.OnEnable();
 	}
@@ -40,7 +42,56 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 	protected override void Update()
 	{
 		goHomeBackTimer.Tick();
+		DoFrameDependentPhysics();
 		base.Update();
+	}
+
+	public void RegisterFrameDependentPhysicsInteraction((BabyChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	{
+		if (!physicsInteractionQueue.Contains(interaction))
+			physicsInteractionQueue.Enqueue(interaction);
+	}
+
+	public bool TrySetDestinationToHome()
+	{
+		if (ParentHome != null)
+			return OpenAIHomeGate = this.TrySetDestinationToTransform(ParentHome.transform, 0.1f);
+
+		return false;
+	}
+
+	public void DoFrameDependentPhysics()
+	{
+		for (int i = physicsInteractionQueue.Count - 1; i >= 0; i--)
+		{
+			var iteratedPhysicsInteraction = physicsInteractionQueue.Dequeue();
+
+			switch (iteratedPhysicsInteraction.triggerType)
+			{
+				case BabyChickenAIPhysicsInteractionType.EnemyTriggerStay2D:
+				DoEnemyTriggerStay2D(iteratedPhysicsInteraction);
+				break;
+			}
+		}
+	}
+
+	private void DoEnemyTriggerStay2D((BabyChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	{
+		if (!interaction.collider2D)
+			return;
+
+		if (EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(interaction.collider2D.gameObject, out ITarget foundTarget))
+		{
+			// Try Runaway from target
+			if (!runawayTargetTypeList.Contains(foundTarget.TargetTag))
+				return;
+
+			if (TrySetDestinationAwayFromVector((foundTarget as Component).transform.position))
+			{
+				State = PlayerStateType.Running;
+				OpenAIHomeGate = true;
+			}
+		}
 	}
 
 	protected override void DoIdle()
@@ -76,40 +127,14 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 		base.OnStateChangedToDead();
 	}
 
-	public bool TrySetDestinationToHome()
-	{
-		if (ParentHome != null)
-			return OpenAIHomeGate = TrySetDestinationTo(ParentHome.transform, 0.1f);
-
-		return false;
-	}
-
 	protected override void OnChangedDestination(Vector2? newDestination)
 	{
 		OpenAIHomeGate = false;
 		base.OnChangedDestination(newDestination);
 	}
 
-	public void OnRunawayTriggerStay2D(Collider2D collider)
-	{
-		if (EventReflectorUtils.TryGetComponentByEventReflector<AIBase>(collider.gameObject, out AIBase foundTarget))
-			TryRunawayFrom(foundTarget);
-	}
-
-	private bool TryRunawayFrom(AIBase otherAI)
-	{
-		if (!runawayTargetTypeList.Contains(otherAI.TargetTag))
-			return false;
-
-		if (TrySetDestinationAwayFrom(otherAI.transform.position))
-		{
-			State = PlayerStateType.Running;
-			OpenAIHomeGate = true;
-			return true;
-		}
-
-		return false;
-	}
+	public void OnEnemyTriggerStay2D(Collider2D collider)
+		=> RegisterFrameDependentPhysicsInteraction((BabyChickenAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
 
 	public void OnEnteredAIHome(HomeBase home)
 	{
@@ -133,6 +158,17 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser
 			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
 
 		base.CopyTo(main);
+	}
+
+
+	// Dispose
+	protected override void OnDisable()
+	{
+		if (GameControllerSingleton.IsQuitting)
+			return;
+
+		DoFrameDependentPhysics();
+		base.OnDisable();
 	}
 }
 

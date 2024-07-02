@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 9099630285785831523}
   - component: {fileID: 8596979324990227312}
   m_Layer: 7
-  m_Name: GateTrigger
+  m_Name: GateTrigger2D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -118,7 +118,7 @@ GameObject:
   - component: {fileID: 1624482395435068778}
   - component: {fileID: 8507845816337553294}
   m_Layer: 7
-  m_Name: StealBabyChickenTrigger
+  m_Name: StealBabyChickenTrigger2D
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -9,9 +9,11 @@ public enum WarrirorFoxAIPhysicsInteractionType
 
 	SingleNormalAttackTriggerExit2D = 1 << 1,
 
-	EnemyTriggerStay2D = 1 << 2,
+	EnemyTriggerEnter2D = 1 << 2,
 
-	EnemyTriggerExit2D = 1 << 3,
+	EnemyTriggerStay2D = 1 << 3,
 
-	All = ~(-1 << 4)
+	EnemyTriggerExit2D = 1 << 4,
+
+	All = ~(-1 << 5)
 }

@@ -13,6 +13,7 @@ public abstract partial class GroundedAIBase : AIBase
 	[SerializeField]
 	private Timer idleTimer = new(2f);
 
+
 	#endregion
 
 	[Header("GroundedAIBase Walking")]
@@ -25,6 +26,7 @@ public abstract partial class GroundedAIBase : AIBase
 	[Tooltip("If you want single axis limited only, set other axis to zero")]
 	private Vector2 walkMaxVelocity;
 
+
 	#endregion
 
 	[Header("GroundedAIBase Running")]
@@ -36,6 +38,7 @@ public abstract partial class GroundedAIBase : AIBase
 	[SerializeField]
 	[Tooltip("If you want single axis limited only, set other axis to zero")]
 	private Vector2 runningMaxVelocity;
+
 
 	#endregion
 
@@ -53,12 +56,14 @@ public abstract partial class GroundedAIBase : AIBase
 	[Tooltip("Decides what angle should be considered as jumpable")]
 	protected float jumpingAngle = 45f;
 
+
 	#endregion
 
 	#region GroundedAIBase Other
 
 	[NonSerialized]
 	private sbyte norDirHorizontal;
+
 
 	#endregion
 
@@ -126,7 +131,7 @@ public abstract partial class GroundedAIBase : AIBase
 			var newDestination = selfRigidbody.position;
 			newDestination.x += randomHorizontalPosition;
 
-			if (TrySetDestinationTo(newDestination, raycastBounds.x))
+			if (this.TrySetDestinationToVector(newDestination, raycastBounds.x))
 			{
 				State = PlayerStateType.Walking;
 				return;
@@ -232,7 +237,7 @@ public abstract partial class GroundedAIBase : AIBase
 	public bool IsAbleToJumpTowardsDestination()
 	{
 		// If destination set or self didnt reached to destination, check if direction is facing to given angle
-		if (IsReachedToDestination())
+		if (IsReachedToDestinationOrNotSet())
 			return false;
 		
 		if (!TryGetDestination(out Vector2 worldDestination))
@@ -243,14 +248,9 @@ public abstract partial class GroundedAIBase : AIBase
 
 	public bool IsAbleToJumpTowards(Vector2 worldPosition)
 	{
-		// Prepare values
 		var distSelfToDestination = (worldPosition - selfRigidbody.position);
-
-		// Prepare check values
 		var isInsideAngle = Vector3.Angle(Vector2.up, distSelfToDestination) <= (jumpingAngle * 0.5f);
-		var isNotTallerThanPlayer = distSelfToDestination.sqrMagnitude <= (raycastBounds.y * raycastBounds.y);
-
-		return isInsideAngle && isNotTallerThanPlayer;
+		return isInsideAngle;
 	}
 
 	public override void CopyTo(in AIBase main)
@@ -303,12 +303,12 @@ public abstract partial class GroundedAIBase
 		// Prepare angles
 		var distSelfToDestination = raycastBounds.y * 1.5f;
 
-		if (TryGetDestination(out Vector2 worldDestination))
+		if (TryGetDestinationVector(out Vector2 worldDestination))
 			distSelfToDestination = Vector2.Distance(worldDestination, selfRigidbody.position);
 
 		// Draw
 		Handles.color = new Color(0.5f, 0.5f, 0, 0.25f);
-		Handles.DrawWireArc(selfRigidbody.position, Vector3.forward, Vector3.up.Rotate(-jumpingAngle * 0.5f, Vector3.forward), jumpingAngle, Mathf.Clamp(distSelfToDestination, 1f, distSelfToDestination), Mathf.Clamp(distSelfToDestination, 1f, 5f));
+		Handles.DrawWireArc(selfRigidbody.position, Vector3.forward, Vector3.up.RotateByDegreeAngle(-jumpingAngle * 0.5f, Vector3.forward), jumpingAngle, Mathf.Clamp(distSelfToDestination, 1f, distSelfToDestination), Mathf.Clamp(distSelfToDestination, 1f, 5f));
 	}
 }
 

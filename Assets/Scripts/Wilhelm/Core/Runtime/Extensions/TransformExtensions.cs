@@ -1,19 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public static class TransformExtensions
 {
-	public static bool TryGetNearestTransform(this Transform relativeTo, IEnumerable<Transform> transformEnumerable, out Transform nearestTransform, Predicate<Transform> predicateNearest = null)
+	public static bool TryGetNearestTransform<TransformEnumeratorType>(this Transform relativeTo, TransformEnumeratorType transformEnumerable, out Transform nearestTransform, Predicate<Transform> predicateNearest = null)
+		where TransformEnumeratorType : IEnumerator<Transform>
 	{
-		var isFoundNearest = false;
 		nearestTransform = default;
 
-		if (transformEnumerable.Count() == 0)
-			return isFoundNearest;
-
-		float nearestHorizontalDistance = (transformEnumerable.First().position - relativeTo.position).sqrMagnitude;
+		var isFoundNearest = false;
+		float nearestHorizontalDistance = float.MaxValue;
 		float iteratedDistance;
 
 		// Check sqr distances and select nearest chicken
@@ -21,7 +18,7 @@ public static class TransformExtensions
 		{
 			iteratedDistance = (iteratedTransform.position - relativeTo.position).sqrMagnitude;
 
-			if ((iteratedDistance <= nearestHorizontalDistance) && (predicateNearest == null || predicateNearest.Invoke(iteratedTransform)))
+			if ((iteratedDistance < nearestHorizontalDistance) && (predicateNearest == null || predicateNearest.Invoke(iteratedTransform)))
 			{
 				nearestTransform = iteratedTransform;
 				nearestHorizontalDistance = iteratedDistance;

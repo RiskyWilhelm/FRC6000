@@ -54,7 +54,7 @@ public sealed partial class TagObject : MonoBehaviour
 		nearestTagObject = null;
 
 		if (TryGetActiveObjectListFromTag(checkTag, out ReadOnlyCollection<Transform> activeTagObjectList))
-			TransformExtensions.TryGetNearestTransform(relativeTo, activeTagObjectList, out nearestTagObject, predicateNearest);
+			TransformExtensions.TryGetNearestTransform(relativeTo, activeTagObjectList.GetEnumerator(), out nearestTagObject, predicateNearest);
 
 		return nearestTagObject != null;
 	}

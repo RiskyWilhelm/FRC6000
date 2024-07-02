@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public sealed partial class ChickenAIHome : HomeBase, ITarget
+public sealed partial class ChickenAIHome : HomeBase, ITarget, IFrameDependentPhysicsInteractor<ChickenAIHomePhysicsInteractionType>
 {
 	[Header("ChickenAIHome Spawn")]
 	#region ChickenAIHome Spawn
@@ -47,12 +47,79 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 
 	#endregion
 
+	#region BabyChickenAI Other
+
+	[NonSerialized]
+	private readonly Queue<(ChickenAIHomePhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D)> physicsInteractionQueue = new();
+
+
+	#endregion
+
 
 	// Update
 	private void Update()
 	{
 		TrySpawn(out _);
 		TryRestoreHealth();
+		DoFrameDependentPhysics();
+	}
+
+	public void RegisterFrameDependentPhysicsInteraction((ChickenAIHomePhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	{
+		if (!physicsInteractionQueue.Contains(interaction))
+			physicsInteractionQueue.Enqueue(interaction);
+	}
+
+	public void DoFrameDependentPhysics()
+	{
+		for (int i = physicsInteractionQueue.Count - 1; i >= 0; i--)
+		{
+			var iteratedPhysicsInteraction = physicsInteractionQueue.Dequeue();
+
+			switch (iteratedPhysicsInteraction.triggerType)
+			{
+				case ChickenAIHomePhysicsInteractionType.GateTriggerStay2D:
+				DoGateTriggerStay2D(iteratedPhysicsInteraction);
+				break;
+			}
+		}
+	}
+
+	private void DoGateTriggerStay2D((ChickenAIHomePhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	{
+		if (EventReflectorUtils.TryGetComponentByEventReflector<IHomeAccesser>(interaction.collider2D.gameObject, out IHomeAccesser foundAccesser))
+		{
+			// Check if accesser wants to go in
+			if (!foundAccesser.OpenAIHomeGate)
+				return;
+
+			// Accept only specific types
+			if ((foundAccesser.ParentHome == this) && acceptedTargetTypeList.Contains(foundAccesser.TargetTag))
+				foundAccesser.OnEnteredAIHome(this);
+		}
+	}
+
+	public void TakeDamage(uint damage, Vector2 occurWorldPosition)
+	{
+		Health = (ushort)Math.Clamp(Health - (int)damage, ushort.MinValue, ushort.MaxValue);
+
+		if ((Health == ushort.MinValue) && !IsDead)
+			OnDead();
+	}
+
+	private void RestoreHealth()
+	{
+		Health = MaxHealth;
+		IsDead = false;
+	}
+
+	private void TryRestoreHealth()
+	{
+		if (IsDead && restoreHealthTimer.Tick())
+		{
+			restoreHealthTimer.ResetAndRandomize();
+			RestoreHealth();
+		}
 	}
 
 	public override bool TrySpawn(out AIBase spawnedAI)
@@ -121,41 +188,7 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 	}
 
 	public void OnGateTriggerStay2D(Collider2D collider)
-	{
-		if (EventReflectorUtils.TryGetComponentByEventReflector<IHomeAccesser>(collider.gameObject, out IHomeAccesser foundAccesser))
-		{
-			// Check if accesser wants to go in
-			if (!foundAccesser.OpenAIHomeGate)
-				return;
-
-			// Accept only specific types
-			if ((foundAccesser.ParentHome == this) && acceptedTargetTypeList.Contains(foundAccesser.TargetTag))
-				foundAccesser.OnEnteredAIHome(this);
-		}
-	}
-
-	public void TakeDamage(uint damage, Vector2 occurWorldPosition)
-	{
-		Health = (ushort)Math.Clamp(Health - (int)damage, ushort.MinValue, ushort.MaxValue);
-
-		if ((Health == ushort.MinValue) && !IsDead)
-			OnDead();
-	}
-
-	private void TryRestoreHealth()
-	{
-		if (IsDead && restoreHealthTimer.Tick())
-		{
-			restoreHealthTimer.ResetAndRandomize();
-			RestoreHealth();
-		}
-	}
-
-	private void RestoreHealth()
-	{
-		Health = MaxHealth;
-		IsDead = false;
-	}
+		=> RegisterFrameDependentPhysicsInteraction((ChickenAIHomePhysicsInteractionType.GateTriggerStay2D, collider, null));
 
 	private void OnDead()
 	{
@@ -163,6 +196,13 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget
 
 		// TODO: Decrease the extinction rate of Chickens
 		IsDead = true;
+	}
+
+
+	// Dispose
+	private void OnDisable()
+	{
+		DoFrameDependentPhysics();
 	}
 }
 

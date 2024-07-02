@@ -6,7 +6,7 @@ public partial class AIPool : MonoBehaviourPoolBase<AIBase>
 	#region
 
 	[SerializeField]
-	[Tooltip("If preStats null, this will be used. Used for copying when creating a new AI in pool")]
+	[Tooltip("Used for copying when creating a new AI in pool")]
 	private AIBase prefab;
 
 	#endregion

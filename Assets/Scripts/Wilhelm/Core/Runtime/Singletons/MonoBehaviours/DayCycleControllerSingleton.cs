@@ -76,6 +76,17 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 		base.Awake();
 	}
 
+	private void InitializeTime()
+	{
+		if (!isTimeInitialized)
+		{
+			_time = GameTimeUtils.AngleToGameTime(this.transform.rotation.eulerAngles.z);
+			onDaylightTypeChanged?.Invoke(_time.daylightType);
+			onDayTypeChanged?.Invoke(_time.dayType);
+			isTimeInitialized = true;
+		}
+	}
+
 
 	// Update
 	private void Update()
@@ -93,49 +104,6 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 		var infiniteDayProgress = MathF.Abs(MathF.Cos(_time.ToProgress01() * MathF.PI));
 		sun.color = Color.Lerp(dayLightColor, dayNightColor, infiniteDayProgress);
 	}
-
-	private void InitializeTime()
-	{
-		_time = GameTimeUtils.AngleToGameTime(this.transform.rotation.eulerAngles.z);
-		isTimeInitialized = true;
-	}
-
-	/// <summary> Assumes the time 12:00 equals North(Y+) in cardinal direction </summary>
-	/*private float GameTimeToAngle(GameTime gameTime, sbyte offsetHour = 0)
-	{
-		// offsetAngleDegree is used to shift the right side (angle zero) time to something else instead of 00:00
-		float exactHourPoint = (360 / 24);
-		float exactMinutePoint = (exactHourPoint / 60f);
-		float exactSecondPoint = (exactMinutePoint / 60f);
-
-		float offsetAngleDegree = 270;
-		float offsetHourAngle = (offsetHour * exactHourPoint) + offsetAngleDegree;
-
-		float angleInDegrees = (gameTime.hour * exactHourPoint);
-		float verticallyMirroredAngleDegree = (360 - angleInDegrees); // Not inverted! Mirrored the angle in a circle. That way, time will grow if rotation getting negative
-
-		float hourAngle = verticallyMirroredAngleDegree + offsetHourAngle;
-		float minuteAngle = (gameTime.minute * exactMinutePoint);
-		float secondAngle = (gameTime.second * exactSecondPoint);
-
-		return Math.Abs(hourAngle - minuteAngle - secondAngle) % 360;
-	}*/
-
-	/// <summary> Assumes the time 12:00 equals North(Y+) in cardinal direction </summary>
-	/*private float GameTimeToAngle(GameTime gameTime, sbyte offsetHour = 0)
-	{
-		// offsetAngleDegree is used to shift the right side (angle zero) time to something else instead of 00:00
-		float exactHourPoint = (360 / 24);
-		float exactMinutePoint = (exactHourPoint / 60f);
-		float exactSecondPoint = (exactMinutePoint / 60f);
-		float offsetAngleDegree = 270;
-
-		float hourAngle = (360 - (gameTime.hour * exactHourPoint)) + offsetAngleDegree;
-		float minuteAngle = (gameTime.minute * exactMinutePoint);
-		float secondAngle = (gameTime.second * exactSecondPoint);
-
-		return Math.Abs(hourAngle - minuteAngle - secondAngle) % 360;
-	}*/
 }
 
 
@@ -144,16 +112,12 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 public sealed partial class DayCycleControllerSingleton
 {
 	public string e_Time;
-	public float e_TimeAngle;
-	public float e_TimeProgress;
 	public string e_Time12;
 
 	private void LateUpdate()
 	{
-		e_Time = _time.ToString();
-		e_Time12 = _time.To12HourTime().ToString();
-		e_TimeAngle = _time.ToAngle();
-		e_TimeProgress = _time.ToProgress01();
+		/*e_Time = _time.ToString();
+		e_Time12 = _time.To12HourTime().ToString();*/
 	}
 }
 
