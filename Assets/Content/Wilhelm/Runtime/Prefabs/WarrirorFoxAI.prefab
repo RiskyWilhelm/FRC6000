@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 7973699907714518999}
   - component: {fileID: 4028007122091320076}
   - component: {fileID: 1005912783288694528}
-  - component: {fileID: 2130061696637265959}
   m_Layer: 0
   m_Name: WarrirorFoxAI
   m_TagString: FoxAI
@@ -80,21 +79,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
   raycastBounds: {x: 0.75, y: 1.75}
+  _state: 0
   <Health>k__BackingField: 5
   <MaxHealth>k__BackingField: 5
   <TargetTag>k__BackingField: 4
   acceptedTargetTypeList: 0100000003000000
   runawayTargetTypeList: 
-  _state: 0
   idleMaxDistance: 10
   idleTimer:
     _tickSecond: 2
-  walkForce: 20
-  walkMaxVelocity: {x: 4, y: 0}
+  walkingForce: 20
+  walkingMaxVelocity: {x: 6, y: 0}
   runningForce: 20
   runningMaxVelocity: {x: 12, y: 0}
   jumpingReleaseStateTimer:
     _tickSecond: 0.5
+  jumpingBlockStateTimer:
+    _tickSecond: 0.25
   jumpingForce: 240
   jumpingAngle: 45
   goHomeBackTimer:
@@ -119,18 +120,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   updateType: 0
---- !u!114 &2130061696637265959
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2669454140272425697}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3b44c08615be18429936510aed2a1b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &3556564923247605855
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,8 +1,9 @@
 {
-    "name": "FRC.Core.Runtime",
+    "name": "FRC.Wilhelm.Other.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:75469ad4d38634e559750d17036d5f7c"
+        "GUID:1c8b44325a8ed2748ae6a8a316697f65",
+        "GUID:dabf12c3f39015b46966c05c98c84bbd"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

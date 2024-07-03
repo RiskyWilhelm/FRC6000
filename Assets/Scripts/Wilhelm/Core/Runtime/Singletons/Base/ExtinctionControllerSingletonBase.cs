@@ -16,8 +16,8 @@ public abstract partial class ExtinctionControllerSingletonBase<SingletonType> :
 
 	#endregion
 
-	[field: Header("ExtinctionControllerSingletonBase Rate Verify")]
-	#region ExtinctionControllerSingletonBase Rate Verify
+	[field: Header("ExtinctionControllerSingletonBase Rate")]
+	#region ExtinctionControllerSingletonBase Rate
 
 	[SerializeField]
 	[ContextMenuItem(nameof(IncreaseRate), nameof(IncreaseRate))]

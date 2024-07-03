@@ -1,10 +1,12 @@
 {
-    "name": "FRC.Core.Runtime",
+    "name": "FRC.Wilhelm.Other.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:75469ad4d38634e559750d17036d5f7c"
+        "GUID:be680ad58f633d14a8c9bccb0c0f622a"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

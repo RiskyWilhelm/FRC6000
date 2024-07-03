@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 7973699907714518999}
   - component: {fileID: 3095688449028363923}
   - component: {fileID: 1005912783288694528}
-  - component: {fileID: 2130061696637265959}
   m_Layer: 0
   m_Name: WarrirorChickenAI
   m_TagString: FoxAI
@@ -89,8 +88,8 @@ MonoBehaviour:
   idleMaxDistance: 10
   idleTimer:
     _tickSecond: 2
-  walkForce: 10
-  walkMaxVelocity: {x: 4, y: 0}
+  walkingForce: 10
+  walkingMaxVelocity: {x: 4, y: 0}
   runningForce: 10
   runningMaxVelocity: {x: 10, y: 0}
   jumpingReleaseStateTimer:
@@ -119,18 +118,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   updateType: 0
---- !u!114 &2130061696637265959
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2669454140272425697}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3b44c08615be18429936510aed2a1b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &3556564923247605855
 GameObject:
   m_ObjectHideFlags: 0
