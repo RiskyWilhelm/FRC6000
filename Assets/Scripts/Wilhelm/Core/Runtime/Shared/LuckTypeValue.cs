@@ -3,7 +3,7 @@ using System;
 
 /// <summary> Takes input of serializable <see cref="LuckType"/> and either serializable or non-serializable any type of value </summary>
 [Serializable]
-public struct LuckValue<T> : IEquatable<LuckValue<T>>
+public struct LuckTypeValue<T> : IEquatable<LuckTypeValue<T>>
 {
 	public LuckType luckType;
 
@@ -11,10 +11,10 @@ public struct LuckValue<T> : IEquatable<LuckValue<T>>
 
 	public override bool Equals(object obj)
 	{
-		return (obj is LuckValue<T> luck) && Equals(luck);
+		return (obj is LuckTypeValue<T> luck) && Equals(luck);
 	}
 
-	public bool Equals(LuckValue<T> other)
+	public bool Equals(LuckTypeValue<T> other)
 	{
 		return luckType == other.luckType &&
 			   EqualityComparer<T>.Default.Equals(value, other.value);
@@ -25,12 +25,12 @@ public struct LuckValue<T> : IEquatable<LuckValue<T>>
 		return HashCode.Combine(luckType, value);
 	}
 
-	public static bool operator ==(LuckValue<T> left, LuckValue<T> right)
+	public static bool operator ==(LuckTypeValue<T> left, LuckTypeValue<T> right)
 	{
 		return left.Equals(right);
 	}
 
-	public static bool operator !=(LuckValue<T> left, LuckValue<T> right)
+	public static bool operator !=(LuckTypeValue<T> left, LuckTypeValue<T> right)
 	{
 		return !(left == right);
 	}

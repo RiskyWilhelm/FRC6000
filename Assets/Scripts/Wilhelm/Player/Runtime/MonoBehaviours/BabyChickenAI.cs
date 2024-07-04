@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
+public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInteractable, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
 {
 	[Header("BabyChickenAI Movement")]
 	#region BabyChickenAI Movement
@@ -99,7 +99,6 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IFram
 		// If not grounded, set state to Flying
 		if (!IsGrounded())
 		{
-			goHomeBackTimer.ResetAndRandomize();
 			State = PlayerStateType.Flying;
 			return;
 		}
@@ -136,6 +135,36 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IFram
 	public void OnEnemyTriggerStay2D(Collider2D collider)
 		=> RegisterFrameDependentPhysicsInteraction((BabyChickenAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
 
+	public void Interact(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
+	{
+		resultValue = InteractionArgs.Empty;
+
+		if (interactor is Player)
+			OnInteractedByPlayer(interactor, receivedValue, out resultValue);
+	}
+
+	private void OnInteractedByPlayer(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
+	{
+		var interactorArgs = receivedValue as PlayerInteractionArgs;
+		var convertedResultValue = new BabyChickenAIInteractionArgs
+		{
+			ChickenRigidbody = selfRigidbody
+		};
+
+		if ((State is not PlayerStateType.Blocked) && interactorArgs.WantsToCarry)
+		{
+			convertedResultValue.InteractorAbleToCarrySelf = true;
+			State = PlayerStateType.Blocked;
+		}
+		else if (State is PlayerStateType.Blocked)
+		{
+			convertedResultValue.InteractedWantsToGetUncarried = true;
+			State = PlayerStateType.Idle;
+		}
+
+		resultValue = convertedResultValue;
+	}
+
 	public void OnEnteredAIHome(HomeBase home)
 	{
 		ReleaseOrDestroySelf();
@@ -169,11 +198,6 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IFram
 
 		DoFrameDependentPhysics();
 		base.OnDisable();
-	}
-
-	public bool Interact()
-	{
-		return false;
 	}
 }
 

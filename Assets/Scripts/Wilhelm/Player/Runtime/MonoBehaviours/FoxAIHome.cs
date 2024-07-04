@@ -8,7 +8,7 @@ public sealed partial class FoxAIHome : HomeBase, IFrameDependentPhysicsInteract
 	[Header("FoxAIHome Spawn")]
 	#region FoxAIHome Spawn
 
-	public List<LuckValue<AIPool>> nightDaySpawnPoolList = new();
+	public List<LuckTypeValue<AIPool>> nightDaySpawnPoolList = new();
 
 	[SerializeField]
 	private TimerRandomized nightDaySpawnTimer = new(10f, 10f, 20f);
@@ -104,14 +104,14 @@ public sealed partial class FoxAIHome : HomeBase, IFrameDependentPhysicsInteract
 		return false;
 	}
 
-	public bool TrySpawnFromLuckList(in List<LuckValue<AIPool>> luckPoolList, out AIBase spawnedAI)
+	public bool TrySpawnFromLuckList(in List<LuckTypeValue<AIPool>> luckPoolList, out AIBase spawnedAI)
 	{
 		spawnedAI = null;
 		bool isSpawned = false;
 
 		// Get auto-generated luck and all of the LuckAIPool elements where the LuckAIPool has the value of auto-generated luck
 		var generatedLuckType = LuckUtils.Generate();
-		var cachedLuckList = ListPool<LuckValue<AIPool>>.Get();
+		var cachedLuckList = ListPool<LuckTypeValue<AIPool>>.Get();
 
 		foreach (var iteratedLuckPool in luckPoolList)
 		{
@@ -135,7 +135,7 @@ public sealed partial class FoxAIHome : HomeBase, IFrameDependentPhysicsInteract
 			isSpawned = true;
 		}
 
-		ListPool<LuckValue<AIPool>>.Release(cachedLuckList);
+		ListPool<LuckTypeValue<AIPool>>.Release(cachedLuckList);
 		return isSpawned;
 	}
 

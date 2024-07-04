@@ -2,14 +2,14 @@ using System.Collections.Generic;
 using System;
 
 /// <summary> Takes input of <see cref="IInteractable"/> and any type of value </summary>
-public struct InteractableValue<T> : IEquatable<InteractableValue<T>>
+public struct IInteractableValue<T> : IEquatable<IInteractableValue<T>>
 {
 	public IInteractable interactable;
 
 	public T value;
 
 
-	public InteractableValue(IInteractable target, T value)
+	public IInteractableValue(IInteractable target, T value)
 	{
 		this.interactable = target;
 		this.value = value;
@@ -17,10 +17,10 @@ public struct InteractableValue<T> : IEquatable<InteractableValue<T>>
 
 	public override bool Equals(object obj)
 	{
-		return (obj is InteractableValue<T> luck) && Equals(luck);
+		return (obj is IInteractableValue<T> luck) && Equals(luck);
 	}
 
-	public bool Equals(InteractableValue<T> other)
+	public bool Equals(IInteractableValue<T> other)
 	{
 		return interactable == other.interactable &&
 			   EqualityComparer<T>.Default.Equals(value, other.value);
@@ -31,12 +31,12 @@ public struct InteractableValue<T> : IEquatable<InteractableValue<T>>
 		return HashCode.Combine(interactable, value);
 	}
 
-	public static bool operator ==(InteractableValue<T> left, InteractableValue<T> right)
+	public static bool operator ==(IInteractableValue<T> left, IInteractableValue<T> right)
 	{
 		return left.Equals(right);
 	}
 
-	public static bool operator !=(InteractableValue<T> left, InteractableValue<T> right)
+	public static bool operator !=(IInteractableValue<T> left, IInteractableValue<T> right)
 	{
 		return !(left == right);
 	}

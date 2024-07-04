@@ -5,7 +5,7 @@ using static UnityEngine.InputSystem.InputAction;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [DisallowMultipleComponent]
-public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<AIBase>, IFrameDependentPhysicsInteractor<PlayerPhysicsInteractionType>
+public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, IFrameDependentPhysicsInteractor<PlayerPhysicsInteractionType>
 {
 	[Header("Player Walking")]
 	#region Player Walking
@@ -60,10 +60,10 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<A
 	#region Player Interaction
 
 	[NonSerialized]
-	private IInteractable currentSelectedInteractable;
+	private IInteractable currentInteracted;
 
 	[NonSerialized]
-	private readonly List<InteractableValue<Transform>> interactablesInRangeList = new();
+	private readonly List<IInteractableValue<Transform>> interactablesInRangeList = new();
 
 
 	#endregion
@@ -78,6 +78,12 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<A
 
 	[NonSerialized]
 	private readonly Queue<(PlayerPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D)> physicsInteractionQueue = new();
+
+	[NonSerialized]
+	private Rigidbody2D carriedRigidbody;
+
+	[SerializeField]
+	private Transform babyChickenAICarryPoint;
 
 
 	#endregion
@@ -94,6 +100,8 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<A
 		inputActions.Player.Sprint.canceled += OnInputSprintCanceled;
 
 		inputActions.Player.Jump.performed += OnInputJumpPerformed;
+
+		inputActions.Player.Interact.performed += OnInputInteractPerformed;
 	}
 
 	protected override void OnEnable()
@@ -107,7 +115,14 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<A
 	protected override void Update()
 	{
 		DoFrameDependentPhysics();
+		UpdateCarried();
 		base.Update();
+	}
+
+	private void UpdateCarried()
+	{
+		if (carriedRigidbody && (currentInteracted is BabyChickenAI))
+			carriedRigidbody.MovePosition(babyChickenAICarryPoint.position);
 	}
 
 	public void RegisterFrameDependentPhysicsInteraction((PlayerPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
@@ -134,12 +149,24 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<A
 		State = PlayerStateType.Jumping;
 	}
 
-	private void SelectLastInteractable()
+	private bool TrySelectInteractableOrCurrent(out IInteractable interactable)
 	{
+		interactable = default;
+		interactablesInRangeList.RemoveAll((iteratedInteractableValue) => !iteratedInteractableValue.value);
+
+		if (currentInteracted != null)
+		{
+			interactable = currentInteracted;
+			return true;
+		}
+
 		if (interactablesInRangeList.Count > 0)
-			currentSelectedInteractable = interactablesInRangeList[^1].interactable;
-		else
-			currentSelectedInteractable = null;
+		{
+			interactable = interactablesInRangeList[^1].interactable;
+			return true;
+		}
+
+		return false;
 	}
 
 	public void DoFrameDependentPhysics()
@@ -167,10 +194,7 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<A
 			return;
 
 		if (EventReflectorUtils.TryGetComponentByEventReflector<IInteractable>(interaction.collider2D.gameObject, out IInteractable found))
-		{
-			interactablesInRangeList.Add(new InteractableValue<Transform>(found, (found as Component).transform));
-			SelectLastInteractable();
-		}
+			interactablesInRangeList.Add(new IInteractableValue<Transform>(found, (found as Component).transform));
 	}
 
 	private void DoInteractTriggerExit2D((PlayerPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
@@ -182,9 +206,7 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<A
 		}
 
 		if (EventReflectorUtils.TryGetComponentByEventReflector<IInteractable>(interaction.collider2D.gameObject, out IInteractable found))
-			interactablesInRangeList.Remove(new InteractableValue<Transform>(found, (found as Component).transform));
-
-		SelectLastInteractable();
+			interactablesInRangeList.Remove(new IInteractableValue<Transform>(found, (found as Component).transform));
 	}
 
 	protected override void DoIdle()
@@ -282,11 +304,43 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor<A
 	public void OnInteractTriggerExit2D(Collider2D collider)
 		=> RegisterFrameDependentPhysicsInteraction((PlayerPhysicsInteractionType.InteractTriggerExit2D, collider, null));
 
-	public void OnInteracted(AIBase interacted)
-	{ }
+	private void OnInputInteractPerformed(CallbackContext context)
+	{
+		if (TrySelectInteractableOrCurrent(out IInteractable selectedInteractable))
+		{
+			if (selectedInteractable is BabyChickenAI)
+				InteractWithBabyChickenAI(selectedInteractable);
+		}
+	}
 
-	public void OnInteracted(MonoBehaviour interacted)
-	{ }
+	private void InteractWithBabyChickenAI(IInteractable interactableBabyChickenAI)
+	{
+		// Interact
+		var sendValue = new PlayerInteractionArgs
+		{
+			WantsToCarry = true
+		};
+
+		interactableBabyChickenAI.Interact(this, sendValue, out InteractionArgs resultValue);
+
+		// Do action by result
+		var convertedResultValue = resultValue as BabyChickenAIInteractionArgs;
+
+		if (convertedResultValue.InteractorAbleToCarrySelf)
+		{
+			carriedRigidbody = convertedResultValue.ChickenRigidbody;
+			currentInteracted = interactableBabyChickenAI;
+		}
+		
+		if (convertedResultValue.InteractedWantsToGetUncarried)
+		{
+			if (currentInteracted == interactableBabyChickenAI)
+				currentInteracted = null;
+
+			if (carriedRigidbody == convertedResultValue.ChickenRigidbody)
+				carriedRigidbody = null;
+		}
+	}
 
 	private void OnInputJumpPerformed(CallbackContext context)
 	{
