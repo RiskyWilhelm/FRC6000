@@ -5,7 +5,7 @@ using static UnityEngine.InputSystem.InputAction;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [DisallowMultipleComponent]
-public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, IFrameDependentPhysicsInteractor<PlayerPhysicsInteractionType>
+public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, ICarrier, IFrameDependentPhysicsInteractor<PlayerPhysicsInteractionType>
 {
 	[Header("Player Walking")]
 	#region Player Walking
@@ -57,10 +57,22 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 	#endregion
 
+	[Header("Player Carry")]
+	#region Player Carry
+
+	[SerializeField]
+	private Transform defaultCarryPoint;
+
+	[NonSerialized]
+	private ICarryableValue<Rigidbody2D> currentCarried;
+
+
+	#endregion
+
 	#region Player Interaction
 
 	[NonSerialized]
-	private IInteractable currentInteracted;
+	public bool isInteractionBlocked;
 
 	[NonSerialized]
 	private readonly List<IInteractableValue<Transform>> interactablesInRangeList = new();
@@ -78,12 +90,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 	[NonSerialized]
 	private readonly Queue<(PlayerPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D)> physicsInteractionQueue = new();
-
-	[NonSerialized]
-	private Rigidbody2D carriedRigidbody;
-
-	[SerializeField]
-	private Transform babyChickenAICarryPoint;
 
 
 	#endregion
@@ -115,14 +121,27 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 	protected override void Update()
 	{
 		DoFrameDependentPhysics();
-		UpdateCarried();
+		DoCarried();
 		base.Update();
 	}
 
-	private void UpdateCarried()
+	
+	public void Carry(ICarryable carryable, Rigidbody2D carryableRigidbody)
 	{
-		if (carriedRigidbody && (currentInteracted is BabyChickenAI))
-			carriedRigidbody.MovePosition(babyChickenAICarryPoint.position);
+		currentCarried = new (carryable, carryableRigidbody);
+		carryable.OnCarried(this);
+	}
+
+	public void StopCarrying()
+	{
+		currentCarried.carryable?.OnUncarried(this);
+		currentCarried = default;
+	}
+
+	public void StopCarrying(ICarryable carryable)
+	{
+		if ((currentCarried.carryable == carryable) || !currentCarried.value)
+			StopCarrying();
 	}
 
 	public void RegisterFrameDependentPhysicsInteraction((PlayerPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
@@ -149,16 +168,10 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 		State = PlayerStateType.Jumping;
 	}
 
-	private bool TrySelectInteractableOrCurrent(out IInteractable interactable)
+	private bool TryGetInteractable(out IInteractable interactable)
 	{
 		interactable = default;
 		interactablesInRangeList.RemoveAll((iteratedInteractableValue) => !iteratedInteractableValue.value);
-
-		if (currentInteracted != null)
-		{
-			interactable = currentInteracted;
-			return true;
-		}
 
 		if (interactablesInRangeList.Count > 0)
 		{
@@ -207,6 +220,12 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 		if (EventReflectorUtils.TryGetComponentByEventReflector<IInteractable>(interaction.collider2D.gameObject, out IInteractable found))
 			interactablesInRangeList.Remove(new IInteractableValue<Transform>(found, (found as Component).transform));
+	}
+
+	private void DoCarried()
+	{
+		if (currentCarried.value)
+			currentCarried.value.MovePosition(defaultCarryPoint.position);
 	}
 
 	protected override void DoIdle()
@@ -304,9 +323,10 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 	public void OnInteractTriggerExit2D(Collider2D collider)
 		=> RegisterFrameDependentPhysicsInteraction((PlayerPhysicsInteractionType.InteractTriggerExit2D, collider, null));
 
+	// TODO: Refactor interaction
 	private void OnInputInteractPerformed(CallbackContext context)
 	{
-		if (TrySelectInteractableOrCurrent(out IInteractable selectedInteractable))
+		if (TryGetInteractable(out IInteractable selectedInteractable))
 		{
 			if (selectedInteractable is BabyChickenAI)
 				InteractWithBabyChickenAI(selectedInteractable);
@@ -325,20 +345,17 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 		// Do action by result
 		var convertedResultValue = resultValue as BabyChickenAIInteractionArgs;
+		var carryableBabyChickenAI = interactableBabyChickenAI as ICarryable;
 
 		if (convertedResultValue.InteractorAbleToCarrySelf)
 		{
-			carriedRigidbody = convertedResultValue.ChickenRigidbody;
-			currentInteracted = interactableBabyChickenAI;
+			Carry(carryableBabyChickenAI, convertedResultValue.ChickenRigidbody);
+			isInteractionBlocked = true;
 		}
-		
-		if (convertedResultValue.InteractedWantsToGetUncarried)
+		else
 		{
-			if (currentInteracted == interactableBabyChickenAI)
-				currentInteracted = null;
-
-			if (carriedRigidbody == convertedResultValue.ChickenRigidbody)
-				carriedRigidbody = null;
+			StopCarrying(carryableBabyChickenAI);
+			isInteractionBlocked = false;
 		}
 	}
 

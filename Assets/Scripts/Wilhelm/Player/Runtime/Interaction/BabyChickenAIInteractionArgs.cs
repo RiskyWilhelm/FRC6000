@@ -6,13 +6,10 @@ public class BabyChickenAIInteractionArgs : InteractionArgs
 
 	public bool InteractorAbleToCarrySelf { get; set; }
 
-	public bool InteractedWantsToGetUncarried { get; set; }
-
 
 	public override void Dispose()
 	{
 		ChickenRigidbody = default;
 		InteractorAbleToCarrySelf = default;
-		InteractedWantsToGetUncarried = default;
 	}
 }

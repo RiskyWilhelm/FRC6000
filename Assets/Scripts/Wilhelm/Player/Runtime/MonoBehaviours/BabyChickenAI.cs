@@ -2,13 +2,21 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInteractable, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
+public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInteractable, ICarryable, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
 {
 	[Header("BabyChickenAI Movement")]
 	#region BabyChickenAI Movement
 
 	[SerializeField]
 	private TimerRandomized goHomeBackTimer = new(10f, 10f, 60f);
+
+
+	#endregion
+
+	#region BabyChickenAI Carry
+
+	[field: NonSerialized]
+	public ICarrier Carrier { get; private set; }
 
 
 	#endregion
@@ -135,6 +143,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	public void OnEnemyTriggerStay2D(Collider2D collider)
 		=> RegisterFrameDependentPhysicsInteraction((BabyChickenAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
 
+	// TODO: Refactor interaction
 	public void Interact(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
 	{
 		resultValue = InteractionArgs.Empty;
@@ -151,18 +160,28 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 			ChickenRigidbody = selfRigidbody
 		};
 
-		if ((State is not PlayerStateType.Blocked) && interactorArgs.WantsToCarry)
+		if (State is PlayerStateType.Blocked)
+		{
+			convertedResultValue.InteractorAbleToCarrySelf = false;
+			State = PlayerStateType.Idle;
+		}
+		else if (interactorArgs.WantsToCarry)
 		{
 			convertedResultValue.InteractorAbleToCarrySelf = true;
 			State = PlayerStateType.Blocked;
 		}
-		else if (State is PlayerStateType.Blocked)
-		{
-			convertedResultValue.InteractedWantsToGetUncarried = true;
-			State = PlayerStateType.Idle;
-		}
 
 		resultValue = convertedResultValue;
+	}
+
+	public void OnCarried(ICarrier carrier)
+	{
+		Carrier = carrier;
+	}
+
+	public void OnUncarried(ICarrier carrier)
+	{
+		Carrier = null;
 	}
 
 	public void OnEnteredAIHome(HomeBase home)
@@ -196,6 +215,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 		if (GameControllerSingleton.IsQuitting)
 			return;
 
+		Carrier?.StopCarrying(this);
 		DoFrameDependentPhysics();
 		base.OnDisable();
 	}
