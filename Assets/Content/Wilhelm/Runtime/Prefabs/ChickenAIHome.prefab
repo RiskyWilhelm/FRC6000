@@ -384,13 +384,13 @@ MonoBehaviour:
   lightDaySpawnPoolList: []
   nightDaySpawnPoolList: []
   lightDaySpawnTimer:
-    _tickSecond: 10
-    _minInclusiveTickSeconds: 10
-    _maxExclusiveTickSeconds: 20
+    _tickSecond: 7.5
+    _minInclusiveTickSeconds: 7.5
+    _maxExclusiveTickSeconds: 12.5
   nightDaySpawnTimer:
-    _tickSecond: 10
-    _minInclusiveTickSeconds: 10
-    _maxExclusiveTickSeconds: 20
+    _tickSecond: 5
+    _minInclusiveTickSeconds: 5
+    _maxExclusiveTickSeconds: 10
   acceptedTargetTypeList: 0100000003000000
   restoreHealthTimer:
     _tickSecond: 5

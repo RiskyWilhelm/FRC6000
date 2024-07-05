@@ -78,12 +78,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selfRigidbody: {fileID: 7973699907714518999}
   raycastBounds: {x: 0.75, y: 1.75}
+  _state: 0
   <Health>k__BackingField: 1
   <MaxHealth>k__BackingField: 1
   <TargetTag>k__BackingField: 1
   acceptedTargetTypeList: 
-  runawayTargetTypeList: 0000000004000000
-  _state: 0
+  runawayTargetTypeList: 04000000
   idleMaxDistance: 10
   idleTimer:
     _tickSecond: 2
@@ -92,7 +92,9 @@ MonoBehaviour:
   runningForce: 10
   runningMaxVelocity: {x: 5, y: 0}
   jumpingReleaseStateTimer:
-    _tickSecond: 0.5
+    _tickSecond: 0.75
+  jumpingBlockStateTimer:
+    _tickSecond: 0.25
   jumpingForce: 160
   jumpingAngle: 45
   goHomeBackTimer:

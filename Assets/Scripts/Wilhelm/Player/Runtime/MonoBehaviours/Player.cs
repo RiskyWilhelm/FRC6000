@@ -130,12 +130,14 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 	{
 		currentCarried = new (carryable, carryableRigidbody);
 		carryable.OnCarried(this);
+		isInteractionBlocked = true;
 	}
 
 	public void StopCarrying()
 	{
 		currentCarried.carryable?.OnUncarried(this);
 		currentCarried = default;
+		isInteractionBlocked = false;
 	}
 
 	public void StopCarrying(ICarryable carryable)
@@ -180,6 +182,60 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 		}
 
 		return false;
+	}
+
+	public void InteractWith(IInteractable interactable)
+	{
+		switch(interactable)
+		{
+			case BabyChickenAI:
+			InteractWithBabyChickenAI(interactable);
+			break;
+
+			case BabyFoxAI:
+			InteractWithBabyFoxAI(interactable);
+			break;
+		}
+	}
+
+	public void InteractWithBabyChickenAI(IInteractable interactableBabyChickenAI)
+	{
+		// Interact
+		var sendValue = new PlayerInteractionArgs
+		{
+			WantsToCarry = true
+		};
+
+		interactableBabyChickenAI.Interact(this, sendValue, out InteractionArgs resultValue);
+
+		// Do action by result
+		var convertedResultValue = resultValue as BabyChickenAIInteractionArgs;
+		var carryableBabyChickenAI = interactableBabyChickenAI as ICarryable;
+
+		if (convertedResultValue.InteractorAbleToCarrySelf)
+			Carry(carryableBabyChickenAI, convertedResultValue.ChickenRigidbody);
+		else
+			StopCarrying(carryableBabyChickenAI);
+	}
+
+	public void InteractWithBabyFoxAI(IInteractable interactableBabyChickenAI)
+	{
+		// Interact
+		var sendValue = new PlayerInteractionArgs
+		{
+			WantsToCarry = true
+		};
+
+		interactableBabyChickenAI.Interact(this, sendValue, out InteractionArgs resultValue);
+
+		// Do action by result
+		var convertedResultValue = resultValue as BabyFoxAIInteractionArgs;
+		var carryableBabyChickenAI = interactableBabyChickenAI as ICarryable;
+
+		if (convertedResultValue.InteractorAbleToCarrySelf)
+			Carry(carryableBabyChickenAI, convertedResultValue.FoxRigidbody);
+		else
+			StopCarrying(carryableBabyChickenAI);
 	}
 
 	public void DoFrameDependentPhysics()
@@ -323,40 +379,16 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 	public void OnInteractTriggerExit2D(Collider2D collider)
 		=> RegisterFrameDependentPhysicsInteraction((PlayerPhysicsInteractionType.InteractTriggerExit2D, collider, null));
 
-	// TODO: Refactor interaction
 	private void OnInputInteractPerformed(CallbackContext context)
 	{
+		if (isInteractionBlocked)
+		{
+			StopCarrying();
+			return;
+		}
+
 		if (TryGetInteractable(out IInteractable selectedInteractable))
-		{
-			if (selectedInteractable is BabyChickenAI)
-				InteractWithBabyChickenAI(selectedInteractable);
-		}
-	}
-
-	private void InteractWithBabyChickenAI(IInteractable interactableBabyChickenAI)
-	{
-		// Interact
-		var sendValue = new PlayerInteractionArgs
-		{
-			WantsToCarry = true
-		};
-
-		interactableBabyChickenAI.Interact(this, sendValue, out InteractionArgs resultValue);
-
-		// Do action by result
-		var convertedResultValue = resultValue as BabyChickenAIInteractionArgs;
-		var carryableBabyChickenAI = interactableBabyChickenAI as ICarryable;
-
-		if (convertedResultValue.InteractorAbleToCarrySelf)
-		{
-			Carry(carryableBabyChickenAI, convertedResultValue.ChickenRigidbody);
-			isInteractionBlocked = true;
-		}
-		else
-		{
-			StopCarrying(carryableBabyChickenAI);
-			isInteractionBlocked = false;
-		}
+			InteractWith(selectedInteractable);
 	}
 
 	private void OnInputJumpPerformed(CallbackContext context)

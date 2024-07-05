@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInteractable, ICarryable, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
+public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteractable, ICarryable, IFrameDependentPhysicsInteractor<BabyFoxAIPhysicsInteractionType>
 {
-	[Header("BabyChickenAI Movement")]
-	#region BabyChickenAI Movement
+	[Header("BabyFoxAI Movement")]
+	#region BabyFoxAI Movement
 
 	[SerializeField]
 	private TimerRandomized goHomeBackTimer = new(10f, 10f, 60f);
@@ -13,7 +13,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 	#endregion
 
-	#region BabyChickenAI Carry
+	#region BabyFoxAI Carry
 
 	[field: NonSerialized]
 	public ICarrier Carrier { get; private set; }
@@ -21,7 +21,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 	#endregion
 
-	#region BabyChickenAI Other
+	#region BabyFoxAI Other
 
 	[field: NonSerialized]
 	public bool OpenAIHomeGate { get; private set; }
@@ -30,7 +30,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	public HomeBase ParentHome { get; set; }
 
 	[NonSerialized]
-	private readonly Queue<(BabyChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D)> physicsInteractionQueue = new();
+	private readonly Queue<(BabyFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D)> physicsInteractionQueue = new();
 
 
 	#endregion
@@ -39,7 +39,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	// Initialize
 	protected override void OnEnable()
 	{
-		PlayerControllerSingleton.Instance.onTargetBirthEventDict[TargetType.BabyChicken]?.Invoke();
+		PlayerControllerSingleton.Instance.onTargetBirthEventDict[TargetType.BabyFox]?.Invoke();
 		goHomeBackTimer.ResetAndRandomize();
 
 		base.OnEnable();
@@ -54,7 +54,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 		base.Update();
 	}
 
-	public void RegisterFrameDependentPhysicsInteraction((BabyChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	public void RegisterFrameDependentPhysicsInteraction((BabyFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
 	{
 		if (!physicsInteractionQueue.Contains(interaction))
 			physicsInteractionQueue.Enqueue(interaction);
@@ -84,14 +84,14 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 			switch (iteratedPhysicsInteraction.triggerType)
 			{
-				case BabyChickenAIPhysicsInteractionType.EnemyTriggerStay2D:
+				case BabyFoxAIPhysicsInteractionType.EnemyTriggerStay2D:
 				DoEnemyTriggerStay2D(iteratedPhysicsInteraction);
 				break;
 			}
 		}
 	}
 
-	private void DoEnemyTriggerStay2D((BabyChickenAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
+	private void DoEnemyTriggerStay2D((BabyFoxAIPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
 	{
 		if (!interaction.collider2D)
 			return;
@@ -140,7 +140,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 	protected override void OnStateChangedToDead()
 	{
-		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.BabyChicken]?.Invoke();
+		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.BabyFox]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
 	}
@@ -152,14 +152,14 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	}
 
 	public void OnEnemyTriggerStay2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((BabyChickenAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
+		=> RegisterFrameDependentPhysicsInteraction((BabyFoxAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
 
 	private void OnInteractedByPlayer(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
 	{
 		var interactorArgs = receivedValue as PlayerInteractionArgs;
-		var convertedResultValue = new BabyChickenAIInteractionArgs
+		var convertedResultValue = new BabyFoxAIInteractionArgs
 		{
-			ChickenRigidbody = selfRigidbody
+			FoxRigidbody = selfRigidbody
 		};
 
 		if (State is PlayerStateType.Blocked)
@@ -192,15 +192,9 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 		OpenAIHomeGate = false;
 	}
 
-	public void OnStolenByFoxHome(FoxAIHome foxAIHome)
-	{
-		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.BabyChicken]?.Invoke();
-		ReleaseOrDestroySelf();
-	}
-
 	public override void CopyTo(in AIBase main)
 	{
-		if (main is BabyChickenAI foundSelf)
+		if (main is BabyFoxAI foundSelf)
 			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
 
 		base.CopyTo(main);
@@ -222,7 +216,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 #if UNITY_EDITOR
 
-public sealed partial class BabyChickenAI
+public sealed partial class BabyFoxAI
 { }
 
 #endif

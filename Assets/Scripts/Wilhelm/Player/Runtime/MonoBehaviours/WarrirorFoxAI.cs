@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
-public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<WarrirorFoxAIPhysicsInteractionType>
+public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<WarrirorFoxAIPhysicsInteractionType>
 {
 	[Header("WarrirorFoxAI Movement")]
 	#region BabyFoxAI Movement
@@ -448,7 +448,7 @@ public partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFrameDepend
 
 #if UNITY_EDITOR
 
-public partial class WarrirorFoxAI
+public sealed partial class WarrirorFoxAI
 { }
 
 #endif
