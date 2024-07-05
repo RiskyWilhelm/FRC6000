@@ -1,0 +1,23 @@
+✅ Create player and move that. Player will be able to move left and right. There wont be any jumping
+✅ AI's will move to a target transform. If target is null, the AI will do random movement.
+✅ Created AI fox and chicken. Fox can catch the Chicken and return to nearest base
+✅ Create AI Spawner.  Spawn X times in N time. AI Should not fall off from the edge (Not needed for now).
+✅ Add night and light time. At night, foxes will spawn MORE, chickens will spawn less. At light, chicken will spawn MORE, foxes 
+will spawn less. - update: Foxes wont spawn in daytime but instead, if any chicken come to their home, the chicken will die
+✅  AI should be able to die. Create custom editor for killing an AI directly
+✅ Create combat system for two different AI type's
+✅ Fox's AI Spawner (Home) should take baby chicken's when they enter in range
+✅ Create extinction rate. Extinction Rate should increase or decrease depends on the deaths
+✅ Player should be able to take the chicken in his hands and run to the base in order to escape from fox
+✅ Create Normal Chick (Baby Chicken) that spawns at light, walks and runs from foxes only
+✅ Create Warriror Chicken (Chickor) that spawns at night, walks, runs and attacks from/to foxes only
+❌ Create Ranger Chicken (Chickenhood) that spawns at night, walks, runs and attacks from/to foxes only
+✅ Create Normal Fox (Baby Fox) that spawns at night, walks and runs from chickens only
+✅ Create Warriror Fox (Foxight) that spawns at night, walks, runs and attacks from/to chickens only
+❌ Create Ranger Fox (Foxhood) that spawns at night, walks, runs and attacks from/to chickens only
+❌ Create building system - at first stage, achieve the result of putting a building and saving the game with it
+❌ Destruction of buildings
+✅ Create Save&Load system for saving a file into the disk
+❌ Create Game Data and try to save the seeds at first stage (Game Coin as integer) - NewtonsoftJSON should be used for serializing data
+❌ Do not forget to save the state of time too! Light will be using Runtime without any light probes. So no optimization is desired at all
+❌ Update all of the visuals of the game

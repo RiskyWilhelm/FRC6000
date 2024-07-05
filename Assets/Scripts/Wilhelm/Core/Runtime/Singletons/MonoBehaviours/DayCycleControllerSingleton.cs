@@ -12,11 +12,14 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 	[SerializeField]
 	private Light2D sun;
 
-	public float daySpeed;
+	[SerializeField]
+	private float daySpeed;
 
-	public Color dayLightColor;
+	[SerializeField]
+	private Color dayLightColor;
 
-	public Color dayNightColor;
+	[SerializeField]
+	private Color dayNightColor;
 
 
 	#endregion
@@ -24,8 +27,10 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 	[Header("DayCycleControllerSingleton Time")]
 	#region Time
 
+	[NonSerialized]
 	private GameTime _time;
 
+	[NonSerialized]
 	private bool isTimeInitialized;
 
 	public GameTime Time
@@ -46,9 +51,10 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 			if (value.dayType != _time.dayType)
 				onDayTypeChanged?.Invoke(value.dayType);
 
-			if (value.isDayChangeHour != _time.isDayChangeHour)
+			if ((value.dayType is DayType.AM) && (value.hour == 0) && (_time.hour != 0))
 				onDayChanged?.Invoke();
 
+			onGameTimeChanged?.Invoke(value);
 			_time = value;
 		}
 	}
@@ -58,6 +64,8 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 
 	[Header("DayCycleControllerSingleton Events")]
 	#region DayCycleControllerSingleton Events
+
+	public UnityEvent<GameTime> onGameTimeChanged = new();
 
 	public UnityEvent<DaylightType> onDaylightTypeChanged = new();
 

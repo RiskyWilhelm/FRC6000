@@ -1,3 +1,4 @@
+using Cysharp.Text;
 using System;
 
 public readonly struct GameTime : IEquatable<GameTime>
@@ -7,8 +8,6 @@ public readonly struct GameTime : IEquatable<GameTime>
 	public readonly byte minute;
 
 	public readonly byte second;
-
-	public readonly bool isDayChangeHour;
 
 	public readonly bool is12HourTime;
 
@@ -24,7 +23,6 @@ public readonly struct GameTime : IEquatable<GameTime>
 		this.minute = (byte)(minute % 60);
 		this.second = (byte)(second % 60);
 		this.is12HourTime = convertTo12HourTime;
-		this.isDayChangeHour = (hour == 0);
 
 		// Check day type
 		if ((hour >= 0) && (hour <= 11))
@@ -48,10 +46,7 @@ public readonly struct GameTime : IEquatable<GameTime>
 
 	public override string ToString()
 	{
-		if (is12HourTime)
-			return string.Format("{0:00}:{1:00}:{2:00} {3}", hour, minute, second, dayType).ToString();
-
-		return string.Format("{0:00}:{1:00}:{2:00}", hour, minute, second).ToString();
+		return ZString.Format("{0:00}:{1:00}:{2:00} {3}", hour, minute, second, dayType);
 	}
 
 	public override bool Equals(object obj)
