@@ -15,9 +15,11 @@ will spawn less. - update: Foxes wont spawn in daytime but instead, if any chick
 ✅ Create Normal Fox (Baby Fox) that spawns at night, walks and runs from chickens only
 ✅ Create Warriror Fox (Foxight) that spawns at night, walks, runs and attacks from/to chickens only
 ❌ Create Ranger Fox (Foxhood) that spawns at night, walks, runs and attacks from/to chickens only
+✅ Create Save&Load system for saving a file into the disk - NewtonsoftJSON should be used for serializing data
+❌ Update all of the visuals of the game
+
+V1.1
+❌ Save the seeds (Game Coin as integer)
+❌ Do not forget to save the state of time too! Light will be using Runtime without any light probes. So no optimization is desired at all
 ❌ Create building system - at first stage, achieve the result of putting a building and saving the game with it
 ❌ Destruction of buildings
-✅ Create Save&Load system for saving a file into the disk
-❌ Create Game Data and try to save the seeds at first stage (Game Coin as integer) - NewtonsoftJSON should be used for serializing data
-❌ Do not forget to save the state of time too! Light will be using Runtime without any light probes. So no optimization is desired at all
-❌ Update all of the visuals of the game

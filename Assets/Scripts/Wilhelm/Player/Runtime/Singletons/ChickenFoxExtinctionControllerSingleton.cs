@@ -1,9 +1,20 @@
 using System;
+using UnityEngine;
 using UnityEngine.Events;
 
-public sealed partial class ChickenFoxExtinctionControllerSingleton : ExtinctionControllerSingletonBase<ChickenFoxExtinctionControllerSingleton>
+public sealed partial class ChickenFoxExtinctionControllerSingleton : ExtinctionControllerSingletonBase<ChickenFoxExtinctionControllerSingleton>, ILoadableSaveData
 {
-	#region ChickenFoxExtinctionControllerSingleton Rate Verify
+	[Header("ChickenFoxExtinctionControllerSingleton Events")]
+	#region ChickenFoxExtinctionControllerSingleton Events
+
+	public UnityEvent onChickenExtinctRateFullFilled = new();
+
+	public UnityEvent onFoxExtinctRateFullFilled = new();
+
+
+	#endregion
+
+	#region ChickenFoxExtinctionControllerSingleton Rate
 
 	public int ChickenRate { get; private set; }
 
@@ -23,15 +34,6 @@ public sealed partial class ChickenFoxExtinctionControllerSingleton : Extinction
 			}
 		}
 	}
-
-
-	#endregion
-
-	#region ChickenFoxExtinctionControllerSingleton Events
-
-	public UnityEvent onChickenExtinctRateFullFilled = new();
-
-	public UnityEvent onFoxExtinctRateFullFilled = new();
 
 
 	#endregion
@@ -60,6 +62,7 @@ public sealed partial class ChickenFoxExtinctionControllerSingleton : Extinction
 	{
 		ChickenRate = (_currentRate < 0) ? Math.Abs(_currentRate) : 0;
 		FoxRate = (_currentRate > 0) ? Math.Abs(_currentRate) : 0;
+		OverrideSaveData();
 	}
 
 	private void CheckRates()
@@ -67,9 +70,19 @@ public sealed partial class ChickenFoxExtinctionControllerSingleton : Extinction
 		var extinctFullFilled = (MaxRate * 0.5f);
 
 		if (ChickenRate == extinctFullFilled)
-			OnChickenRateFullFilled();
+			onChickenExtinctRateFullFilled?.Invoke();
 		else if (FoxRate == extinctFullFilled)
-			OnFoxRateFullFilled();
+			onFoxExtinctRateFullFilled?.Invoke();
+	}
+
+	public void LoadSaveData(SaveData saveData)
+	{
+		CurrentRate = saveData.chickenFoxExtinctionRate;
+	}
+
+	public void OverrideSaveData()
+	{
+		SaveDataControllerSingleton.Instance.Save.chickenFoxExtinctionRate = CurrentRate;
 	}
 
 	protected override void OnCurrentRateChanged(int newValue)
@@ -78,12 +91,6 @@ public sealed partial class ChickenFoxExtinctionControllerSingleton : Extinction
 		CheckRates();
 		base.OnCurrentRateChanged(newValue);
 	}
-
-	private void OnChickenRateFullFilled()
-		=> onChickenExtinctRateFullFilled?.Invoke();
-
-	private void OnFoxRateFullFilled()
-		=> onFoxExtinctRateFullFilled?.Invoke();
 
 
 	// Dispose

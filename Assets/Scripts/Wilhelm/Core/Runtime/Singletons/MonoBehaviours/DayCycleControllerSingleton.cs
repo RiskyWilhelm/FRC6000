@@ -7,10 +7,16 @@ using UnityEngine.Rendering.Universal;
 public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingletonBase<DayCycleControllerSingleton>
 {
 	[Header("DayCycleControllerSingleton Sun")]
-	#region
+	#region DayCycleControllerSingleton Sun
 
 	[SerializeField]
 	private Light2D sun;
+
+
+	#endregion
+
+	[Header("DayCycleControllerSingleton Day")]
+	#region DayCycleControllerSingleton Day
 
 	[SerializeField]
 	private float daySpeed;
@@ -25,7 +31,7 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 	#endregion
 
 	[Header("DayCycleControllerSingleton Time")]
-	#region Time
+	#region DayCycleControllerSingleton Time
 
 	[NonSerialized]
 	private GameTime _time;

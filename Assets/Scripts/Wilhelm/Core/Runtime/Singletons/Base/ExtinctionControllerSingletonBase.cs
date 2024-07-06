@@ -26,7 +26,7 @@ public abstract partial class ExtinctionControllerSingletonBase<SingletonType> :
 	protected int _currentRate;
 
 	[field: SerializeField]
-	public ushort MaxRate { get; protected set; }
+	public int MaxRate { get; protected set; }
 
 	// TODO: Ridicilous. Refactor in next version
 	public virtual int CurrentRate

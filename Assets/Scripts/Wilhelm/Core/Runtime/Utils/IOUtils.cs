@@ -6,17 +6,21 @@ using UnityEngine;
 
 // Copyright belongs to: https://github.com/shapedbyrainstudios/save-load-system
 // Save&Load
-public static class IOUtil
+public static class IOUtils
 {
 	public const string encryptionWord = "FRC";
 	public const string backupExtension = ".backup";
 
+
 	/// <summary> Replaces '/' with <see cref="Path.DirectorySeparatorChar"/> </summary>
-	public static string FixPathByCorrectDirectorySeperator(ref string path)
+	public static string FixPathByCorrectDirectorySeperator(string path)
 	{
-		path = path.Replace('/', Path.DirectorySeparatorChar);
-		return path;
+		return path.Replace('/', Path.DirectorySeparatorChar);
 	}
+
+	/// <inheritdoc cref="FixPathByCorrectDirectorySeperator(string)"/>
+	public static string FixPathByCorrectDirectorySeperator(ref string path)
+		=> path = FixPathByCorrectDirectorySeperator(path);
 
 	/// <summary> Uses Newtonsoft JSON to deserialize </summary>
 	public static bool Load<LoadObjectType>(string fullPathWithExtension, out LoadObjectType loadedData, bool useDecryption = false, bool allowRestoreFromBackup = true)
@@ -24,8 +28,12 @@ public static class IOUtil
 		loadedData = default;
 		FixPathByCorrectDirectorySeperator(ref fullPathWithExtension);
 
+		// Try to load backup if file does not exists
 		if (!File.Exists(fullPathWithExtension))
-			return false;
+		{
+			Debug.LogError($"Failed to load file at path: {fullPathWithExtension} File does not exists");
+			return allowRestoreFromBackup && TrySaveRollbackAsMainFile(fullPathWithExtension) && Load<LoadObjectType>(fullPathWithExtension, out loadedData, useDecryption, false);
+		}
 
 		// load the serialized data from the file
 		try
@@ -50,12 +58,8 @@ public static class IOUtil
 			{
 				Debug.LogWarning($"Failed to load file at path: {fullPathWithExtension} Attempting to rollback. Error occured: {e}");
 
-				if (TrySaveRollbackAsMainFile(fullPathWithExtension))
-				{
-					// try to load again recursively
-					if (Load<LoadObjectType>(fullPathWithExtension, out loadedData, useDecryption, true))
-						return true;
-				}
+				if (TrySaveRollbackAsMainFile(fullPathWithExtension) && Load<LoadObjectType>(fullPathWithExtension, out loadedData, useDecryption, false))
+					return true;
 			}
 				
 			// if we hit here, one possibility is that the backup file is also corrupt
@@ -119,7 +123,10 @@ public static class IOUtil
 		try
 		{
 			if (!File.Exists(backupFilePath))
-				throw new Exception("Tried to Rollback but no backup file exists to roll back to.");
+			{
+				Debug.LogError("Tried to Rollback but no backup file exists to roll back to.");
+				return false;
+			}
 			
 			File.Copy(backupFilePath, fullPathWithExtension, true);
 			Debug.Log($"Saved backup as main file to: {fullPathWithExtension}");

@@ -6,6 +6,11 @@ public static partial class NewtonsoftJSONInitializer
 {
 	// Initialize
 	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+	private static void OnBeforeSceneLoad()
+	{
+		ConfigureSettings();
+	}
+
 	private static void ConfigureSettings()
 	{
 		JsonConvert.DefaultSettings = () => new JsonSerializerSettings
@@ -31,7 +36,7 @@ public static partial class NewtonsoftJSONInitializer
 public static partial class NewtonsoftJSONInitializer
 {
 	[InitializeOnLoadMethod]
-	private static void E_ConfigureSettings()
+	private static void OnEditorInitializeOnLoad()
 	{
 		ConfigureSettings();
 	}
