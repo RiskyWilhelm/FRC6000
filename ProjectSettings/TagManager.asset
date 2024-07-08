@@ -4,9 +4,10 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - Chicken
-  - Fox
-  - AITargetDummy
+  - ChickenAI
+  - ChickenAIHome
+  - FoxAI
+  - FoxAIHome
   layers:
   - Default
   - TransparentFX
@@ -15,7 +16,7 @@ TagManager:
   - Water
   - UI
   - Dynamic
-  - 
+  - Triggers
   - 
   - 
   - 
@@ -41,11 +42,14 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Front
-    uniqueID: 3431905489
+  - name: Behind
+    uniqueID: 1289443183
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Front
+    uniqueID: 3431905489
     locked: 0
   m_RenderingLayers:
   - Default

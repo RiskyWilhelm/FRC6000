@@ -1,7 +1,11 @@
 {
     "name": "FRC.Core.Runtime",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:516a5277b8c3b4f4c8cc86b77b1591ff",
+        "GUID:33661e06c33d31b4c9223810bf503247"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
