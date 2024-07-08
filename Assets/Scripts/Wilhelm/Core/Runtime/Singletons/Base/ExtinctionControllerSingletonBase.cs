@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 
 public abstract partial class ExtinctionControllerSingletonBase<SingletonType> : MonoBehaviourSingletonBase<SingletonType>
 	where SingletonType : ExtinctionControllerSingletonBase<SingletonType>
@@ -25,16 +26,18 @@ public abstract partial class ExtinctionControllerSingletonBase<SingletonType> :
 	[ContextMenuItem(nameof(MoveVisualToCurrentRate), nameof(MoveVisualToCurrentRate))]
 	protected int _currentRate;
 
-	[field: SerializeField]
-	public int MaxRate { get; protected set; }
+	[SerializeField]
+	protected int minRate;
 
-	// TODO: Ridicilous. Refactor in next version
-	public virtual int CurrentRate
+	[SerializeField]
+	protected int maxRate;
+
+	public int CurrentRate
 	{
 		get => _currentRate;
 		protected set
 		{
-			var newValue = Math.Clamp(value, 0, MaxRate);
+			var newValue = Math.Clamp(value, minRate, maxRate);
 
 			if (_currentRate != newValue)
 			{
@@ -43,6 +46,16 @@ public abstract partial class ExtinctionControllerSingletonBase<SingletonType> :
 			}
 		}
 	}
+
+
+	#endregion
+
+	[Header("ExtinctionControllerSingletonBase Events")]
+	#region ExtinctionControllerSingletonBase Events
+
+	public UnityEvent onHitMinRate = new();
+
+	public UnityEvent onHitMaxRate = new();
 
 
 	#endregion
@@ -59,12 +72,9 @@ public abstract partial class ExtinctionControllerSingletonBase<SingletonType> :
 	/// <summary> Does a horizontal movement </summary>
 	protected virtual void MoveVisualToCurrentRate()
 	{
-		// Get horizontal step position for every x rate dependent on Max Rect Transform width to show correctly
-		var rateScreenStepHPosition = maxRTransform.rect.width;
-
-		// Handle division by zero
-		if (MaxRate != 0)
-			rateScreenStepHPosition = (maxRTransform.rect.width / MaxRate);
+		// Get horizontal step position for each rate change
+		var rateScreenStepHorizontally = Math.Abs(minRate) + Math.Abs(maxRate);
+		var rateScreenStepHPosition = checked(maxRTransform.rect.width / rateScreenStepHorizontally);
 
 		// Show the current rate
 		currentRateRTransform.anchoredPosition = new Vector2(
@@ -78,8 +88,19 @@ public abstract partial class ExtinctionControllerSingletonBase<SingletonType> :
 	public void DecreaseRate()
 		=> CurrentRate--;
 
+	private void CheckRates()
+	{
+		if (CurrentRate == minRate)
+			onHitMinRate?.Invoke();
+		else if (CurrentRate == maxRate)
+			onHitMaxRate?.Invoke();
+	}
+
 	protected virtual void OnCurrentRateChanged(int newValue)
-		=> MoveVisualToCurrentRate();
+	{
+		MoveVisualToCurrentRate();
+		CheckRates();
+	}
 }
 
 

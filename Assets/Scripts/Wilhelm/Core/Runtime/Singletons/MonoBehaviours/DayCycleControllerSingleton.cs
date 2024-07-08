@@ -15,7 +15,7 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 
 	#endregion
 
-	[Header("DayCycleControllerSingleton Day")]
+	[Header("DayCycleControllerSingleton Game Day")]
 	#region DayCycleControllerSingleton Day
 
 	[SerializeField]
@@ -30,38 +30,75 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 
 	#endregion
 
-	[Header("DayCycleControllerSingleton Time")]
-	#region DayCycleControllerSingleton Time
+	[Header("DayCycleControllerSingleton Game Time")]
+	#region DayCycleControllerSingleton Game Time
 
 	[NonSerialized]
-	private GameTime _time;
+	private DateTime _gameTime;
 
 	[NonSerialized]
-	private bool isTimeInitialized;
+	private DaylightType _gameTimeDaylightType;
 
-	public GameTime Time
+	[NonSerialized]
+	private DayType _gameTimeDayType;
+
+	[NonSerialized]
+	private bool isGameTimeInitialized;
+
+	public DaylightType GameTimeDaylightType
+	{
+		get => _gameTimeDaylightType;
+		set
+		{
+			if (value == _gameTimeDaylightType)
+				return;
+
+			_gameTimeDaylightType = value;
+			onDaylightTypeChanged?.Invoke(value);
+		}
+	}
+
+	public DayType GameTimeDayType
+	{
+		get => _gameTimeDayType;
+		set
+		{
+			if (value == _gameTimeDayType)
+				return;
+
+			_gameTimeDayType = value;
+			onDayTypeChanged?.Invoke(value);
+		}
+	}
+
+	public DateTime GameTime
 	{
 		get
 		{
-			if (!isTimeInitialized)
+			if (!isGameTimeInitialized)
 				InitializeTime();
 
-			return _time;
+			return _gameTime;
 		}
 
-		private set
+		set
 		{
-			if (value.daylightType != _time.daylightType)
-				onDaylightTypeChanged?.Invoke(value.daylightType);
+			if (IsDaylight(value))
+				GameTimeDaylightType = DaylightType.Light;
+			else
+				GameTimeDaylightType = DaylightType.Night;
 
-			if (value.dayType != _time.dayType)
-				onDayTypeChanged?.Invoke(value.dayType);
+			if (value.Hour >= 12)
+				GameTimeDayType = DayType.PM;
+			else
+				GameTimeDayType = DayType.AM;
 
-			if ((value.dayType is DayType.AM) && (value.hour == 0) && (_time.hour != 0))
+			if ((_gameTimeDayType is DayType.AM) && (value.Hour == 0) && (_gameTime.Hour != 0))
 				onDayChanged?.Invoke();
 
-			onGameTimeChanged?.Invoke(value);
-			_time = value;
+			_gameTime = value;
+			onGameTimeChanged?.Invoke(value, "HH:mm:ss tt");
+			this.transform.rotation = Quaternion.Euler(new Vector3(0, 0, value.ToAngleDegree()));
 		}
 	}
 
@@ -71,7 +108,7 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 	[Header("DayCycleControllerSingleton Events")]
 	#region DayCycleControllerSingleton Events
 
-	public UnityEvent<GameTime> onGameTimeChanged = new();
+	public UnityEvent<DateTime, string> onGameTimeChanged = new();
 
 	public UnityEvent<DaylightType> onDaylightTypeChanged = new();
 
@@ -92,12 +129,10 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 
 	private void InitializeTime()
 	{
-		if (!isTimeInitialized)
+		if (!isGameTimeInitialized)
 		{
-			_time = GameTimeUtils.AngleToGameTime(this.transform.rotation.eulerAngles.z);
-			onDaylightTypeChanged?.Invoke(_time.daylightType);
-			onDayTypeChanged?.Invoke(_time.dayType);
-			isTimeInitialized = true;
+			GameTime = DateTimeUtils.AngleDegreeToDateTime(this.transform.rotation.eulerAngles.z);
+			isGameTimeInitialized = true;
 		}
 	}
 
@@ -105,34 +140,30 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 	// Update
 	private void Update()
 	{
+		GameTime = _gameTime.AddSeconds(daySpeed * Time.deltaTime);
 		UpdateSun();
-		Time = GameTimeUtils.AngleToGameTime(this.transform.rotation.eulerAngles.z);
 	}
 
 	private void UpdateSun()
 	{
-		// Rotate sun
-		this.transform.Rotate(0, 0, -daySpeed * UnityEngine.Time.deltaTime);
-
-		// Change color based on rotation
-		var infiniteDayProgress = MathF.Abs(MathF.Cos(_time.ToProgress01() * MathF.PI));
+		// Change color based on time
+		var infiniteDayProgress = MathF.Abs(MathF.Cos(_gameTime.ToProgress01() * MathF.PI));
 		sun.color = Color.Lerp(dayLightColor, dayNightColor, infiniteDayProgress);
 	}
+
+	public bool IsDaylight(DateTime a)
+	{
+		return (a.Hour >= 6) && (a.Hour <= 19);
+	}
+
+	public bool IsDaylight()
+		=> IsDaylight(_gameTime);
 }
 
 
 #if UNITY_EDITOR
 
 public sealed partial class DayCycleControllerSingleton
-{
-	public string e_Time;
-	public string e_Time12;
-
-	private void LateUpdate()
-	{
-		/*e_Time = _time.ToString();
-		e_Time12 = _time.To12HourTime().ToString();*/
-	}
-}
+{ }
 
 #endif

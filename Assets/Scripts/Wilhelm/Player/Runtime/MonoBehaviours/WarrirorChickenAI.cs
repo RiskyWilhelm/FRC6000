@@ -314,7 +314,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 
 	protected override void OnStateChangedToDead()
 	{
-		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.WarrirorChicken]?.Invoke();
+		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.WarrirorChicken]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
 	}
@@ -383,9 +383,6 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	// Dispose
 	protected override void OnDisable()
 	{
-		if (GameControllerSingleton.IsQuitting)
-			return;
-
 		DoFrameDependentPhysics();
 		base.OnDisable();
 	}

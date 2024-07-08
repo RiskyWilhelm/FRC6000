@@ -4,12 +4,8 @@ public abstract partial class StateMachineDrivenPlayerBase : PlayerBase
 {
 	#region StateMachineDrivenPlayerBase Other
 
-#if UNITY_EDITOR
 	[SerializeField]
-#else
-	[NonSerialized]
-#endif
-	private PlayerStateType _state;
+	private PlayerStateType _state = PlayerStateType.Idle;
 
 	protected PlayerStateType State
 	{

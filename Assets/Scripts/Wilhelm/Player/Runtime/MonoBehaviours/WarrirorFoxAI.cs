@@ -43,7 +43,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 	[field: NonSerialized]
 	public bool IsCaughtMeal {  get; private set; }
 
-	[field: NonSerialized]
+	[field: SerializeField]
 	public bool OpenAIHomeGate { get; private set; }
 
 	[field: NonSerialized]
@@ -60,7 +60,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 	protected override void OnEnable()
 	{
 		goHomeBackTimer.ResetAndRandomize();
-		UpdateByDaylightType(DayCycleControllerSingleton.Instance.Time.daylightType);
+		UpdateByDaylightType(DayCycleControllerSingleton.Instance.GameTimeDaylightType);
 		RefreshAttackState();
 
 		base.OnEnable();
@@ -100,6 +100,9 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 					acceptedTargetTypeList.Add(TargetType.ChickenHome);
 			}
 			break;
+
+			default:
+			goto case DaylightType.Light;
 		}
 	}
 
@@ -346,7 +349,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 
 	protected override void OnStateChangedToDead()
 	{
-		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.WarrirorFox]?.Invoke();
+		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.WarrirorFox]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
 	}
@@ -429,18 +432,12 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 	// Dispose
 	protected override void OnDisable()
 	{
-		if (GameControllerSingleton.IsQuitting)
-			return;
-
 		DoFrameDependentPhysics();
 		base.OnDisable();
 	}
 
 	private void OnDestroy()
 	{
-		if (GameControllerSingleton.IsQuitting)
-			return;
-
 		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.RemoveListener(OnDaylightTypeChanged);
 	}
 }

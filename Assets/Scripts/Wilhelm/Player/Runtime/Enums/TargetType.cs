@@ -1,5 +1,7 @@
 public enum TargetType
 {
+	None,
+
 	BabyFox,
 
 	BabyChicken,

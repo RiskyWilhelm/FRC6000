@@ -4,14 +4,23 @@ using UnityEngine;
 [Serializable]
 public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 {
-	private float _currentSecond;
+	[SerializeField]
+	private TimeType _tickType;
 
 	[SerializeField]
-    private float _tickSecond;
+	private float _tickSecond;
+
+	private float _currentSecond;
 
 	public readonly float CurrentSecond => _currentSecond;
 
 	public readonly bool HasEnded => (_currentSecond >= _tickSecond);
+
+	public TimeType TickType
+	{
+		readonly get => _tickType;
+		set => _tickType = value;
+	}
 
 	public float TickSecond
 	{
@@ -21,10 +30,11 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 
 
     // Initialize
-    public Timer(float tickSecond)
+    public Timer(float tickSecond, TimeType tickType = TimeType.Scaled)
     {
         this._tickSecond = tickSecond;
         this._currentSecond = 0;
+		this._tickType = tickType;
     }
 
 
@@ -33,7 +43,21 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 	public bool Tick()
     {
 		if (_currentSecond < _tickSecond)
-			_currentSecond += Time.deltaTime;
+		{
+			switch (_tickType)
+			{
+				case TimeType.Scaled:
+				_currentSecond += Time.deltaTime;
+				break;
+
+				case TimeType.Unscaled:
+				_currentSecond += Time.unscaledDeltaTime;
+				break;
+
+				default:
+					goto case TimeType.Scaled;
+			}
+		}
 
         return _currentSecond >= _tickSecond;
     }
@@ -57,17 +81,17 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 
 	public bool Equals(Timer other)
 	{
-		return (_currentSecond, _tickSecond) == (other._currentSecond, other._tickSecond);
+		return (_tickType, _currentSecond, _tickSecond) == (other._tickType, other._currentSecond, other._tickSecond);
 	}
 
 	public bool Equals(TimerRandomized other)
 	{
-		return (_currentSecond, _tickSecond) == (other.CurrentSecond, other.TickSecond);
+		return (_tickType, _currentSecond, _tickSecond) == (other.TickType, other.CurrentSecond, other.TickSecond);
 	}
 
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(_currentSecond, _tickSecond);
+		return HashCode.Combine(_tickType, _currentSecond, _tickSecond);
 	}
 
 	public static bool operator ==(Timer left, Timer right)

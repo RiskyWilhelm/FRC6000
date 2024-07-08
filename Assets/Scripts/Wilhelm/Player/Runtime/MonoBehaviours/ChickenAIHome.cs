@@ -126,7 +126,7 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget, IFrameDependentPh
 	{
 		spawnedAI = null;
 
-		switch (DayCycleControllerSingleton.Instance.Time.daylightType)
+		switch (DayCycleControllerSingleton.Instance.GameTimeDaylightType)
 		{
 			case DaylightType.Light:
 			{
@@ -147,6 +147,9 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget, IFrameDependentPh
 				}
 			}
 			break;
+
+			default:
+			goto case DaylightType.Light;
 		}
 
 		return false;
@@ -192,9 +195,7 @@ public sealed partial class ChickenAIHome : HomeBase, ITarget, IFrameDependentPh
 
 	private void OnDead()
 	{
-		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.ChickenHome]?.Invoke();
-
-		// TODO: Decrease the extinction rate of Chickens
+		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.ChickenHome]?.Invoke();
 		IsDead = true;
 	}
 

@@ -4,8 +4,7 @@ using Cysharp.Text;
 using Newtonsoft.Json;
 using UnityEngine;
 
-// Copyright belongs to: https://github.com/shapedbyrainstudios/save-load-system
-// Save&Load
+// Save&Load Copyright belongs to: https://github.com/shapedbyrainstudios/save-load-system - I upgraded the code
 public static class IOUtils
 {
 	public const string encryptionWord = "FRC";
@@ -73,7 +72,6 @@ public static class IOUtils
 	public static void Save<SaveObjectType>(SaveObjectType data, string fullPathWithExtension, bool useEncryption = false, bool createBackup = true)
 	{
 		FixPathByCorrectDirectorySeperator(ref fullPathWithExtension);
-		string backupFilePath = ZString.Concat(fullPathWithExtension, backupExtension);
 
 		try
 		{
@@ -93,7 +91,7 @@ public static class IOUtils
 			// verify the newly saved file can be loaded successfully
 			// if the data can be verified, back it up
 			if (Load<SaveObjectType>(fullPathWithExtension, out _, useEncryption, false) && createBackup)
-				File.Copy(fullPathWithExtension, backupFilePath, true);
+				File.Copy(fullPathWithExtension, ZString.Concat(fullPathWithExtension, backupExtension), true);
 			else
 				throw new Exception($"Save file could not be verified and backup could not be created at path: {fullPathWithExtension}");
 		}
@@ -101,6 +99,20 @@ public static class IOUtils
 		{
 			Debug.LogError($"Error occured when trying to save data to file at path: {fullPathWithExtension} Error occured: {e}");
 		}
+	}
+
+	public static void Delete(string fullPathWithExtension, bool deleteBackup = true)
+	{
+		if (!File.Exists(fullPathWithExtension))
+		{
+			Debug.LogError($"Failed to delete file at path: {fullPathWithExtension} File does not exists");
+			return;
+		}
+
+		if (deleteBackup)
+			File.Delete(ZString.Concat(fullPathWithExtension, backupExtension));
+
+		File.Delete(fullPathWithExtension);
 	}
 
 	/// <summary> Simple implementation of XOR encryption </summary>

@@ -8,7 +8,7 @@ public partial class TMP_TextUpdater : MonoBehaviour
 
 
     // Update
-    public void UpdateText(in string str)
+    public void UpdateText(string str)
     {
         textField.text = str;
     }

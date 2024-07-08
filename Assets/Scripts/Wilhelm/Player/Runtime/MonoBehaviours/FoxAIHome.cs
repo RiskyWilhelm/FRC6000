@@ -95,7 +95,7 @@ public sealed partial class FoxAIHome : HomeBase, IFrameDependentPhysicsInteract
 	{
 		spawnedAI = null;
 
-		if ((DayCycleControllerSingleton.Instance.Time.daylightType is DaylightType.Night) && nightDaySpawnTimer.Tick())
+		if ((DayCycleControllerSingleton.Instance.GameTimeDaylightType is DaylightType.Night) && nightDaySpawnTimer.Tick())
 		{
 			nightDaySpawnTimer.ResetAndRandomize();
 			return TrySpawnFromLuckList(nightDaySpawnPoolList, out spawnedAI);

@@ -1,5 +1,7 @@
 public enum PlayerStateType
 {
+	None,
+
 	Idle,
 
 	Walking,

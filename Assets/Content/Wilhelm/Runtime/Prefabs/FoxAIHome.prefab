@@ -401,7 +401,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   nightDaySpawnPoolList: []
   nightDaySpawnTimer:
+    _tickType: 1
     _tickSecond: 7.5
     _minInclusiveTickSeconds: 7.5
     _maxExclusiveTickSeconds: 12.5
-  acceptedTargetTypeList: 0000000004000000
+  acceptedTargetTypeList: 0100000005000000

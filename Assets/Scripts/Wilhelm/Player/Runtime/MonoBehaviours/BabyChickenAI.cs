@@ -39,7 +39,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	// Initialize
 	protected override void OnEnable()
 	{
-		PlayerControllerSingleton.Instance.onTargetBirthEventDict[TargetType.BabyChicken]?.Invoke();
+		PlayerControllerSingleton.onTargetBirthEventDict[TargetType.BabyChicken]?.Invoke();
 		goHomeBackTimer.ResetAndRandomize();
 
 		base.OnEnable();
@@ -140,7 +140,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 	protected override void OnStateChangedToDead()
 	{
-		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.BabyChicken]?.Invoke();
+		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.BabyChicken]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
 	}
@@ -194,7 +194,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 	public void OnStolenByFoxHome(FoxAIHome foxAIHome)
 	{
-		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.BabyChicken]?.Invoke();
+		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.BabyChicken]?.Invoke();
 		ReleaseOrDestroySelf();
 	}
 
@@ -210,9 +210,6 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	// Dispose
 	protected override void OnDisable()
 	{
-		if (GameControllerSingleton.IsQuitting)
-			return;
-
 		Carrier?.StopCarrying(this);
 		DoFrameDependentPhysics();
 		base.OnDisable();

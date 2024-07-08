@@ -16,7 +16,21 @@ public sealed partial class SaveDataControllerSingleton : MonoBehaviourSingleton
 
 	#region SaveDataControllerSingleton Save
 
-	public SaveData Save { get; private set; } = new();
+	private static SaveData _data;
+
+	public static SaveData Data
+	{
+		get
+		{
+			if (_data == null)
+			{
+				Instance.LoadDataFromFile();
+				_data ??= new SaveData();
+			}
+
+            return _data;
+		}
+	}
 
 	public static string FullSavePath => Path.Combine(Application.persistentDataPath, IOUtils.FixPathByCorrectDirectorySeperator("FRCMainSave.json"));
 
@@ -24,33 +38,29 @@ public sealed partial class SaveDataControllerSingleton : MonoBehaviourSingleton
 	#endregion
 
 
-	// Initialize
-	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-	private static void OnBeforeSceneLoad()
-	{
-		if (!IsInstanceLiving)
-			FindOrCreate();
-
-        Instance.LoadDataFromFile();
-		Debug.LogFormat("Initialized '{0}'", Instance.GameObjectName);
-	}
-
-
 	// Update
 	public void LoadDataFromFile()
     {
-        if (IOUtils.Load<SaveData>(FullSavePath, out SaveData loadedData))
-		{
-            Save = loadedData;
-			onLoad?.Invoke(Save);
-		}
+        if (IOUtils.Load<SaveData>(FullSavePath, out _data))
+			onLoad?.Invoke(_data);
     }
 
     public void SaveDataToFile()
     {
-        IOUtils.Save<SaveData>(Save, FullSavePath);
-		onSave?.Invoke(Save);
+        IOUtils.Save<SaveData>(_data, FullSavePath);
+		onSave?.Invoke(_data);
     }
+
+	public void DeleteSaveDataFile()
+	{
+		IOUtils.Delete(FullSavePath);
+	}
+
+	public void FreshSaveData()
+	{
+		_data = new();
+		onLoad?.Invoke(_data);
+	}
 }
 
 

@@ -1,40 +1,44 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public sealed partial class PlayerControllerSingleton : MonoBehaviourSingletonBase<PlayerControllerSingleton>
 {
 	#region PlayerControllerSingleton Events
 
-	public readonly Dictionary<TargetType, Action> onTargetBirthEventDict = new();
+	private static readonly Dictionary<TargetType, Action> _onTargetBirthEventDict = new();
 
-	public readonly Dictionary<TargetType, Action> onTargetDeathEventDict = new();
+	private static readonly Dictionary<TargetType, Action> _onTargetDeathEventDict = new();
+
+	public static Dictionary<TargetType, Action> onTargetBirthEventDict
+	{
+		get
+		{
+			if (_onTargetBirthEventDict.Count == 0)
+			{
+				foreach (TargetType iteratedTargetType in Enum.GetValues(typeof(TargetType)))
+					_onTargetBirthEventDict.TryAdd(iteratedTargetType, null);
+			}
+
+			return _onTargetBirthEventDict;
+		}
+	}
+
+	public static Dictionary<TargetType, Action> onTargetDeathEventDict
+	{
+		get
+		{
+			if (_onTargetDeathEventDict.Count == 0)
+			{
+				foreach (TargetType iteratedTargetType in Enum.GetValues(typeof(TargetType)))
+					_onTargetDeathEventDict.TryAdd(iteratedTargetType, null);
+			}
+
+			return _onTargetDeathEventDict;
+		}
+	}
 
 
 	#endregion
-
-
-	// Initialize
-	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-	private static void OnRuntimeInitialization()
-	{
-		if (!IsInstanceLiving)
-			FindOrCreate();
-
-		foreach (TargetType iteratedTargetType in Enum.GetValues(typeof(TargetType)))
-		{
-			Instance.onTargetBirthEventDict.Add(iteratedTargetType, null);
-			Instance.onTargetDeathEventDict.Add(iteratedTargetType, null);
-		}
-
-		Debug.LogFormat("Initialized PlayerController '{0}'", Instance.GameObjectName);
-	}
-
-	protected override void Awake()
-	{
-		DontDestroyOnLoad(Instance);
-		base.Awake();
-	}
 }
 
 

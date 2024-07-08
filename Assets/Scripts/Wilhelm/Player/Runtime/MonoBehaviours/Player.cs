@@ -125,7 +125,16 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 		base.Update();
 	}
 
-	
+	public void EnablePlayerInput()
+	{
+		inputActions.Player.Enable();
+	}
+
+	public void DisablePlayerInput()
+	{
+		inputActions.Player.Disable();
+	}
+
 	public void Carry(ICarryable carryable, Rigidbody2D carryableRigidbody)
 	{
 		currentCarried = new (carryable, carryableRigidbody);
@@ -421,14 +430,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 		var distSelfToDestination = (worldPosition - selfRigidbody.position);
 		var isInsideAngle = Vector3.Angle(Vector2.up, distSelfToDestination) <= (jumpingAngle * 0.5f);
 		return isInsideAngle;
-	}
-
-
-	// Dispose
-	private void OnDisable()
-	{
-		State = PlayerStateType.Idle;
-		inputActions.Player.Disable();
 	}
 }
 

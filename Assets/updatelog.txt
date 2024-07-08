@@ -16,6 +16,8 @@ will spawn less. - update: Foxes wont spawn in daytime but instead, if any chick
 ✅ Create Warriror Fox (Foxight) that spawns at night, walks, runs and attacks from/to chickens only
 ❌ Create Ranger Fox (Foxhood) that spawns at night, walks, runs and attacks from/to chickens only
 ✅ Create Save&Load system for saving a file into the disk - NewtonsoftJSON should be used for serializing data
+✅ Create restart game UI
+✅ Game able to restart
 ❌ Update all of the visuals of the game
 
 V1.1

@@ -4,7 +4,8 @@ using UnityEngine;
 [Serializable]
 public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 {
-	private float _currentSecond;
+	[SerializeField]
+	private TimeType _tickType;
 
 	[SerializeField]
 	private float _tickSecond;
@@ -15,12 +16,17 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 	[SerializeField]
 	private float _maxExclusiveTickSeconds;
 
-	public readonly float CurrentSecond
-	{
-		get => _currentSecond;
-	}
+	private float _currentSecond;
+
+	public readonly float CurrentSecond => _currentSecond;
 
 	public readonly bool HasEnded => (_currentSecond >= _tickSecond);
+
+	public TimeType TickType
+	{
+		readonly get => _tickType;
+		set => _tickType = value;
+	}
 
 	public float TickSecond
 	{
@@ -44,29 +50,25 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 
 
 	// Initialize
-	public TimerRandomized(float tickSecond)
+	public TimerRandomized(float tickSecond, TimeType tickType = TimeType.Scaled)
 	{
 		this._minInclusiveTickSeconds = 0;
 		this._maxExclusiveTickSeconds = 0;
 		this._tickSecond = tickSecond;
 		this._currentSecond = 0;
+		this._tickType = tickType;
 	}
 
-	public TimerRandomized(float tickSecond, float minInclusiveTickTime, float maxExclusiveTickTime)
+	public TimerRandomized(float tickSecond, float minInclusiveTickTime, float maxExclusiveTickTime, TimeType tickType = TimeType.Scaled)
+		: this(tickSecond, tickType)
 	{
 		this._minInclusiveTickSeconds = minInclusiveTickTime;
 		this._maxExclusiveTickSeconds = maxExclusiveTickTime;
-		this._tickSecond = tickSecond;
-		this._currentSecond = 0;
 	}
 
-	public TimerRandomized(float minInclusiveTickTime, float maxExclusiveTickTime)
-	{
-		this._minInclusiveTickSeconds = minInclusiveTickTime;
-		this._maxExclusiveTickSeconds = maxExclusiveTickTime;
-		this._tickSecond = Mathf.Abs(randomizer.NextFloat(_minInclusiveTickSeconds, _maxExclusiveTickSeconds));
-		this._currentSecond = 0;
-	}
+	public TimerRandomized(float minInclusiveTickTime, float maxExclusiveTickTime, TimeType tickType = TimeType.Scaled)
+		: this(Mathf.Abs(randomizer.NextFloat(minInclusiveTickTime, minInclusiveTickTime)), minInclusiveTickTime, maxExclusiveTickTime, tickType)
+	{ }
 
 
 	// Update
@@ -74,7 +76,21 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 	public bool Tick()
 	{
 		if (_currentSecond < _tickSecond)
-			_currentSecond += Time.deltaTime;
+		{
+			switch (_tickType)
+			{
+				case TimeType.Scaled:
+				_currentSecond += Time.deltaTime;
+				break;
+
+				case TimeType.Unscaled:
+				_currentSecond += Time.unscaledDeltaTime;
+				break;
+
+				default:
+					goto case TimeType.Scaled;
+			}
+		}
 
 		return _currentSecond >= _tickSecond;
 	}
@@ -111,17 +127,17 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 
 	public bool Equals(TimerRandomized other)
 	{
-		return (_currentSecond, _tickSecond, _minInclusiveTickSeconds, _maxExclusiveTickSeconds) == (other._currentSecond, other._tickSecond, other._minInclusiveTickSeconds, other._maxExclusiveTickSeconds);
+		return (_tickType, _currentSecond, _tickSecond, _minInclusiveTickSeconds, _maxExclusiveTickSeconds) == (other._tickType, other._currentSecond, other._tickSecond, other._minInclusiveTickSeconds, other._maxExclusiveTickSeconds);
 	}
 
 	public bool Equals(Timer other)
 	{
-		return (_currentSecond, _tickSecond) == (other.CurrentSecond, other.TickSecond);
+		return (_tickType, _currentSecond, _tickSecond) == (other.TickType, other.CurrentSecond, other.TickSecond);
 	}
 
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(_minInclusiveTickSeconds, _maxExclusiveTickSeconds, _currentSecond, _tickSecond);
+		return HashCode.Combine(_tickType, _currentSecond, _tickSecond, _minInclusiveTickSeconds, _maxExclusiveTickSeconds);
 	}
 
 	public static bool operator ==(TimerRandomized left, TimerRandomized right)

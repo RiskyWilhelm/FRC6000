@@ -39,7 +39,7 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 	// Initialize
 	protected override void OnEnable()
 	{
-		PlayerControllerSingleton.Instance.onTargetBirthEventDict[TargetType.BabyFox]?.Invoke();
+		PlayerControllerSingleton.onTargetBirthEventDict[TargetType.BabyFox]?.Invoke();
 		goHomeBackTimer.ResetAndRandomize();
 
 		base.OnEnable();
@@ -140,7 +140,7 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 
 	protected override void OnStateChangedToDead()
 	{
-		PlayerControllerSingleton.Instance.onTargetDeathEventDict[TargetType.BabyFox]?.Invoke();
+		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.BabyFox]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
 	}
@@ -204,9 +204,6 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 	// Dispose
 	protected override void OnDisable()
 	{
-		if (GameControllerSingleton.IsQuitting)
-			return;
-
 		Carrier?.StopCarrying(this);
 		DoFrameDependentPhysics();
 		base.OnDisable();

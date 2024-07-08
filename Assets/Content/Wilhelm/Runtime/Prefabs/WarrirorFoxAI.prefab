@@ -82,28 +82,33 @@ MonoBehaviour:
   _state: 0
   <Health>k__BackingField: 5
   <MaxHealth>k__BackingField: 5
-  <TargetTag>k__BackingField: 4
-  acceptedTargetTypeList: 0100000003000000
+  <TargetTag>k__BackingField: 5
+  acceptedTargetTypeList: 030000000200000004000000
   runawayTargetTypeList: 
   idleMaxDistance: 10
   idleTimer:
+    _tickType: 1
     _tickSecond: 2
   walkingForce: 10
   walkingMaxVelocity: {x: 6, y: 0}
   runningForce: 10
   runningMaxVelocity: {x: 12, y: 0}
   jumpingReleaseStateTimer:
+    _tickType: 1
     _tickSecond: 0.5
   jumpingBlockStateTimer:
+    _tickType: 1
     _tickSecond: 0.25
   jumpingForce: 200
   jumpingAngle: 45
   goHomeBackTimer:
+    _tickType: 1
     _tickSecond: 10
     _minInclusiveTickSeconds: 10
     _maxExclusiveTickSeconds: 20
   singleNormalAttackDamage: 1
   singleNormalAttackTimer:
+    _tickType: 1
     _tickSecond: 0.5015787
     _minInclusiveTickSeconds: 0.5
     _maxExclusiveTickSeconds: 0.75
@@ -119,7 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc2bcaf3cb83ecf4cbbd979553bc45f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  updateType: 0
+  updateType: 1
 --- !u!1 &3556564923247605855
 GameObject:
   m_ObjectHideFlags: 0

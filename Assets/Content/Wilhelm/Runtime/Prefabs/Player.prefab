@@ -407,12 +407,13 @@ MonoBehaviour:
   runningForce: 15
   runningMaxVelocity: {x: 15, y: 0}
   jumpingReleaseStateTimer:
+    _tickType: 1
     _tickSecond: 1
   jumpingBlockStateTimer:
+    _tickType: 1
     _tickSecond: 0.25
   jumpingForce: 240
   jumpingAngle: 45
-  isInteractionBlocked: 0
   defaultCarryPoint: {fileID: 7888952571465630550}
 --- !u!114 &7600928671570595875
 MonoBehaviour:
@@ -439,4 +440,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc2bcaf3cb83ecf4cbbd979553bc45f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  updateType: 0
+  updateType: 1

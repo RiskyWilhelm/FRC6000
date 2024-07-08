@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBehaviour
     where SingletonType : MonoBehaviourSingletonBase<SingletonType>
 {
@@ -9,23 +10,23 @@ public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBe
     {
         get
         {
-            if (!_instance)
-                FindOrCreate();
+            if (_instance == null)
+                FindOrTryCreateSingleton();
 
             return _instance;
         }
     }
 
-    public static bool IsInstanceLiving => _instance;
+    public static bool IsAnyInstanceLiving => (_instance != null) || FindFirstObjectByType<SingletonType>(findObjectsInactive: FindObjectsInactive.Include);
 
-    protected virtual string GameObjectName => typeof(SingletonType).Name;
+	public virtual string GameObjectName => typeof(SingletonType).Name;
 
 
 	// Initialize
 	protected virtual void Awake()
     {
         // If other instance is living
-        if (Instance && (_instance != this))
+        if ((_instance != null) && (_instance != this))
         {
             DestroyImmediate(this.gameObject);
             return;
@@ -34,23 +35,36 @@ public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBe
         _instance = (this as SingletonType);
     }
 
-	protected static void FindOrCreate()
-	{
-        // Try to find
-		_instance = FindFirstObjectByType<SingletonType>(findObjectsInactive: FindObjectsInactive.Include);
+    protected static void TryCreateSingleton()
+    {
+        if (GameControllerPersistentSingleton.IsQuitting || SceneControllerPersistentSingleton.IsActiveSceneChanging)
+            throw new System.Exception("Cant create Singleton. You are probably trying to instantiate in OnDestroy() or OnDisable()");
 
-        // If still cant find, try to create
-        if (!_instance)
-        {
-            var newSingleton = new GameObject(typeof(SingletonType).Name, typeof(SingletonType)).GetComponent<SingletonType>();
-            newSingleton.name = newSingleton.GameObjectName;
+		_instance = new GameObject(typeof(SingletonType).Name, typeof(SingletonType)).GetComponent<SingletonType>();
+		_instance.name = _instance.GameObjectName;
 
 #if UNITY_EDITOR
-            if (!Application.isPlaying)
-                newSingleton.hideFlags = HideFlags.DontSave | HideFlags.NotEditable;
+		if (!Application.isPlaying)
+			_instance.hideFlags = HideFlags.DontSave | HideFlags.NotEditable;
 #endif
-        }
 	}
+
+    protected static void FindOrTryCreateSingleton()
+    {
+        // Try to find
+        if (_instance == null)
+            _instance = FindFirstObjectByType<SingletonType>(findObjectsInactive: FindObjectsInactive.Include);
+
+        // If still cant find, try to create
+        if (_instance == null)
+            TryCreateSingleton();
+    }
+
+	protected static void DestroyAllInstances()
+    {
+        foreach (var iteratedInstance in FindObjectsByType<SingletonType>(FindObjectsInactive.Include, sortMode: FindObjectsSortMode.None))
+            DestroyImmediate(iteratedInstance.gameObject);
+    }
 }
 
 
