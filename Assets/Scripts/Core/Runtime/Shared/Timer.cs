@@ -10,11 +10,12 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 	[SerializeField]
 	private float _tickSecond;
 
+	[SerializeField]
 	private float _currentSecond;
 
 	public readonly float CurrentSecond => _currentSecond;
 
-	public readonly bool HasEnded => (_currentSecond >= _tickSecond);
+	public readonly bool HasEnded => (_currentSecond == 0f);
 
 	public TimeType TickType
 	{
@@ -33,7 +34,7 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
     public Timer(float tickSecond, TimeType tickType = TimeType.Scaled)
     {
         this._tickSecond = tickSecond;
-        this._currentSecond = 0;
+        this._currentSecond = tickSecond;
 		this._tickType = tickType;
     }
 
@@ -42,30 +43,36 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 	/// <returns> true if timer has ended </returns>
 	public bool Tick()
     {
-		if (_currentSecond < _tickSecond)
+		if (_currentSecond > 0f)
 		{
 			switch (_tickType)
 			{
 				case TimeType.Scaled:
-				_currentSecond += Time.deltaTime;
+				_currentSecond -= Time.deltaTime;
 				break;
 
 				case TimeType.Unscaled:
-				_currentSecond += Time.unscaledDeltaTime;
+				_currentSecond -= Time.unscaledDeltaTime;
 				break;
 
 				default:
 					goto case TimeType.Scaled;
 			}
 		}
+		
+		if (_currentSecond <= 0f)
+		{
+			_currentSecond = 0f;
+			return true;
+		}
 
-        return _currentSecond >= _tickSecond;
+        return false;
     }
 
 	/// <summary> Sets the <see cref="_currentSecond"/> to zero </summary>
 	public void Reset()
     {
-        _currentSecond = 0;
+        _currentSecond = _tickSecond;
     }
 
 	public override bool Equals(object obj)

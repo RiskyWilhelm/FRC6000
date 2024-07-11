@@ -22,10 +22,22 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 	private uint singleNormalAttackDamage = 1;
 
 	[SerializeField]
-	private TimerRandomized singleNormalAttackTimer = new(0.5f, 0.75f);
+	[Tooltip("Sticks the state")]
+	private Timer singleNormalAttackBlockTimer;
 
 	[NonSerialized]
 	private (ITarget target, Coroutine coroutine) currentSingleNormalAttack;
+
+	public bool IsSingleNormalAttacking => (currentSingleNormalAttack != default);
+
+
+	#endregion
+
+	[Header("BabyChickenAI Visuals")]
+	#region BabyChickenAI Visuals
+
+	[SerializeField]
+	private Animator animator;
 
 
 	#endregion
@@ -43,7 +55,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 	[field: NonSerialized]
 	public bool IsCaughtMeal {  get; private set; }
 
-	[field: SerializeField]
+	[field: NonSerialized]
 	public bool OpenAIHomeGate { get; private set; }
 
 	[field: NonSerialized]
@@ -122,10 +134,6 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 
 	public bool TrySetDestinationAwayFromOrToNearestTarget()
 	{
-		// Let the blocked states take control
-		if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Defending or PlayerStateType.Dead)
-			return false;
-
 		var isSetDestination = false;
 		var cachedRunawayTransformList = ListPool<Transform>.Get();
 		var cachedAcceptedTransformList = ListPool<Transform>.Get();
@@ -147,17 +155,17 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 		if (cachedRunawayTransformList.Count > 0)
 		{
 			this.transform.TryGetNearestTransform(cachedRunawayTransformList.GetEnumerator(), out Transform nearestTransform);
-			isSetDestination = TrySetDestinationAwayFromVector(nearestTransform.position);
+			isSetDestination = TrySetDestinationAwayFromVector(nearestTransform.position, isGroundedOnly: true);
 		}
 
 		// If there is any accepted target and cant runaway, catch the nearest target
 		if (!IsCaughtMeal && !isSetDestination && (cachedAcceptedTransformList.Count > 0))
 		{
 			this.transform.TryGetNearestTransform(cachedAcceptedTransformList.GetEnumerator(), out Transform nearestTransform);
-			isSetDestination = TrySetDestinationToVector(nearestTransform.position);
+			isSetDestination = TrySetDestinationToVector(nearestTransform.position, considerAsReachedDistance: 1.5f);
 		}
 
-		if (isSetDestination)
+		if (isSetDestination && !IsSingleNormalAttacking && (State is not PlayerStateType.Jumping or PlayerStateType.Flying or PlayerStateType.Attacking or PlayerStateType.Blocked or PlayerStateType.Dead))
 			State = PlayerStateType.Running;
 
 		ListPool<Transform>.Release(cachedRunawayTransformList);
@@ -171,8 +179,11 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 		if (!this.gameObject.activeSelf)
 			return false;
 
-		// If attacking, let it finish first
-		if (State == PlayerStateType.Attacking)
+		// If attacking or target dead, let it finish first
+		if (IsSingleNormalAttacking || target.IsDead)
+			return false;
+
+		if (State is PlayerStateType.Jumping or PlayerStateType.Flying or PlayerStateType.Attacking or PlayerStateType.Blocked or PlayerStateType.Dead)
 			return false;
 
 		// If target is not accepted, return
@@ -205,7 +216,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 			State = PlayerStateType.Idle;
 
 		currentSingleNormalAttack = default;
-		singleNormalAttackTimer.ResetAndRandomize();
+		singleNormalAttackBlockTimer.Reset();
 	}
 
 	private void RefreshAttackState()
@@ -215,26 +226,18 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 
 	private IEnumerator DoSingleNormalAttack(ITarget target)
 	{
-		// Cant attack the dead
-		if (target.IsDead)
-			yield break;
-
 		// Take full control over the body by setting state to attacking, ready timer
 		State = PlayerStateType.Attacking;
+
+		// Lock the state to Attacking until timer ends
+		while (!singleNormalAttackBlockTimer.Tick())
+			yield return null;
 
 		// Do the attack
 		target.TakeDamage(singleNormalAttackDamage, selfRigidbody.position);
 
 		if (target.IsDead)
-		{
 			OnKilledTarget(target);
-			RefreshSingleNormalAttack();
-			yield break;
-		}
-
-		// Lock the state to Attacking until timer ends
-		while (!singleNormalAttackTimer.Tick())
-			yield return null;
 
 		RefreshSingleNormalAttack();
 	}
@@ -347,11 +350,70 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 		base.DoIdle();
 	}
 
+	// TODO: Same implementation as DoRunning except there is no switching to Idle
+	protected override void DoAttacking()
+	{
+		// If not grounded, set state to flying
+		if (!IsGrounded())
+		{
+			State = PlayerStateType.Flying;
+			return;
+		}
+
+		// If destination available, set state to running
+		if (TryGetDestination(out Vector2 worldDestination) && !IsReachedToVector(worldDestination))
+		{
+			// If wants to jump, jump
+			if (IsAbleToJumpTowardsDestination())
+			{
+				Jump();
+				return;
+			}
+
+			// Set the horizontal direction that mirrors to FixedUpdate
+			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
+			return;
+		}
+	}
+
+	protected override void DoAttackingFixed()
+		=> base.DoRunningFixed();
+
+	protected override void OnStateChangedToIdle()
+	{
+		animator.Play("Idle");
+	}
+
+	protected override void OnStateChangedToWalking()
+	{
+		animator.Play("Walking");
+	}
+
+	protected override void OnStateChangedToRunning()
+	{
+		animator.Play("Running");
+	}
+
+	protected override void OnStateChangedToJumping()
+	{
+		animator.Play("Jumping");
+	}
+
+	protected override void OnStateChangedToAttacking()
+	{
+		animator.Play("Attacking");
+	}
+
 	protected override void OnStateChangedToDead()
 	{
 		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.WarrirorFox]?.Invoke();
 		ReleaseOrDestroySelf();
-		base.OnStateChangedToDead();
+	}
+
+	protected override void OnStateChangedToAny(PlayerStateType newState)
+	{
+		if (newState is not PlayerStateType.Attacking)
+			RefreshAttackState();
 	}
 
 	private void OnDaylightTypeChanged(DaylightType newDaylightType)
@@ -409,7 +471,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
 
 			// Normal Attack
-			foundSelf.singleNormalAttackTimer = this.singleNormalAttackTimer;
+			foundSelf.singleNormalAttackBlockTimer = this.singleNormalAttackBlockTimer;
 			foundSelf.singleNormalAttackDamage = this.singleNormalAttackDamage;
 		}
 

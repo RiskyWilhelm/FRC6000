@@ -13,6 +13,15 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 	#endregion
 
+	[Header("BabyChickenAI Visuals")]
+	#region BabyChickenAI Visuals
+
+	[SerializeField]
+	private Animator animator;
+
+
+	#endregion
+
 	#region BabyChickenAI Carry
 
 	[field: NonSerialized]
@@ -60,6 +69,12 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 			physicsInteractionQueue.Enqueue(interaction);
 	}
 
+	public override void TakeDamage(uint damage, Vector2 occuredWorldPosition)
+	{
+		animator.Play("Damaged");
+		base.TakeDamage(damage, occuredWorldPosition);
+	}
+
 	public void Interact(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
 	{
 		resultValue = InteractionArgs.Empty;
@@ -105,7 +120,7 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 			if (!runawayTargetTypeList.Contains(foundTarget.TargetTag))
 				return;
 
-			if (TrySetDestinationAwayFromVector((foundTarget as Component).transform.position))
+			if (TrySetDestinationAwayFromVector((foundTarget as Component).transform.position, isGroundedOnly: true))
 			{
 				State = PlayerStateType.Running;
 				OpenAIHomeGate = true;
@@ -138,11 +153,36 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 		base.DoIdle();
 	}
 
+	protected override void OnStateChangedToIdle()
+	{
+		animator.Play("Idle");
+	}
+
+	protected override void OnStateChangedToWalking()
+	{
+		animator.Play("Walking");
+	}
+
+	protected override void OnStateChangedToRunning()
+	{
+		animator.Play("Running");
+	}
+
+	protected override void OnStateChangedToJumping()
+	{
+		animator.Play("Jumping");
+	}
+
 	protected override void OnStateChangedToDead()
 	{
 		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.BabyChicken]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
+	}
+
+	protected override void OnStateChangedToBlocked()
+	{
+		animator.Play("Sleeping");
 	}
 
 	protected override void OnChangedDestination(Vector2? newDestination)

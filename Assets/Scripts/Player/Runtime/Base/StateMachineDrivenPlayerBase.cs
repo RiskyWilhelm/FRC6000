@@ -14,8 +14,9 @@ public abstract partial class StateMachineDrivenPlayerBase : PlayerBase
 		{
 			if (value != _state)
 			{
-				OnStateChanged(value);
 				_state = value;
+				OnStateChanged(value);
+				OnStateChangedToAny(value);
 			}
 		}
 	}
@@ -336,6 +337,9 @@ public abstract partial class StateMachineDrivenPlayerBase : PlayerBase
 	{ }
 
 	protected virtual void OnStateChangedToBlocked()
+	{ }
+
+	protected virtual void OnStateChangedToAny(PlayerStateType newState)
 	{ }
 }
 

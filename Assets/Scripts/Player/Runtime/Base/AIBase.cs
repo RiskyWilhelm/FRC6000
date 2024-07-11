@@ -4,7 +4,6 @@ using UnityEngine;
 
 // OPTIMIZATION: Needed in future versions
 /// <summary> Fresh base of AI. Implements destination system </summary>
-/// <remarks> To update allies, you must setup your own collider system with <see cref="OnTriggerStay2DEvent"/> and <see cref="OnTriggerExit2DEvent"/> </remarks>
 [RequireComponent(typeof(Rigidbody2D))]
 [DisallowMultipleComponent]
 public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IPooledObject<AIBase>, ICopyable<AIBase> 
@@ -77,7 +76,7 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 			ClearDestination();
 	}
 
-	public void TakeDamage(uint damage, Vector2 occuredWorldPosition)
+	public virtual void TakeDamage(uint damage, Vector2 occuredWorldPosition)
 	{
 		// Check for System.OverflowException. This is because the health may become negative and this is unwanted behaviour
 		try
@@ -95,7 +94,7 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 		}
 	}
 
-	protected void RestoreHealth()
+	protected virtual void RestoreHealth()
 	{
 		Health = MaxHealth;
 	}
@@ -136,7 +135,7 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 		return false;
 	}
 
-	public void SetDestinationToTransform(Transform targetDestination, float considerAsReachedDistance = 1f)
+	public void SetDestinationToTransform(Transform targetDestination, float considerAsReachedDistance = 0.25f)
 	{
 		currentDestinationTuple.worldDestination = null;
 		currentDestinationTuple.targetDestination = targetDestination;
@@ -177,7 +176,7 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 	}
 
 	// TODO: Create transform version to set away constantly and refactor this method
-	public bool TrySetDestinationAwayFromVector(Vector2 targetWorldPosition, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12))
+	public bool TrySetDestinationAwayFromVector(Vector2 targetWorldPosition, float considerAsReachedDistance = 1f, float checkInDegree = 180f, float checkEveryDegree = (180 / 12), bool isGroundedOnly = false)
 	{
 		var isFoundValidAngle = false;
 
@@ -208,6 +207,12 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 			// Check angle destination and it's look dir
 			if (IsAbleToGoToVector(iteratedAngleWorldDestination))
 			{
+				if (isGroundedOnly && !IsGroundedAtVector(iteratedAngleWorldDestination))
+				{
+					degCurrentAngle += checkEveryDegree;
+					continue;
+				}
+
 				if (iteratedAngleLookDirDotProduct > closestLookDirTuple.lookDirDotProduct)
 					closestLookDirTuple = (iteratedAngleLookDirDotProduct, iteratedAngleWorldDestination);
 
@@ -272,12 +277,16 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 		return (distSelfToDestination.sqrMagnitude <= (considerAsReachedDistance * considerAsReachedDistance));
 	}
 
-	public bool IsAbleToGoToVector(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)
+	// TODO: Un-finished and abondoned. Pathfinding requires a better way to handle such as via Checkpoints or A* pathfinding algorithm or navmesh 2D
+	public virtual bool IsAbleToGoToVector(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)
 	{
 		// Check if there is any obstacle in front of self
-		var norDirSelfToTarget = (worldPosition2D - selfRigidbody.position).normalized;
+		var dirSelfToTarget = (worldPosition2D - selfRigidbody.position);
 
-		if (Physics2D.BoxCast(selfRigidbody.position, raycastBounds, 0f, norDirSelfToTarget, Vector2.Distance(selfRigidbody.position, worldPosition2D), layerMask))
+		/*if (Physics2D.BoxCast(selfRigidbody.position, raycastBounds, 0f, norDirSelfToTarget, Vector2.Distance(selfRigidbody.position, worldPosition2D), layerMask))
+			return false;*/
+
+		if (Physics2D.Linecast(selfRigidbody.position, selfRigidbody.position + dirSelfToTarget, layerMask))
 			return false;
 
 		return true;

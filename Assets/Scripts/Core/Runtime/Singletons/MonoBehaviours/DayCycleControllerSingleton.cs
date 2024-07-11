@@ -47,7 +47,14 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 
 	public DaylightType GameTimeDaylightType
 	{
-		get => _gameTimeDaylightType;
+		get
+		{
+			if (!isGameTimeInitialized)
+				InitializeTime();
+
+			return _gameTimeDaylightType;
+		}
+
 		set
 		{
 			if (value == _gameTimeDaylightType)
@@ -60,7 +67,14 @@ public sealed partial class DayCycleControllerSingleton : MonoBehaviourSingleton
 
 	public DayType GameTimeDayType
 	{
-		get => _gameTimeDayType;
+		get
+		{
+			if (!isGameTimeInitialized)
+				InitializeTime();
+
+			return _gameTimeDayType;
+		}
+
 		set
 		{
 			if (value == _gameTimeDayType)

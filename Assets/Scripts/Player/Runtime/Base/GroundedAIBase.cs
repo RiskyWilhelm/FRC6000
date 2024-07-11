@@ -46,11 +46,11 @@ public abstract partial class GroundedAIBase : AIBase
 	#region GroundedAIBase Jumping
 
 	[SerializeField]
-	[Tooltip("Decides when it should switch to idle or flying")]
+	[Tooltip("Decides when it should switch the state")]
 	private Timer jumpingReleaseStateTimer = new(0.75f);
 
 	[SerializeField]
-	[Tooltip("Sticks the state to jumping")]
+	[Tooltip("Sticks the state")]
 	private Timer jumpingBlockStateTimer = new(0.25f);
 
 	[SerializeField]
@@ -67,7 +67,7 @@ public abstract partial class GroundedAIBase : AIBase
 	#region GroundedAIBase Other
 
 	[NonSerialized]
-	private sbyte norDirHorizontal;
+	protected sbyte norDirHorizontal;
 
 
 	#endregion
@@ -94,6 +94,7 @@ public abstract partial class GroundedAIBase : AIBase
 			selfRigidbody.velocityY = Math.Clamp(selfRigidbody.velocityY, -maxVelocity.y, maxVelocity.y);
 	}
 
+	[ContextMenu(nameof(Jump))]
 	public void Jump()
 	{
 		if (State is PlayerStateType.Jumping)
@@ -189,18 +190,6 @@ public abstract partial class GroundedAIBase : AIBase
 		State = PlayerStateType.Idle;
 	}
 
-	protected override void DoWalkingFixed()
-	{
-		selfRigidbody.AddForceX(walkingForce * norDirHorizontal, ForceMode2D.Impulse);
-		LimitVelocity(walkingMaxVelocity);
-	}
-
-	protected override void DoRunningFixed()
-	{
-		selfRigidbody.AddForceX(runningForce * norDirHorizontal, ForceMode2D.Impulse);
-		LimitVelocity(runningMaxVelocity);
-	}
-
 	protected override void DoFlying()
 	{
 		if (IsGrounded())
@@ -225,6 +214,18 @@ public abstract partial class GroundedAIBase : AIBase
 			else
 				State = PlayerStateType.Flying;
 		}
+	}
+
+	protected override void DoWalkingFixed()
+	{
+		selfRigidbody.AddForceX(walkingForce * norDirHorizontal, ForceMode2D.Impulse);
+		LimitVelocity(walkingMaxVelocity);
+	}
+
+	protected override void DoRunningFixed()
+	{
+		selfRigidbody.AddForceX(runningForce * norDirHorizontal, ForceMode2D.Impulse);
+		LimitVelocity(runningMaxVelocity);
 	}
 
 	public bool IsAbleToJumpTowardsDestination()

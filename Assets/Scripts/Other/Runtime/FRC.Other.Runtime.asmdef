@@ -2,7 +2,8 @@
     "name": "FRC.Other.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:1c8b44325a8ed2748ae6a8a316697f65"
+        "GUID:1c8b44325a8ed2748ae6a8a316697f65",
+        "GUID:99f363f9eb93f6743ada5c146173b0fa"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

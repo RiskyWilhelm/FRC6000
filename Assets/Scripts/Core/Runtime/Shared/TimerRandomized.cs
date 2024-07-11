@@ -16,11 +16,12 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 	[SerializeField]
 	private float _maxExclusiveTickSeconds;
 
+	[SerializeField]
 	private float _currentSecond;
 
 	public readonly float CurrentSecond => _currentSecond;
 
-	public readonly bool HasEnded => (_currentSecond >= _tickSecond);
+	public readonly bool HasEnded => (_currentSecond == 0f);
 
 	public TimeType TickType
 	{
@@ -52,10 +53,10 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 	// Initialize
 	public TimerRandomized(float tickSecond, TimeType tickType = TimeType.Scaled)
 	{
-		this._minInclusiveTickSeconds = 0;
-		this._maxExclusiveTickSeconds = 0;
+		this._minInclusiveTickSeconds = 0f;
+		this._maxExclusiveTickSeconds = 0f;
 		this._tickSecond = tickSecond;
-		this._currentSecond = 0;
+		this._currentSecond = tickSecond;
 		this._tickType = tickType;
 	}
 
@@ -67,7 +68,7 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 	}
 
 	public TimerRandomized(float minInclusiveTickTime, float maxExclusiveTickTime, TimeType tickType = TimeType.Scaled)
-		: this(Mathf.Abs(randomizer.NextFloat(minInclusiveTickTime, minInclusiveTickTime)), minInclusiveTickTime, maxExclusiveTickTime, tickType)
+		: this(Mathf.Abs(randomizer.NextFloat(minInclusiveTickTime, maxExclusiveTickTime)), minInclusiveTickTime, maxExclusiveTickTime, tickType)
 	{ }
 
 
@@ -75,16 +76,16 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 	/// <returns> true if timer has ended </returns>
 	public bool Tick()
 	{
-		if (_currentSecond < _tickSecond)
+		if (_currentSecond > 0f)
 		{
 			switch (_tickType)
 			{
 				case TimeType.Scaled:
-				_currentSecond += Time.deltaTime;
+				_currentSecond -= Time.deltaTime;
 				break;
 
 				case TimeType.Unscaled:
-				_currentSecond += Time.unscaledDeltaTime;
+				_currentSecond -= Time.unscaledDeltaTime;
 				break;
 
 				default:
@@ -92,13 +93,19 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 			}
 		}
 
-		return _currentSecond >= _tickSecond;
+		if (_currentSecond <= 0f)
+		{
+			_currentSecond = 0f;
+			return true;
+		}
+
+		return false;
 	}
 
 	/// <summary> Sets the <see cref="_currentSecond"/> to zero </summary>
 	public void Reset()
 	{
-		_currentSecond = 0;
+		_currentSecond = _tickSecond;
 	}
 
 	/// <summary> Sets the <see cref="_tickSecond"/> around <see cref="_minInclusiveTickSeconds"/> and <see cref="_maxExclusiveTickSeconds"/> </summary>
@@ -107,11 +114,11 @@ public struct TimerRandomized : IEquatable<TimerRandomized>, IEquatable<Timer>
 		_tickSecond = Mathf.Abs(randomizer.NextFloat(_minInclusiveTickSeconds, _maxExclusiveTickSeconds));
 	}
 
-	/// <summary> Shortcut to <see cref="Reset"/> and <see cref="Randomize"/> calls </summary>
+	/// <summary> Shortcut to <see cref="Randomize"/> and <see cref="Reset"/> calls </summary>
 	public void ResetAndRandomize()
 	{
-		Reset();
 		Randomize();
+		Reset();
 	}
 
 	public override bool Equals(object obj)

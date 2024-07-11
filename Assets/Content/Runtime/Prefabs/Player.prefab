@@ -109,7 +109,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1005374595386622600}
-  - component: {fileID: 4767316598410609779}
+  - component: {fileID: 6416735406779651608}
+  - component: {fileID: 5053748922846010278}
   m_Layer: 0
   m_Name: Visual2D
   m_TagString: Untagged
@@ -132,7 +133,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2875921501242787366}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &4767316598410609779
+--- !u!212 &6416735406779651608
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -173,20 +174,42 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -863061807
-  m_SortingLayer: 1
-  m_SortingOrder: 2
-  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
-  m_Color: {r: 0.5660378, g: 0.5660378, b: 0.5660378, a: 1}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_Sprite: {fileID: 1263449661410444649, guid: e33872c480ef47a44a4c3cdb6d9846da, type: 3}
+  m_Color: {r: 1, g: 0.7688679, b: 0.7688679, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 2}
+  m_Size: {x: 2.75, y: 2.125}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &5053748922846010278
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2781408639264230803}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: f411fa1e1d5c3ef43b310d2819b5afba, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &7473488955981050918
 GameObject:
   m_ObjectHideFlags: 0
@@ -409,12 +432,21 @@ MonoBehaviour:
   jumpingReleaseStateTimer:
     _tickType: 1
     _tickSecond: 1
+    _currentSecond: 0.75
   jumpingBlockStateTimer:
     _tickType: 1
     _tickSecond: 0.25
+    _currentSecond: 0.25
   jumpingForce: 240
   jumpingAngle: 45
   defaultCarryPoint: {fileID: 7888952571465630550}
+  animator: {fileID: 5053748922846010278}
+  sleepingTimer:
+    _tickType: 1
+    _tickSecond: 10
+    _minInclusiveTickSeconds: 10
+    _maxExclusiveTickSeconds: 20
+    _currentSecond: 0
 --- !u!114 &7600928671570595875
 MonoBehaviour:
   m_ObjectHideFlags: 0

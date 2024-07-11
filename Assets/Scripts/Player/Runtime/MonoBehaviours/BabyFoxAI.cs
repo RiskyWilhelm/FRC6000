@@ -13,6 +13,15 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 
 	#endregion
 
+	[Header("BabyFoxAI Visuals")]
+	#region BabyFoxAI Visuals
+
+	[SerializeField]
+	private Animator animator;
+
+
+	#endregion
+
 	#region BabyFoxAI Carry
 
 	[field: NonSerialized]
@@ -105,7 +114,7 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 			if (!runawayTargetTypeList.Contains(foundTarget.TargetTag))
 				return;
 
-			if (TrySetDestinationAwayFromVector((foundTarget as Component).transform.position))
+			if (TrySetDestinationAwayFromVector((foundTarget as Component).transform.position, isGroundedOnly: true))
 			{
 				State = PlayerStateType.Running;
 				OpenAIHomeGate = true;
@@ -138,11 +147,36 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 		base.DoIdle();
 	}
 
+	protected override void OnStateChangedToIdle()
+	{
+		animator.Play("Idle");
+	}
+
+	protected override void OnStateChangedToWalking()
+	{
+		animator.Play("Walking");
+	}
+
+	protected override void OnStateChangedToRunning()
+	{
+		animator.Play("Running");
+	}
+
+	protected override void OnStateChangedToJumping()
+	{
+		animator.Play("Jumping");
+	}
+
 	protected override void OnStateChangedToDead()
 	{
 		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.BabyFox]?.Invoke();
 		ReleaseOrDestroySelf();
 		base.OnStateChangedToDead();
+	}
+
+	protected override void OnStateChangedToBlocked()
+	{
+		animator.Play("Sleeping");
 	}
 
 	protected override void OnChangedDestination(Vector2? newDestination)

@@ -69,6 +69,18 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 	#endregion
 
+	[Header("Player Visuals")]
+	#region Player Visuals
+
+	[SerializeField]
+	private Animator animator;
+
+	[SerializeField]
+	private TimerRandomized sleepingTimer;
+
+
+	#endregion
+
 	#region Player Interaction
 
 	[NonSerialized]
@@ -307,6 +319,13 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 				State = PlayerStateType.Running;
 			else
 				State = PlayerStateType.Walking;
+
+			sleepingTimer.ResetAndRandomize();
+		}
+		else if (sleepingTimer.Tick())
+		{
+			animator.Play("Sleeping");
+			sleepingTimer.ResetAndRandomize();
 		}
 	}
 
@@ -377,9 +396,26 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 	}
 
 	protected override void DoJumpingFixed()
+		=> DoRunningFixed();
+
+	protected override void OnStateChangedToIdle()
 	{
-		selfRigidbody.AddForceX(walkingForce * norDirHorizontalInput, ForceMode2D.Impulse);
-		LimitVelocity(runningMaxVelocity);
+		animator.Play("Idle");
+	}
+
+	protected override void OnStateChangedToWalking()
+	{
+		animator.Play("Walking");
+	}
+
+	protected override void OnStateChangedToRunning()
+	{
+		animator.Play("Running");
+	}
+
+	protected override void OnStateChangedToJumping()
+	{
+		animator.Play("Jumping");
 	}
 
 	public void OnInteractTriggerEnter2D(Collider2D collider)

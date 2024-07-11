@@ -1,0 +1,18 @@
+{
+    "name": "FRC.Wilhelm.Core.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:99f363f9eb93f6743ada5c146173b0fa"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

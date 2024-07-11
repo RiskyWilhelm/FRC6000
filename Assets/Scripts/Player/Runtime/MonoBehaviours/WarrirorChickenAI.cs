@@ -22,10 +22,22 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	private uint singleNormalAttackDamage = 1;
 
 	[SerializeField]
-	private TimerRandomized singleNormalAttackTimer = new(0.5f, 0.75f);
+	[Tooltip("Sticks the state")]
+	private Timer singleNormalAttackBlockTimer;
 
 	[NonSerialized]
 	private ITargetValue<Coroutine> currentSingleNormalAttack;
+
+	public bool IsSingleNormalAttacking => (currentSingleNormalAttack != default);
+
+
+	#endregion
+
+	[Header("BabyChickenAI Visuals")]
+	#region BabyChickenAI Visuals
+
+	[SerializeField]
+	private Animator animator;
 
 
 	#endregion
@@ -68,7 +80,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	{
 		goHomeBackTimer.Tick();
 
-		if (State is PlayerStateType.Attacking)
+		if (IsSingleNormalAttacking)
             goHomeBackTimer.Reset();
 
 		DoFrameDependentPhysics();
@@ -79,6 +91,12 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	{
 		if (!PhysicsInteractionQueue.Contains(interaction))
 			PhysicsInteractionQueue.Enqueue(interaction);
+	}
+
+	public override void TakeDamage(uint damage, Vector2 occuredWorldPosition)
+	{
+		animator.Play("Damaged");
+		base.TakeDamage(damage, occuredWorldPosition);
 	}
 
 	public bool TrySetDestinationToHome()
@@ -92,9 +110,6 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	public bool TrySetDestinationAwayFromOrToNearestTarget()
 	{
 		// Let the blocked states take control
-		if (State is PlayerStateType.Jumping or PlayerStateType.Attacking or PlayerStateType.Defending or PlayerStateType.Dead)
-			return false;
-
 		var isSetDestination = false;
 		var cachedRunawayTransformList = ListPool<Transform>.Get();
 		var cachedAcceptedTransformList = ListPool<Transform>.Get();
@@ -116,7 +131,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 		if (cachedRunawayTransformList.Count > 0)
 		{
 			this.transform.TryGetNearestTransform(cachedRunawayTransformList.GetEnumerator(), out Transform nearestTransform);
-			isSetDestination = TrySetDestinationAwayFromVector(nearestTransform.position);
+			isSetDestination = TrySetDestinationAwayFromVector(nearestTransform.position, isGroundedOnly: true);
 		}
 
 		// If there is any accepted target and cant runaway, catch the nearest target
@@ -126,7 +141,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 			isSetDestination = TrySetDestinationToVector(nearestTransform.position);
 		}
 
-		if (isSetDestination)
+		if (isSetDestination && !IsSingleNormalAttacking && (State is not PlayerStateType.Jumping or PlayerStateType.Flying or PlayerStateType.Attacking or PlayerStateType.Blocked or PlayerStateType.Dead))
 			State = PlayerStateType.Running;
 
 		ListPool<Transform>.Release(cachedRunawayTransformList);
@@ -140,8 +155,11 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 		if (!this.gameObject.activeSelf)
 			return false;
 
-		// If attacking, let it finish first
-		if (State == PlayerStateType.Attacking)
+		// If attacking or target dead, let it finish first
+		if (IsSingleNormalAttacking || target.IsDead)
+			return false;
+
+		if (State is PlayerStateType.Jumping or PlayerStateType.Flying or PlayerStateType.Attacking or PlayerStateType.Blocked or PlayerStateType.Dead)
 			return false;
 
 		// If target is not accepted, return
@@ -170,11 +188,11 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 		if (currentSingleNormalAttack.value != null)
 			StopCoroutine(currentSingleNormalAttack.value);
 
-		if (State == PlayerStateType.Attacking)
+		if (State is PlayerStateType.Attacking)
 			State = PlayerStateType.Idle;
 
 		currentSingleNormalAttack = default;
-		singleNormalAttackTimer.ResetAndRandomize();
+		singleNormalAttackBlockTimer.Reset();
 	}
 
 	private void RefreshAttackState()
@@ -184,26 +202,18 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 
 	private IEnumerator DoSingleNormalAttack(ITarget target)
 	{
-		// Cant attack the dead
-		if (target.IsDead)
-			yield break;
-
 		// Take full control over the body by setting state to attacking, ready timer
 		State = PlayerStateType.Attacking;
+
+		// Lock the state to Attacking until timer ends
+		while (!singleNormalAttackBlockTimer.Tick())
+			yield return null;
 
 		// Do the attack
 		target.TakeDamage(singleNormalAttackDamage, selfRigidbody.position);
 
 		if (target.IsDead)
-		{
 			OnKilledTarget(target);
-			RefreshSingleNormalAttack();
-			yield break;
-		}
-
-		// Lock the state to Attacking until timer ends
-		while (!singleNormalAttackTimer.Tick())
-			yield return null;
 
 		RefreshSingleNormalAttack();
 	}
@@ -273,7 +283,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 		if (!interaction.collider2D)
 			return;
 
-		if ((State != PlayerStateType.Attacking) && EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(interaction.collider2D.gameObject, out ITarget foundTarget))
+		if (!IsSingleNormalAttacking && EventReflectorUtils.TryGetComponentByEventReflector<ITarget>(interaction.collider2D.gameObject, out ITarget foundTarget))
 			TryDoSingleNormalAttackTo(foundTarget);
 	}
 
@@ -312,11 +322,70 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 		base.DoIdle();
 	}
 
+	// TODO: Same implementation as DoRunning except there is no switching to Idle
+	protected override void DoAttacking()
+	{
+		// If not grounded, set state to flying
+		if (!IsGrounded())
+		{
+			State = PlayerStateType.Flying;
+			return;
+		}
+
+		// If destination available, set state to running
+		if (TryGetDestination(out Vector2 worldDestination))
+		{
+			// If wants to jump, jump
+			if (IsAbleToJumpTowardsDestination())
+			{
+				Jump();
+				return;
+			}
+
+			// Set the horizontal direction that mirrors to FixedUpdate
+			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
+			return;
+		}
+	}
+
+	protected override void DoAttackingFixed()
+		=> base.DoRunningFixed();
+
+	protected override void OnStateChangedToIdle()
+	{
+		animator.Play("Idle");
+	}
+
+	protected override void OnStateChangedToWalking()
+	{
+		animator.Play("Walking");
+	}
+
+	protected override void OnStateChangedToRunning()
+	{
+		animator.Play("Running");
+	}
+
+	protected override void OnStateChangedToJumping()
+	{
+		animator.Play("Jumping");
+	}
+
+	protected override void OnStateChangedToAttacking()
+	{
+		animator.Play("Attacking");
+	}
+
 	protected override void OnStateChangedToDead()
 	{
 		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.WarrirorChicken]?.Invoke();
 		ReleaseOrDestroySelf();
-		base.OnStateChangedToDead();
+	}
+
+	protected override void OnStateChangedToAny(PlayerStateType newState)
+	{
+		if (newState is not PlayerStateType.Attacking)
+			RefreshAttackState();
 	}
 
 	protected override void OnChangedDestination(Vector2? newDestination)
@@ -371,7 +440,7 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 	{
 		if (main is WarrirorChickenAI foundSelf)
 		{
-			foundSelf.singleNormalAttackTimer = this.singleNormalAttackTimer;
+			foundSelf.singleNormalAttackBlockTimer = this.singleNormalAttackBlockTimer;
 			foundSelf.singleNormalAttackDamage = this.singleNormalAttackDamage;
 			foundSelf.goHomeBackTimer = this.goHomeBackTimer;
 		}
