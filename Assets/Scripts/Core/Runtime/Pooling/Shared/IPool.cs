@@ -1,7 +1,11 @@
 using UnityEngine.Pool;
 
 public interface IPool
-{ }
+{
+	public object GetUnknown();
+
+	public void ReleaseUnknown(object obj);
+}
 
 public interface IPool<PooledObjectType> : IPool
 	where PooledObjectType : class

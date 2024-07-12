@@ -24,6 +24,7 @@ public abstract partial class ExtinctionControllerSingletonBase<SingletonType> :
 	[ContextMenuItem(nameof(IncreaseRate), nameof(IncreaseRate))]
 	[ContextMenuItem(nameof(DecreaseRate), nameof(DecreaseRate))]
 	[ContextMenuItem(nameof(MoveVisualToCurrentRate), nameof(MoveVisualToCurrentRate))]
+	[ContextMenuItem(nameof(E_FullfillRate), nameof(E_FullfillRate))]
 	protected int _currentRate;
 
 	[SerializeField]
@@ -107,6 +108,11 @@ public abstract partial class ExtinctionControllerSingletonBase<SingletonType> :
 #if UNITY_EDITOR
 
 public abstract partial class ExtinctionControllerSingletonBase<SingletonType>
-{ }
+{
+	public void E_FullfillRate()
+	{
+		CurrentRate = maxRate;
+	}
+}
 
 #endif

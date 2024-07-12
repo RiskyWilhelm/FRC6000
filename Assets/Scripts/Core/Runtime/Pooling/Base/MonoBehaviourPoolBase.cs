@@ -30,8 +30,11 @@ public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBeha
 
 
 	// Update
+	public PooledObjectType Get()
+		=> MainPool.Get();
 
-	public PooledObjectType Get() => MainPool.Get();
+	public object GetUnknown()
+		=> Get();
 
 	public PooledObjectType Get(Vector2 worldPosition2D)
 	{
@@ -45,7 +48,8 @@ public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBeha
 		return pooledObject;
 	}
 
-	public PooledObject<PooledObjectType> Get(out PooledObjectType pooledObject) => MainPool.Get(out pooledObject);
+	public PooledObject<PooledObjectType> Get(out PooledObjectType pooledObject)
+		=> MainPool.Get(out pooledObject);
 
 	public PooledObject<PooledObjectType> Get(Vector2 worldPosition2D, out PooledObjectType pooledObject)
 	{
@@ -60,9 +64,14 @@ public abstract partial class MonoBehaviourPoolBase<PooledObjectType> : MonoBeha
 		return disposablePooledObject;
 	}
 
-	public void Release(PooledObjectType obj) => MainPool.Release(obj);
+	public void Release(PooledObjectType obj)
+		=> MainPool.Release(obj);
 
-	public void Clear() => MainPool.Clear();
+	public void ReleaseUnknown(object obj)
+		=> Release(obj as PooledObjectType);
+
+	public void Clear()
+		=> MainPool.Clear();
 
 
 	// Dispose

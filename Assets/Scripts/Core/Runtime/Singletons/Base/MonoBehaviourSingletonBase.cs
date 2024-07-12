@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -25,20 +26,22 @@ public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBe
 	// Initialize
 	protected virtual void Awake()
     {
-        // If other instance is living
         if ((_instance != null) && (_instance != this))
         {
+            Debug.LogErrorFormat("An instance of {0} is already living. Destroying duplicate...", typeof(SingletonType).Name);
             DestroyImmediate(this.gameObject);
             return;
         }
 
-        _instance = (this as SingletonType);
+		_instance = (this as SingletonType);
     }
 
-    protected static void TryCreateSingleton()
+
+    // Update
+    public static void TryCreateSingleton()
     {
         if (GameControllerPersistentSingleton.IsQuitting || SceneControllerPersistentSingleton.IsActiveSceneChanging)
-            throw new System.Exception("Cant create Singleton. You are probably trying to instantiate in OnDestroy() or OnDisable()");
+            throw new Exception(string.Format("Cant create Singleton {0}. You are probably trying to instantiate in OnDestroy() or OnDisable(). This occurs when changing scenes nor quitting the game", typeof(SingletonType).Name));
 
 		_instance = new GameObject(typeof(SingletonType).Name, typeof(SingletonType)).GetComponent<SingletonType>();
 		_instance.name = _instance.GameObjectName;
@@ -49,7 +52,7 @@ public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBe
 #endif
 	}
 
-    protected static void FindOrTryCreateSingleton()
+    public static void FindOrTryCreateSingleton()
     {
         // Try to find
         if (_instance == null)
@@ -60,6 +63,8 @@ public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBe
             TryCreateSingleton();
     }
 
+
+	// Dispose
 	protected static void DestroyAllInstances()
     {
         foreach (var iteratedInstance in FindObjectsByType<SingletonType>(FindObjectsInactive.Include, sortMode: FindObjectsSortMode.None))

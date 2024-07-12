@@ -56,14 +56,12 @@ public sealed partial class GameControllerPersistentSingleton : MonoBehaviourSin
 		onRestartGame?.Invoke();
 		SaveDataControllerSingleton.Instance.DeleteSaveDataFile();
 		SaveDataControllerSingleton.Instance.FreshSaveData();
-		SceneControllerPersistentSingleton.Instance.RestartScene();
 		ResumeGame();
+		SceneControllerPersistentSingleton.Instance.RestartScene();
 	}
 
 	private static void OnActiveSceneChanged(Scene lastScene, Scene loadedScene)
 	{
-		SceneControllerPersistentSingleton.OnGameControllerActiveSceneChanged(lastScene, loadedScene);
-
 		if (!IsAnyInstanceLiving)
 			TryCreateSingleton();
 	}

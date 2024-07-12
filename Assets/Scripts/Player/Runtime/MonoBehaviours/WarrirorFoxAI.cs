@@ -72,7 +72,6 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 	protected override void OnEnable()
 	{
 		goHomeBackTimer.ResetAndRandomize();
-		UpdateByDaylightType(DayCycleControllerSingleton.Instance.GameTimeDaylightType);
 		RefreshAttackState();
 
 		base.OnEnable();
@@ -81,6 +80,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 	private void Start()
 	{
 		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.AddListener(OnDaylightTypeChanged);
+		UpdateByDaylightType(DayCycleControllerSingleton.Instance.GameTimeDaylightType);
 	}
 
 

@@ -30,7 +30,11 @@ public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, Pool
 
 
 	// Update
-	public PooledObjectType Get() => MainPool.Get();
+	public PooledObjectType Get()
+		=> MainPool.Get();
+
+	public object GetUnknown()
+		=> Get();
 
 	public PooledObjectType Get(Vector2 worldPosition2D)
 	{
@@ -44,7 +48,8 @@ public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, Pool
 		return pooledObject;
 	}
 
-	public PooledObject<PooledObjectType> Get(out PooledObjectType pooledObject) => MainPool.Get(out pooledObject);
+	public PooledObject<PooledObjectType> Get(out PooledObjectType pooledObject)
+		=> MainPool.Get(out pooledObject);
 
 	public PooledObject<PooledObjectType> Get(Vector2 worldPosition2D, out PooledObjectType pooledObject)
 	{
@@ -60,6 +65,9 @@ public abstract partial class MonoBehaviourSingletonPoolBase<SingletonType, Pool
 	}
 
 	public void Release(PooledObjectType obj) => MainPool.Release(obj);
+
+	public void ReleaseUnknown(object obj)
+		=> Release(obj as PooledObjectType);
 
 	public void Clear() => MainPool.Clear();
 

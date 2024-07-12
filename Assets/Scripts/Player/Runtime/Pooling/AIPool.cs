@@ -6,7 +6,7 @@ public partial class AIPool : MonoBehaviourPoolBase<AIBase>
 	#region
 
 	[SerializeField]
-	[Tooltip("Used for copying when creating a new AI in pool")]
+	[Tooltip("Used for creating")]
 	private AIBase prefab;
 
 	#endregion

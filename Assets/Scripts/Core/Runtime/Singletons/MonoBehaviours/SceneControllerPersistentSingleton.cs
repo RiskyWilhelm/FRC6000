@@ -5,8 +5,21 @@ public sealed partial class SceneControllerPersistentSingleton : MonoBehaviourSi
 {
 	public static bool IsActiveSceneChanging { get; private set; }
 
+	// Initialize
+	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSplashScreen)]
+	private static void OnBeforeSplashScreen()
+	{
+		SceneManager.activeSceneChanged += OnActiveSceneChanged;
+	}
+
 
 	// Update
+	public void ChangeActiveScene(string sceneName)
+	{
+		IsActiveSceneChanging = true;
+		SceneManager.LoadScene(sceneName);
+	}
+
 	public void RestartScene(bool unloadUnusedAssets = false)
 	{
 		if (unloadUnusedAssets)
@@ -15,32 +28,20 @@ public sealed partial class SceneControllerPersistentSingleton : MonoBehaviourSi
 			return;
 		}
 
-		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+		ChangeActiveScene(SceneManager.GetActiveScene().name);
 	}
 
 	private void RestartSceneWithoutUnusedAssets(AsyncOperation operation)
 	{
-		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+		ChangeActiveScene(SceneManager.GetActiveScene().name);
 	}
 
-	/// <summary>
-	/// <see cref="RuntimeInitializeOnLoadMethodAttribute"/> does not respect the order of execution. <see cref="SceneControllerPersistentSingleton"/> needed a parent and this is <see cref="GameControllerPersistentSingleton"/>
-	/// <br/>
-	/// By doing that, <see cref="SceneControllerPersistentSingleton"/> will respect the parent's variables
-	/// </summary>
-	public static void OnGameControllerActiveSceneChanged(Scene lastScene, Scene loadedScene)
+	private static void OnActiveSceneChanged(Scene lastScene, Scene loadedScene)
 	{
 		IsActiveSceneChanging = false;
 
 		if (!IsAnyInstanceLiving)
 			TryCreateSingleton();
-	}
-
-
-	// Dispose
-	private void OnDestroy()
-	{
-		IsActiveSceneChanging = true;
 	}
 }
 
