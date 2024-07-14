@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public sealed partial class DirectionRelativeRotation : MonoBehaviour
@@ -5,8 +6,19 @@ public sealed partial class DirectionRelativeRotation : MonoBehaviour
 	[Header("DirectionRelativeRotation Movement")]
 	#region DirectionRelativeRotation Movement
 
-	public UpdateType updateType = UpdateType.Update;
+	[SerializeField]
+	private Transform relativeTo;
 
+	[SerializeField]
+	private Transform controlled;
+
+	[SerializeField]
+	private bool isReversed;
+
+	[SerializeField]
+	private UpdateType updateType = UpdateType.Update;
+
+	[NonSerialized]
     private Vector3 lastPosition;
 
 
@@ -35,16 +47,31 @@ public sealed partial class DirectionRelativeRotation : MonoBehaviour
 	// TODO: A boolean can control if method will control both rotation axis x or z
 	private void UpdateRotation()
 	{
-		// Calculate new dir
-		var newDir = (this.transform.position - lastPosition).normalized;
+		// Calculate new dir and others
+		var newDir = (relativeTo.position - lastPosition).normalized;
+
+		// Get rotations
+		Quaternion rightRotation;
+		Quaternion leftRotation;
+
+		if (isReversed)
+		{
+			rightRotation = Quaternion.Euler(new Vector3(0, 180, 0));
+			leftRotation = Quaternion.Euler(new Vector3(0, 0, 0));
+		}
+		else
+		{
+			rightRotation = Quaternion.Euler(new Vector3(0, 0, 0));
+			leftRotation = Quaternion.Euler(new Vector3(0, 180, 0));
+		}
 
 		// Update rotation and values
 		if (newDir.x > 0)
-			this.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
+			controlled.rotation = rightRotation;
 		else if (newDir.x < 0)
-			this.transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+			controlled.rotation = leftRotation;
 
-		lastPosition = this.transform.position;
+		lastPosition = relativeTo.position;
 	}
 }
 

@@ -88,10 +88,10 @@ public abstract partial class GroundedAIBase : AIBase
 	protected void LimitVelocity(Vector2 maxVelocity)
 	{
 		if (maxVelocity.x != 0)
-			selfRigidbody.velocityX = Math.Clamp(selfRigidbody.velocityX, -maxVelocity.x, maxVelocity.x);
+			SelfRigidbody.velocityX = Math.Clamp(SelfRigidbody.velocityX, -maxVelocity.x, maxVelocity.x);
 
 		if (maxVelocity.y != 0)
-			selfRigidbody.velocityY = Math.Clamp(selfRigidbody.velocityY, -maxVelocity.y, maxVelocity.y);
+			SelfRigidbody.velocityY = Math.Clamp(SelfRigidbody.velocityY, -maxVelocity.y, maxVelocity.y);
 	}
 
 	[ContextMenu(nameof(Jump))]
@@ -100,7 +100,7 @@ public abstract partial class GroundedAIBase : AIBase
 		if (State is PlayerStateType.Jumping)
 			return;
 
-		selfRigidbody.AddForceY(jumpingForce, ForceMode2D.Impulse);
+		SelfRigidbody.AddForceY(jumpingForce, ForceMode2D.Impulse);
 		State = PlayerStateType.Jumping;
 	}
 
@@ -120,7 +120,7 @@ public abstract partial class GroundedAIBase : AIBase
 			idleTimer.Reset();
 
 			var randomHorizontalPosition = UnityEngine.Random.Range(-idleMaxDistance, idleMaxDistance);
-			var newDestination = selfRigidbody.position;
+			var newDestination = SelfRigidbody.position;
 			newDestination.x += randomHorizontalPosition;
 
 			if (this.TrySetDestinationToVector(newDestination, raycastBounds.x))
@@ -154,7 +154,7 @@ public abstract partial class GroundedAIBase : AIBase
 			}
 
 			// Set the horizontal direction that mirrors to FixedUpdate
-			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
+			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - SelfRigidbody.position).x);
 			return;
 		}
 
@@ -182,7 +182,7 @@ public abstract partial class GroundedAIBase : AIBase
 			}
 
 			// Set the horizontal direction that mirrors to FixedUpdate
-			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
+			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - SelfRigidbody.position).x);
 			return;
 		}
 
@@ -218,13 +218,13 @@ public abstract partial class GroundedAIBase : AIBase
 
 	protected override void DoWalkingFixed()
 	{
-		selfRigidbody.AddForceX(walkingForce * norDirHorizontal, ForceMode2D.Impulse);
+		SelfRigidbody.AddForceX(walkingForce * norDirHorizontal, ForceMode2D.Impulse);
 		LimitVelocity(walkingMaxVelocity);
 	}
 
 	protected override void DoRunningFixed()
 	{
-		selfRigidbody.AddForceX(runningForce * norDirHorizontal, ForceMode2D.Impulse);
+		SelfRigidbody.AddForceX(runningForce * norDirHorizontal, ForceMode2D.Impulse);
 		LimitVelocity(runningMaxVelocity);
 	}
 
@@ -242,7 +242,7 @@ public abstract partial class GroundedAIBase : AIBase
 
 	public bool IsAbleToJumpTowards(Vector2 worldPosition)
 	{
-		var distSelfToDestination = (worldPosition - selfRigidbody.position);
+		var distSelfToDestination = (worldPosition - SelfRigidbody.position);
 		var isInsideAngle = Vector3.Angle(Vector2.up, distSelfToDestination) <= (jumpingAngle * 0.5f);
 		return isInsideAngle;
 	}
@@ -298,11 +298,11 @@ public abstract partial class GroundedAIBase
 		var distSelfToDestination = raycastBounds.y * 1.5f;
 
 		if (TryGetDestinationVector(out Vector2 worldDestination))
-			distSelfToDestination = Vector2.Distance(worldDestination, selfRigidbody.position);
+			distSelfToDestination = Vector2.Distance(worldDestination, SelfRigidbody.position);
 
 		// Draw
 		Handles.color = new Color(0.5f, 0.5f, 0, 0.25f);
-		Handles.DrawWireArc(selfRigidbody.position, Vector3.forward, Vector3.up.RotateByDegreeAngle(-jumpingAngle * 0.5f, Vector3.forward), jumpingAngle, Mathf.Clamp(distSelfToDestination, 1f, distSelfToDestination), Mathf.Clamp(distSelfToDestination, 1f, 5f));
+		Handles.DrawWireArc(SelfRigidbody.position, Vector3.forward, Vector3.up.RotateByDegreeAngle(-jumpingAngle * 0.5f, Vector3.forward), jumpingAngle, Mathf.Clamp(distSelfToDestination, 1f, distSelfToDestination), Mathf.Clamp(distSelfToDestination, 1f, 5f));
 	}
 }
 

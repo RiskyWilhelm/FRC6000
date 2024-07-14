@@ -5,8 +5,8 @@ public abstract partial class PlayerBase : MonoBehaviour
 	[Header("PlayerBase Movement")]
 	#region PlayerBase Movement
 
-	[SerializeField]
-	protected Rigidbody2D selfRigidbody;
+	[field: SerializeField]
+	public Rigidbody2D SelfRigidbody { get; protected set; }
 
 	[SerializeField]
 	[Tooltip("You should set this nearly but not same as the collider size")]
@@ -18,7 +18,7 @@ public abstract partial class PlayerBase : MonoBehaviour
 
 	// Update
 	public bool IsGrounded()
-		=> IsGroundedAtVector(selfRigidbody.position);
+		=> IsGroundedAtVector(SelfRigidbody.position);
 
 	public bool IsGroundedAtVector(Vector2 worldPosition)
 	{

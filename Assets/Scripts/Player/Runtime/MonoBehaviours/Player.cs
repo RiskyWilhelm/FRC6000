@@ -5,7 +5,7 @@ using static UnityEngine.InputSystem.InputAction;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [DisallowMultipleComponent]
-public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, ICarrier, IFrameDependentPhysicsInteractor<PlayerPhysicsInteractionType>
+public sealed partial class Player : StateMachineDrivenPlayerBase, IFrameDependentPhysicsInteractor<PlayerPhysicsInteractionType>
 {
 	[Header("Player Walking")]
 	#region Player Walking
@@ -57,18 +57,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 	#endregion
 
-	[Header("Player Carry")]
-	#region Player Carry
-
-	[SerializeField]
-	private Transform defaultCarryPoint;
-
-	[NonSerialized]
-	private ICarryableValue<Rigidbody2D> currentCarried;
-
-
-	#endregion
-
 	[Header("Player Visuals")]
 	#region Player Visuals
 
@@ -77,17 +65,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 	[SerializeField]
 	private TimerRandomized sleepingTimer;
-
-
-	#endregion
-
-	#region Player Interaction
-
-	[NonSerialized]
-	public bool isInteractionBlocked;
-
-	[NonSerialized]
-	private readonly List<IInteractableValue<Transform>> interactablesInRangeList = new();
 
 
 	#endregion
@@ -118,8 +95,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 		inputActions.Player.Sprint.canceled += OnInputSprintCanceled;
 
 		inputActions.Player.Jump.performed += OnInputJumpPerformed;
-
-		inputActions.Player.Interact.performed += OnInputInteractPerformed;
 	}
 
 	protected override void OnEnable()
@@ -133,7 +108,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 	protected override void Update()
 	{
 		DoFrameDependentPhysics();
-		DoCarried();
 		base.Update();
 	}
 
@@ -147,26 +121,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 		inputActions.Player.Disable();
 	}
 
-	public void Carry(ICarryable carryable, Rigidbody2D carryableRigidbody)
-	{
-		currentCarried = new (carryable, carryableRigidbody);
-		carryable.OnCarried(this);
-		isInteractionBlocked = true;
-	}
-
-	public void StopCarrying()
-	{
-		currentCarried.carryable?.OnUncarried(this);
-		currentCarried = default;
-		isInteractionBlocked = false;
-	}
-
-	public void StopCarrying(ICarryable carryable)
-	{
-		if ((currentCarried.carryable == carryable) || !currentCarried.value)
-			StopCarrying();
-	}
-
 	public void RegisterFrameDependentPhysicsInteraction((PlayerPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
 	{
 		if (!physicsInteractionQueue.Contains(interaction))
@@ -176,10 +130,10 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 	private void LimitVelocity(Vector2 maxVelocity)
 	{
 		if (maxVelocity.x != 0)
-			selfRigidbody.velocityX = Math.Clamp(selfRigidbody.velocityX, -maxVelocity.x, maxVelocity.x);
+			SelfRigidbody.velocityX = Math.Clamp(SelfRigidbody.velocityX, -maxVelocity.x, maxVelocity.x);
 
 		if (maxVelocity.y != 0)
-			selfRigidbody.velocityY = Math.Clamp(selfRigidbody.velocityY, -maxVelocity.y, maxVelocity.y);
+			SelfRigidbody.velocityY = Math.Clamp(SelfRigidbody.velocityY, -maxVelocity.y, maxVelocity.y);
 	}
 
 	public void Jump()
@@ -187,123 +141,12 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 		if (State is PlayerStateType.Jumping)
 			return;
 
-		selfRigidbody.AddForceY(jumpingForce, ForceMode2D.Impulse);
+		SelfRigidbody.AddForceY(jumpingForce, ForceMode2D.Impulse);
 		State = PlayerStateType.Jumping;
 	}
 
-	private bool TryGetInteractable(out IInteractable interactable)
-	{
-		interactable = default;
-		interactablesInRangeList.RemoveAll((iteratedInteractableValue) => !iteratedInteractableValue.value);
-
-		if (interactablesInRangeList.Count > 0)
-		{
-			interactable = interactablesInRangeList[^1].interactable;
-			return true;
-		}
-
-		return false;
-	}
-
-	public void InteractWith(IInteractable interactable)
-	{
-		switch(interactable)
-		{
-			case BabyChickenAI:
-			InteractWithBabyChickenAI(interactable);
-			break;
-
-			case BabyFoxAI:
-			InteractWithBabyFoxAI(interactable);
-			break;
-		}
-	}
-
-	public void InteractWithBabyChickenAI(IInteractable interactableBabyChickenAI)
-	{
-		// Interact
-		var sendValue = new PlayerInteractionArgs
-		{
-			WantsToCarry = true
-		};
-
-		interactableBabyChickenAI.Interact(this, sendValue, out InteractionArgs resultValue);
-
-		// Do action by result
-		var convertedResultValue = resultValue as BabyChickenAIInteractionArgs;
-		var carryableBabyChickenAI = interactableBabyChickenAI as ICarryable;
-
-		if (convertedResultValue.InteractorAbleToCarrySelf)
-			Carry(carryableBabyChickenAI, convertedResultValue.ChickenRigidbody);
-		else
-			StopCarrying(carryableBabyChickenAI);
-	}
-
-	public void InteractWithBabyFoxAI(IInteractable interactableBabyChickenAI)
-	{
-		// Interact
-		var sendValue = new PlayerInteractionArgs
-		{
-			WantsToCarry = true
-		};
-
-		interactableBabyChickenAI.Interact(this, sendValue, out InteractionArgs resultValue);
-
-		// Do action by result
-		var convertedResultValue = resultValue as BabyFoxAIInteractionArgs;
-		var carryableBabyChickenAI = interactableBabyChickenAI as ICarryable;
-
-		if (convertedResultValue.InteractorAbleToCarrySelf)
-			Carry(carryableBabyChickenAI, convertedResultValue.FoxRigidbody);
-		else
-			StopCarrying(carryableBabyChickenAI);
-	}
-
 	public void DoFrameDependentPhysics()
-	{
-		for (int i = physicsInteractionQueue.Count - 1; i >= 0; i--)
-		{
-			var iteratedPhysicsInteraction = physicsInteractionQueue.Dequeue();
-
-			switch (iteratedPhysicsInteraction.triggerType)
-			{
-				case PlayerPhysicsInteractionType.InteractTriggerEnter2D:
-				DoInteractTriggerEnter2D(iteratedPhysicsInteraction);
-				break;
-
-				case PlayerPhysicsInteractionType.InteractTriggerExit2D:
-				DoInteractTriggerExit2D(iteratedPhysicsInteraction);
-				break;
-			}
-		}
-	}
-
-	private void DoInteractTriggerEnter2D((PlayerPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
-	{
-		if (!interaction.collider2D)
-			return;
-
-		if (EventReflectorUtils.TryGetComponentByEventReflector<IInteractable>(interaction.collider2D.gameObject, out IInteractable found))
-			interactablesInRangeList.Add(new IInteractableValue<Transform>(found, (found as Component).transform));
-	}
-
-	private void DoInteractTriggerExit2D((PlayerPhysicsInteractionType triggerType, Collider2D collider2D, Collision2D collision2D) interaction)
-	{
-		if (!interaction.collider2D)
-		{
-			interactablesInRangeList.RemoveAll((iteratedInteractableValue) => !iteratedInteractableValue.value);
-			return;
-		}
-
-		if (EventReflectorUtils.TryGetComponentByEventReflector<IInteractable>(interaction.collider2D.gameObject, out IInteractable found))
-			interactablesInRangeList.Remove(new IInteractableValue<Transform>(found, (found as Component).transform));
-	}
-
-	private void DoCarried()
-	{
-		if (currentCarried.value)
-			currentCarried.value.MovePosition(defaultCarryPoint.position);
-	}
+	{ }
 
 	protected override void DoIdle()
 	{
@@ -385,13 +228,13 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 	protected override void DoWalkingFixed()
 	{
-		selfRigidbody.AddForceX(walkingForce * norDirHorizontalInput, ForceMode2D.Impulse);
+		SelfRigidbody.AddForceX(walkingForce * norDirHorizontalInput, ForceMode2D.Impulse);
 		LimitVelocity(walkingMaxVelocity);
 	}
 
 	protected override void DoRunningFixed()
 	{
-		selfRigidbody.AddForceX(runningForce * norDirHorizontalInput, ForceMode2D.Impulse);
+		SelfRigidbody.AddForceX(runningForce * norDirHorizontalInput, ForceMode2D.Impulse);
 		LimitVelocity(runningMaxVelocity);
 	}
 
@@ -416,24 +259,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 	protected override void OnStateChangedToJumping()
 	{
 		animator.Play("Jumping");
-	}
-
-	public void OnInteractTriggerEnter2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((PlayerPhysicsInteractionType.InteractTriggerEnter2D, collider, null));
-
-	public void OnInteractTriggerExit2D(Collider2D collider)
-		=> RegisterFrameDependentPhysicsInteraction((PlayerPhysicsInteractionType.InteractTriggerExit2D, collider, null));
-
-	private void OnInputInteractPerformed(CallbackContext context)
-	{
-		if (isInteractionBlocked)
-		{
-			StopCarrying();
-			return;
-		}
-
-		if (TryGetInteractable(out IInteractable selectedInteractable))
-			InteractWith(selectedInteractable);
 	}
 
 	private void OnInputJumpPerformed(CallbackContext context)
@@ -463,7 +288,7 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, IInteractor, 
 
 	public bool IsAbleToJumpTowards(Vector2 worldPosition)
 	{
-		var distSelfToDestination = (worldPosition - selfRigidbody.position);
+		var distSelfToDestination = (worldPosition - SelfRigidbody.position);
 		var isInsideAngle = Vector3.Angle(Vector2.up, distSelfToDestination) <= (jumpingAngle * 0.5f);
 		return isInsideAngle;
 	}

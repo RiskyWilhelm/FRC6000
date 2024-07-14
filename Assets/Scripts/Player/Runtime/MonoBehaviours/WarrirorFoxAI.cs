@@ -234,7 +234,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 			yield return null;
 
 		// Do the attack
-		target.TakeDamage(singleNormalAttackDamage, selfRigidbody.position);
+		target.TakeDamage(singleNormalAttackDamage, SelfRigidbody.position);
 
 		if (target.IsDead)
 			OnKilledTarget(target);
@@ -371,7 +371,7 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 			}
 
 			// Set the horizontal direction that mirrors to FixedUpdate
-			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - selfRigidbody.position).x);
+			norDirHorizontal = (sbyte)Mathf.Sign((worldDestination - SelfRigidbody.position).x);
 			return;
 		}
 	}

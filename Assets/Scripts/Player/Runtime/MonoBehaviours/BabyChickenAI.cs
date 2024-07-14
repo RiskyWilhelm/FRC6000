@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInteractable, ICarryable, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
+public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
 {
 	[Header("BabyChickenAI Movement")]
 	#region BabyChickenAI Movement
@@ -18,14 +18,6 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 
 	[SerializeField]
 	private Animator animator;
-
-
-	#endregion
-
-	#region BabyChickenAI Carry
-
-	[field: NonSerialized]
-	public ICarrier Carrier { get; private set; }
 
 
 	#endregion
@@ -73,14 +65,6 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	{
 		animator.Play("Damaged");
 		base.TakeDamage(damage, occuredWorldPosition);
-	}
-
-	public void Interact(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
-	{
-		resultValue = InteractionArgs.Empty;
-
-		if (interactor is Player)
-			OnInteractedByPlayer(interactor, receivedValue, out resultValue);
 	}
 
 	public bool TrySetDestinationToHome()
@@ -194,34 +178,6 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	public void OnEnemyTriggerStay2D(Collider2D collider)
 		=> RegisterFrameDependentPhysicsInteraction((BabyChickenAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
 
-	private void OnInteractedByPlayer(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
-	{
-		var interactorArgs = receivedValue as PlayerInteractionArgs;
-		var convertedResultValue = new BabyChickenAIInteractionArgs
-		{
-			ChickenRigidbody = selfRigidbody
-		};
-
-		if (State is PlayerStateType.Blocked)
-			convertedResultValue.InteractorAbleToCarrySelf = false;
-		else if (interactorArgs.WantsToCarry)
-			convertedResultValue.InteractorAbleToCarrySelf = true;
-
-		resultValue = convertedResultValue;
-	}
-
-	public void OnCarried(ICarrier carrier)
-	{
-		Carrier = carrier;
-		State = PlayerStateType.Blocked;
-	}
-
-	public void OnUncarried(ICarrier carrier)
-	{
-		Carrier = null;
-		State = PlayerStateType.Idle;
-	}
-
 	public void OnEnteredAIHome(HomeBase home)
 	{
 		ReleaseOrDestroySelf();
@@ -250,7 +206,6 @@ public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IInte
 	// Dispose
 	protected override void OnDisable()
 	{
-		Carrier?.StopCarrying(this);
 		DoFrameDependentPhysics();
 		base.OnDisable();
 	}

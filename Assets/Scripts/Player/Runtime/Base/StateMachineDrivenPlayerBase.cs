@@ -48,6 +48,17 @@ public abstract partial class StateMachineDrivenPlayerBase : PlayerBase
 		DoStateLate();
 	}
 
+	public void BlockState()
+	{
+		State = PlayerStateType.Blocked;
+	}
+
+	public void UnblockState()
+	{
+		if (State is PlayerStateType.Blocked)
+			State = PlayerStateType.Idle;
+	}
+
 	#region State in Update()
 
 	protected void DoState()

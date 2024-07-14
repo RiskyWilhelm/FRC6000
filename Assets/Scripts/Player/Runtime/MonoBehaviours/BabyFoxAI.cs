@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteractable, ICarryable, IFrameDependentPhysicsInteractor<BabyFoxAIPhysicsInteractionType>
+public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<BabyFoxAIPhysicsInteractionType>
 {
 	[Header("BabyFoxAI Movement")]
 	#region BabyFoxAI Movement
@@ -18,14 +18,6 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 
 	[SerializeField]
 	private Animator animator;
-
-
-	#endregion
-
-	#region BabyFoxAI Carry
-
-	[field: NonSerialized]
-	public ICarrier Carrier { get; private set; }
 
 
 	#endregion
@@ -67,14 +59,6 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 	{
 		if (!physicsInteractionQueue.Contains(interaction))
 			physicsInteractionQueue.Enqueue(interaction);
-	}
-
-	public void Interact(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
-	{
-		resultValue = InteractionArgs.Empty;
-
-		if (interactor is Player)
-			OnInteractedByPlayer(interactor, receivedValue, out resultValue);
 	}
 
 	public bool TrySetDestinationToHome()
@@ -188,34 +172,6 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 	public void OnEnemyTriggerStay2D(Collider2D collider)
 		=> RegisterFrameDependentPhysicsInteraction((BabyFoxAIPhysicsInteractionType.EnemyTriggerStay2D, collider, null));
 
-	private void OnInteractedByPlayer(IInteractor interactor, InteractionArgs receivedValue, out InteractionArgs resultValue)
-	{
-		var interactorArgs = receivedValue as PlayerInteractionArgs;
-		var convertedResultValue = new BabyFoxAIInteractionArgs
-		{
-			FoxRigidbody = selfRigidbody
-		};
-
-		if (State is PlayerStateType.Blocked)
-			convertedResultValue.InteractorAbleToCarrySelf = false;
-		else if (interactorArgs.WantsToCarry)
-			convertedResultValue.InteractorAbleToCarrySelf = true;
-
-		resultValue = convertedResultValue;
-	}
-
-	public void OnCarried(ICarrier carrier)
-	{
-		Carrier = carrier;
-		State = PlayerStateType.Blocked;
-	}
-
-	public void OnUncarried(ICarrier carrier)
-	{
-		Carrier = null;
-		State = PlayerStateType.Idle;
-	}
-
 	public void OnEnteredAIHome(HomeBase home)
 	{
 		ReleaseOrDestroySelf();
@@ -238,7 +194,6 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IInteract
 	// Dispose
 	protected override void OnDisable()
 	{
-		Carrier?.StopCarrying(this);
 		DoFrameDependentPhysics();
 		base.OnDisable();
 	}

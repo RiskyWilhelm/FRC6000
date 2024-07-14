@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 // OPTIMIZATION: Needed in future versions
 /// <summary> Fresh base of AI. Implements destination system </summary>
@@ -20,8 +21,21 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 	[field: Header("AIBase Stats")]
 	#region AIBase Stats
 
-	[field: SerializeField]
-	public uint Health { get; protected set; }
+	[SerializeField]
+	private uint _health;
+
+	public uint Health
+	{
+		get => _health;
+		protected set
+		{
+			if (value != _health)
+			{
+				_health = value;
+				onHealthChanged?.Invoke(value);
+			}
+		}
+	}
 
 	[field: SerializeField]
 	public uint MaxHealth { get; protected set; }
@@ -38,6 +52,15 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 	public List<TargetType> acceptedTargetTypeList = new();
 
 	public List<TargetType> runawayTargetTypeList = new();
+
+
+	#endregion
+
+	[Header("AIBase Events")]
+	#region AIBase Events
+
+	[SerializeField]
+	private UnityEvent<uint> onHealthChanged = new();
 
 
 	#endregion
@@ -69,7 +92,7 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 	protected void DetectObstacles()
 	{
 		// If not able to go to next position and destination, clear destination and set position to last position. Useful for where player cant fall to bottom from an edge and obstacle detection
-		var nextPredictedPosition = selfRigidbody.position + (selfRigidbody.velocity * Time.deltaTime);
+		var nextPredictedPosition = SelfRigidbody.position + (SelfRigidbody.velocity * Time.deltaTime);
 		var hasDestination = TryGetDestination(out Vector2 worldDestination);
 
 		if (!IsAbleToGoToVector(nextPredictedPosition) || (hasDestination && !IsAbleToGoToVector(worldDestination)))
@@ -185,7 +208,7 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 		checkEveryDegree = Math.Clamp(MathF.Abs(checkEveryDegree) % checkInDegree, 1f, 360f);
 
 		// Get "target to self" angle
-		var norDirTargetToSelf = (selfRigidbody.position - targetWorldPosition).normalized;
+		var norDirTargetToSelf = (SelfRigidbody.position - targetWorldPosition).normalized;
 		var degTargetToSelfAngle = norDirTargetToSelf.ToDegreeAngle_360();
 
 		// Get starting and ending point
@@ -198,11 +221,11 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 
 		while (degCurrentAngle <= degEndAngle)
 		{
-			var iteratedAngleWorldDestination = selfRigidbody.position + (VectorUtils.DegreeToNormalizedVector(degCurrentAngle) * (raycastBounds * 3));
+			var iteratedAngleWorldDestination = SelfRigidbody.position + (VectorUtils.DegreeToNormalizedVector(degCurrentAngle) * (raycastBounds * 3));
 			var iteratedAngleLookDirDotProduct = Vector2.Dot(norDirTargetToSelf, VectorUtils.DegreeToNormalizedVector(degCurrentAngle));
 
 			// DEBUG
-			Debug.DrawLine(selfRigidbody.position, iteratedAngleWorldDestination, new Color(0.75f, 0.75f, 0.75f, 0.5f));
+			Debug.DrawLine(SelfRigidbody.position, iteratedAngleWorldDestination, new Color(0.75f, 0.75f, 0.75f, 0.5f));
 
 			// Check angle destination and it's look dir
 			if (IsAbleToGoToVector(iteratedAngleWorldDestination))
@@ -225,7 +248,7 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 		// DEBUG
 		if (isFoundValidAngle)
 		{
-			Debug.DrawLine(selfRigidbody.position, closestLookDirTuple.worldDestination, Color.green);
+			Debug.DrawLine(SelfRigidbody.position, closestLookDirTuple.worldDestination, Color.green);
 			SetDestinationToVector(closestLookDirTuple.worldDestination, considerAsReachedDistance);
 		}
 
@@ -273,7 +296,7 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 	public bool IsReachedToVector(Vector2 worldPosition, float considerAsReachedDistance = 1f)
 	{
 		// If self position equals or inside the threshold of destination, consider as reached
-		var distSelfToDestination = (worldPosition - selfRigidbody.position);
+		var distSelfToDestination = (worldPosition - SelfRigidbody.position);
 		return (distSelfToDestination.sqrMagnitude <= (considerAsReachedDistance * considerAsReachedDistance));
 	}
 
@@ -281,12 +304,12 @@ public abstract partial class AIBase : StateMachineDrivenPlayerBase, ITarget, IP
 	public virtual bool IsAbleToGoToVector(Vector2 worldPosition2D, int layerMask = Layers.Mask.Ground)
 	{
 		// Check if there is any obstacle in front of self
-		var dirSelfToTarget = (worldPosition2D - selfRigidbody.position);
+		var dirSelfToTarget = (worldPosition2D - SelfRigidbody.position);
 
 		/*if (Physics2D.BoxCast(selfRigidbody.position, raycastBounds, 0f, norDirSelfToTarget, Vector2.Distance(selfRigidbody.position, worldPosition2D), layerMask))
 			return false;*/
 
-		if (Physics2D.Linecast(selfRigidbody.position, selfRigidbody.position + dirSelfToTarget, layerMask))
+		if (Physics2D.Linecast(SelfRigidbody.position, SelfRigidbody.position + dirSelfToTarget, layerMask))
 			return false;
 
 		return true;
