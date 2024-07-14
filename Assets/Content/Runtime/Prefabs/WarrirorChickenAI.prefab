@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5600645816791659096}
   - component: {fileID: 817984544886471587}
+  - component: {fileID: 2032373224369371847}
   m_Layer: 0
   m_Name: WorldCanvas
   m_TagString: Untagged
@@ -60,6 +61,21 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &2032373224369371847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 701600488839127453}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e87a911104ecea438411635ac582ac0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controlled: {fileID: 5600645816791659096}
+  updateType: 3
+  rotationEuler: {x: 0, y: 0, z: 0}
 --- !u!1 &1397523580720387660
 GameObject:
   m_ObjectHideFlags: 0
@@ -70,7 +86,6 @@ GameObject:
   m_Component:
   - component: {fileID: 691058872686082640}
   - component: {fileID: 1912280934580423691}
-  - component: {fileID: 7556936092215558503}
   m_Layer: 0
   m_Name: HealthBar
   m_TagString: Untagged
@@ -113,21 +128,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   image: {fileID: 7240009029899147218}
   maxValue: 6
---- !u!114 &7556936092215558503
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1397523580720387660}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e87a911104ecea438411635ac582ac0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controlled: {fileID: 691058872686082640}
-  updateType: 3
-  rotationEuler: {x: 0, y: 0, z: 0}
 --- !u!1 &2669454140272425697
 GameObject:
   m_ObjectHideFlags: 0

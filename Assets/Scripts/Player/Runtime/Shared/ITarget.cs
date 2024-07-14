@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// TODO: Get rid of this ugly piece of interface implementation. Switch to Monobehaviour. Use relativeTo object like Interaction, Carry and EventReflector system does
 public interface ITarget
 {
 	public TargetType TargetTag { get; }

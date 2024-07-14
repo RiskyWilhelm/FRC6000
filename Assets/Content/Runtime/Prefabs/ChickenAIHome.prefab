@@ -193,9 +193,9 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -863061807
-  m_SortingLayer: 1
-  m_SortingOrder: 2
+  m_SortingLayerID: 1289443183
+  m_SortingLayer: -1
+  m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 6e09d0643b7ff3f4aa8b6bfc785881e0, type: 3}
   m_Color: {r: 0, g: 0.7647059, b: 1, a: 1}
   m_FlipX: 0
@@ -353,16 +353,19 @@ MonoBehaviour:
     _tickSecond: 7.5
     _minInclusiveTickSeconds: 7.5
     _maxExclusiveTickSeconds: 12.5
+    _currentSecond: 10
   nightDaySpawnTimer:
     _tickType: 1
     _tickSecond: 5
     _minInclusiveTickSeconds: 5
     _maxExclusiveTickSeconds: 10
+    _currentSecond: 10
   acceptedTargetTypeList: 0200000004000000
   restoreHealthTimer:
     _tickType: 1
     _tickSecond: 5
     _minInclusiveTickSeconds: 0
     _maxExclusiveTickSeconds: 5
+    _currentSecond: 5
   <Health>k__BackingField: 2
   <MaxHealth>k__BackingField: 2

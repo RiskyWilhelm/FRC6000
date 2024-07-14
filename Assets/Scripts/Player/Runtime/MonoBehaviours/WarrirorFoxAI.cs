@@ -233,6 +233,13 @@ public sealed partial class WarrirorFoxAI : GroundedAIBase, IHomeAccesser, IFram
 		while (!singleNormalAttackBlockTimer.Tick())
 			yield return null;
 
+		// Target is killed by unknown thing while attacking
+		if (target.IsDead)
+		{
+			RefreshSingleNormalAttack();
+			yield break;
+		}
+
 		// Do the attack
 		target.TakeDamage(singleNormalAttackDamage, SelfRigidbody.position);
 

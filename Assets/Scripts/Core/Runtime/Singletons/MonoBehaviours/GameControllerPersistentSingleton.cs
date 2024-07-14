@@ -10,6 +10,8 @@ public sealed partial class GameControllerPersistentSingleton : MonoBehaviourSin
 
 	public UnityEvent onRestartGame = new();
 
+	public UnityEvent onLostGame = new();
+
 
 	#endregion
 
@@ -58,6 +60,12 @@ public sealed partial class GameControllerPersistentSingleton : MonoBehaviourSin
 		SaveDataControllerSingleton.Instance.FreshSaveData();
 		ResumeGame();
 		SceneControllerPersistentSingleton.Instance.RestartScene();
+	}
+
+	public void LostGame()
+	{
+		PauseGame();
+		onLostGame?.Invoke();
 	}
 
 	private static void OnActiveSceneChanged(Scene lastScene, Scene loadedScene)

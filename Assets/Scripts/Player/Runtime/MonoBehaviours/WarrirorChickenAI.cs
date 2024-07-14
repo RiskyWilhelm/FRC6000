@@ -209,6 +209,13 @@ public partial class WarrirorChickenAI : GroundedAIBase, IHomeAccesser, IFrameDe
 		while (!singleNormalAttackBlockTimer.Tick())
 			yield return null;
 
+		// Target is killed by unknown thing while attacking
+		if (target.IsDead)
+		{
+			RefreshSingleNormalAttack();
+			yield break;
+		}
+
 		// Do the attack
 		target.TakeDamage(singleNormalAttackDamage, SelfRigidbody.position);
 

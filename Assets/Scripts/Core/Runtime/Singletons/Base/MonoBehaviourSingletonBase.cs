@@ -18,7 +18,9 @@ public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBe
         }
     }
 
-    public static bool IsAnyInstanceLiving => (_instance != null) || FindFirstObjectByType<SingletonType>(findObjectsInactive: FindObjectsInactive.Include);
+    public static bool IsAnyInstanceLiving => IsCurrentInstanceLiving || FindFirstObjectByType<SingletonType>(findObjectsInactive: FindObjectsInactive.Include);
+
+    public static bool IsCurrentInstanceLiving => (_instance != null);
 
 	public virtual string GameObjectName => typeof(SingletonType).Name;
 
@@ -41,7 +43,7 @@ public abstract partial class MonoBehaviourSingletonBase<SingletonType> : MonoBe
     public static void TryCreateSingleton()
     {
         if (GameControllerPersistentSingleton.IsQuitting || SceneControllerPersistentSingleton.IsActiveSceneChanging)
-            throw new Exception(string.Format("Cant create Singleton {0}. You are probably trying to instantiate in OnDestroy() or OnDisable(). This occurs when changing scenes nor quitting the game", typeof(SingletonType).Name));
+            throw new Exception(string.Format("Cant create Singleton {0}. You are probably trying to instantiate or access in OnDestroy() or OnDisable(). This occurs when changing scenes nor quitting the game", typeof(SingletonType).Name));
 
 		_instance = new GameObject(typeof(SingletonType).Name, typeof(SingletonType)).GetComponent<SingletonType>();
 		_instance.name = _instance.GameObjectName;
