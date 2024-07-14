@@ -7,8 +7,8 @@ public interface IFrameDependentPhysicsInteractor
 	public void DoFrameDependentPhysics();
 }
 
-public interface IFrameDependentPhysicsInteractor<TriggerTypeEnum> : IFrameDependentPhysicsInteractor
-	where TriggerTypeEnum : Enum
+public interface IFrameDependentPhysicsInteractor<CollideTypeEnum> : IFrameDependentPhysicsInteractor
+	where CollideTypeEnum : Enum
 {
-	public void RegisterFrameDependentPhysicsInteraction((TriggerTypeEnum triggerType, Collider2D collider2D, Collision2D collision2D) interaction);
+	public void RegisterFrameDependentPhysicsInteraction((CollideTypeEnum triggerType, Collider2D collider2D, Collision2D collision2D) interaction);
 }

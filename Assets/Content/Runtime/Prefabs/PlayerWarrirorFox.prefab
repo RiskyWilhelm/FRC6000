@@ -238,6 +238,9 @@ PrefabInstance:
       addedObject: {fileID: 8356565118558114876}
     - targetCorrespondingSourceObject: {fileID: 7708960349671397161, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       insertIndex: 4
+      addedObject: {fileID: 3709947264553614943}
+    - targetCorrespondingSourceObject: {fileID: 7708960349671397161, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      insertIndex: 5
       addedObject: {fileID: 4532843874567155936}
     - targetCorrespondingSourceObject: {fileID: 1080929955921167355, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       insertIndex: 1
@@ -263,6 +266,20 @@ MonoBehaviour:
   _relativeTo: {fileID: 6827702858691518110}
   isInteractionBlocked: 0
   _carrierOfBabyFoxAI: {fileID: 4532843874567155936}
+--- !u!114 &3709947264553614943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2898528793403764920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5e45e9758fb874498af7f472833b0d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _relativeTo: {fileID: 6827702858691518110}
+  isInteractionBlocked: 0
 --- !u!114 &4532843874567155936
 MonoBehaviour:
   m_ObjectHideFlags: 0

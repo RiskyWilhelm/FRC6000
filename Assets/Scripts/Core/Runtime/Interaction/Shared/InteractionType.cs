@@ -4,4 +4,5 @@ public enum InteractionType
 	Carry,
 	UnCarry,
 	KillTarget,
+	GoHome,
 }

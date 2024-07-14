@@ -81,6 +81,12 @@ public abstract partial class InteractableMonoBehaviourBase<RelativeType, Intera
 	public void OnUIKillClick_InteractWithCurrent()
 		=> InteractWithCurrent(InteractionType.KillTarget);
 
+	public void OnUIGoHomeClick_InteractWith(InteractorType interactor)
+		=> Interact(interactor, InteractionType.GoHome);
+
+	public void OnUIGoHomeClick_InteractWithCurrent()
+		=> InteractWithCurrent(InteractionType.GoHome);
+
 	public void OnInteractorTriggerEnter2D(Collider2D collider2D)
 	{
 		if (!collider2D)

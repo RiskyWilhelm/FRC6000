@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// TODO: Create Base baby class like you did for Warrirors
 public sealed partial class BabyChickenAI : GroundedAIBase, IHomeAccesser, IFrameDependentPhysicsInteractor<BabyChickenAIPhysicsInteractionType>
 {
 	[Header("BabyChickenAI Movement")]

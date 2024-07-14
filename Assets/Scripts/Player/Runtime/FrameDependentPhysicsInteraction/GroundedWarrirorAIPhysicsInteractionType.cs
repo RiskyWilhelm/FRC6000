@@ -1,7 +1,7 @@
 using System;
 
 [Flags]
-public enum WarrirorChickenAIPhysicsInteractionType
+public enum GroundedWarrirorAIPhysicsInteractionType
 {
 	None = 0,
 

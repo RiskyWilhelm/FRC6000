@@ -13,7 +13,11 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
 	[SerializeField]
 	private float _currentSecond;
 
-	public readonly float CurrentSecond => _currentSecond;
+	public float CurrentSecond
+	{
+		readonly get => _currentSecond;
+		set => _currentSecond = value;
+	}
 
 	public readonly bool HasEnded => (_currentSecond == 0f);
 
@@ -69,7 +73,11 @@ public struct Timer : IEquatable<Timer>, IEquatable<TimerRandomized>
         return false;
     }
 
-	/// <summary> Sets the <see cref="_currentSecond"/> to zero </summary>
+	public void Finish()
+	{
+		_currentSecond = 0f;
+	}
+
 	public void Reset()
     {
         _currentSecond = _tickSecond;
