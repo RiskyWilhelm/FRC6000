@@ -159,6 +159,12 @@ public sealed partial class WarrirorFoxAI : GroundedWarrirorAIBase
 	}
 
 	// Dispose
+	protected override void OnDisable()
+	{
+		IsCaughtMeal = false;
+		base.OnDisable();
+	}
+
 	private void OnDestroy()
 	{
 		DayCycleControllerSingleton.Instance?.onDaylightTypeChanged.RemoveListener(OnDaylightTypeChanged);

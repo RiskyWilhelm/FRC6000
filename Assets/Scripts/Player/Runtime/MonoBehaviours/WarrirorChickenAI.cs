@@ -15,12 +15,58 @@ public partial class WarrirorChickenAI : GroundedWarrirorAIBase
 
 	#endregion
 
+	#region WarrirorFoxAI Other
+
+	[field: NonSerialized]
+	public bool IsForcedToGoHome { get; private set; }
+
+
+	#endregion
+
 
 	// Update
 	public override void TakeDamage(uint damage, Vector2 occuredWorldPosition)
 	{
 		animator.Play("Damaged");
 		base.TakeDamage(damage, occuredWorldPosition);
+	}
+
+	public override void ForceToGoHome()
+	{
+		IsForcedToGoHome = true;
+		base.ForceToGoHome();
+	}
+
+	public override bool TrySetDestinationAwayFromOrToNearestTarget()
+	{
+		return TrySetDestinationAwayFromNearestTarget() || (!IsForcedToGoHome && TrySetDestinationToNearestTarget());
+	}
+
+	protected override void DoIdle()
+	{
+		// If not grounded, set state to Flying
+		if (!IsGrounded())
+		{
+			State = PlayerStateType.Flying;
+			return;
+		}
+
+		// If wants to go home, set state to walking or running depending on the meal state
+		if (goHomeBackTimer.HasEnded || IsForcedToGoHome)
+		{
+			if (TrySetDestinationToHome())
+			{
+				if (IsForcedToGoHome)
+					State = PlayerStateType.Running;
+				else
+					State = PlayerStateType.Walking;
+
+				return;
+			}
+		}
+
+		// Otherwise, continue old idle
+		base.DoIdle();
 	}
 
 	protected override void OnStateChangedToIdle()
@@ -59,11 +105,17 @@ public partial class WarrirorChickenAI : GroundedWarrirorAIBase
 		base.OnStateChangedToDead();
 	}
 
+	public override void OnEnteredAIHome(HomeBase home)
+	{
+		IsForcedToGoHome = false;
+		base.OnEnteredAIHome(home);
+	}
 
 	// Dispose
 	protected override void OnDisable()
 	{
 		DoFrameDependentPhysics();
+		IsForcedToGoHome = false;
 		base.OnDisable();
 	}
 }
