@@ -65,8 +65,8 @@ public sealed partial class ActivatedByDayConfiguration : MonoBehaviour
 	// Dispose
 	private void OnDestroy()
 	{
-		DayCycleControllerSingleton.Instance.onDayTypeChanged.RemoveListener(OnDayTypeChanged);
-		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.RemoveListener(OnDaylightTypeChanged);
+		DayCycleControllerSingleton.Instance?.onDayTypeChanged.RemoveListener(OnDayTypeChanged);
+		DayCycleControllerSingleton.Instance?.onDaylightTypeChanged.RemoveListener(OnDaylightTypeChanged);
 	}
 }
 

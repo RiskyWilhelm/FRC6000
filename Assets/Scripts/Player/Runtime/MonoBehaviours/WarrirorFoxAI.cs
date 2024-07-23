@@ -62,11 +62,10 @@ public sealed partial class WarrirorFoxAI : GroundedWarrirorAIBase
 		base.TakeDamage(damage, occuredWorldPosition);
 	}
 
-	public void ForceToGoHome()
+	public override void ForceToGoHome()
 	{
 		IsCaughtMeal = true;
-		goHomeBackTimer.Finish();
-		TrySetDestinationToHome();
+		base.ForceToGoHome();
 	}
 
 	public override bool TrySetDestinationAwayFromOrToNearestTarget()
@@ -162,7 +161,7 @@ public sealed partial class WarrirorFoxAI : GroundedWarrirorAIBase
 	// Dispose
 	private void OnDestroy()
 	{
-		DayCycleControllerSingleton.Instance.onDaylightTypeChanged.RemoveListener(OnDaylightTypeChanged);
+		DayCycleControllerSingleton.Instance?.onDaylightTypeChanged.RemoveListener(OnDaylightTypeChanged);
 	}
 }
 

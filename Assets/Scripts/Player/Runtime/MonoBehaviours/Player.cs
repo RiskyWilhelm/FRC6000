@@ -547,7 +547,7 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, ITarget, IFra
 	// Dispose
 	private void OnDestroy()
 	{
-		GameControllerPersistentSingleton.Instance.onLostGame.RemoveListener(DisablePlayerInput);
+		GameControllerPersistentSingleton.Instance?.onLostGame.RemoveListener(DisablePlayerInput);
 	}
 }
 

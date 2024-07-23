@@ -1,9 +1,9 @@
 using UnityEngine;
 
-public sealed partial class PlayerInteractableWarrirorFoxAI : InteractableMonoBehaviourBase<WarrirorFoxAI, Player, PlayerInteractorBabyFoxAI>
+public sealed partial class PlayerInteractableWarrirorFoxAI : InteractableMonoBehaviourBase<WarrirorFoxAI, Player, PlayerInteractorWarrirorFoxAI>
 {
 	// Update
-	public override bool Interact(PlayerInteractorBabyFoxAI interactor, InteractionType interactionType)
+	public override bool Interact(PlayerInteractorWarrirorFoxAI interactor, InteractionType interactionType)
 	{
 		switch (interactionType)
 		{

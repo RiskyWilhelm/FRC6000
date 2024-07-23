@@ -82,6 +82,13 @@ public abstract partial class GroundedWarrirorAIBase : GroundedAIBase, IHomeAcce
 			groundedWarrirorAIPhysicsInteractionQueue.Enqueue(interaction);
 	}
 
+	public virtual void ForceToGoHome()
+	{
+		goHomeBackTimer.Finish();
+		TrySetDestinationToHome();
+	}
+
+
 	public bool TrySetDestinationToHome()
 	{
 		if (ParentHome != null)

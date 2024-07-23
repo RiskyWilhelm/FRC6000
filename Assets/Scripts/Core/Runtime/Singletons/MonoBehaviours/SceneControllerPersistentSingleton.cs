@@ -41,7 +41,7 @@ public sealed partial class SceneControllerPersistentSingleton : MonoBehaviourSi
 		IsActiveSceneChanging = false;
 
 		if (!IsAnyInstanceLiving)
-			TryCreateSingleton();
+			CreateSingleton();
 	}
 }
 
