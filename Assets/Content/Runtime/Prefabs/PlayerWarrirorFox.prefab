@@ -143,8 +143,88 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Path
+      value: event:/WarrirorFox/FoxJump
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Path
+      value: event:/WarrirorFox/FoxAttack
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       propertyPath: <TargetTag>k__BackingField
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Path
+      value: event:/WarrirorFox/FoxRun
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Path
+      value: event:/WarrirorFox/FoxWalk
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Guid.Data1
+      value: 1077593550
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Guid.Data2
+      value: 1154952807
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Guid.Data3
+      value: -191469645
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Guid.Data4
+      value: -1407657597
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Guid.Data1
+      value: 350357893
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Guid.Data2
+      value: 1263726852
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Guid.Data3
+      value: -1889596267
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Guid.Data4
+      value: 895297802
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Guid.Data1
+      value: -669186429
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Guid.Data2
+      value: 1153582281
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Guid.Data3
+      value: -1340143454
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Guid.Data4
+      value: 2037459765
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Guid.Data1
+      value: 2145780188
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Guid.Data2
+      value: 1080588659
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Guid.Data3
+      value: -1050581087
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Guid.Data4
+      value: -549485735
       objectReference: {fileID: 0}
     - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       propertyPath: acceptedTargetTypeList.Array.size

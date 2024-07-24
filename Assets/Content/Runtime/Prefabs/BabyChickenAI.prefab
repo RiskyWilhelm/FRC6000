@@ -644,6 +644,27 @@ MonoBehaviour:
     _maxExclusiveTickSeconds: 60
     _currentSecond: 10
   animator: {fileID: 929787005138692536}
+  walkingSoundReference:
+    Guid:
+      Data1: -1121381725
+      Data2: 1091970522
+      Data3: 720592771
+      Data4: -1300419096
+    Path: event:/BabyChicken/BabyChickenWalk
+  runningSoundReference:
+    Guid:
+      Data1: -635185976
+      Data2: 1190031064
+      Data3: 392669375
+      Data4: -726961499
+    Path: event:/BabyChicken/BabyChickenRun
+  jumpSoundReference:
+    Guid:
+      Data1: -1113138876
+      Data2: 1196559257
+      Data3: 1360987826
+      Data4: 147078643
+    Path: event:/BabyChicken/BabyChickenJump
 --- !u!114 &6408775295142716480
 MonoBehaviour:
   m_ObjectHideFlags: 0

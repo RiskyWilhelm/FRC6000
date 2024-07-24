@@ -491,9 +491,9 @@ GameObject:
   - component: {fileID: 2875921501242787366}
   - component: {fileID: 928960518458974017}
   - component: {fileID: 2018388475007777039}
-  - component: {fileID: 7600928671570595875}
   - component: {fileID: 8216879662143814411}
   - component: {fileID: 3906631706836533348}
+  - component: {fileID: 9170046124178779658}
   m_Layer: 0
   m_Name: PlayerPrefabBase
   m_TagString: Untagged
@@ -591,6 +591,34 @@ MonoBehaviour:
   jumpingForce: 240
   jumpingAngle: 45
   animator: {fileID: 5053748922846010278}
+  walkingSoundReference:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  runningSoundReference:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  jumpSoundReference:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
+  attackSoundReference:
+    Guid:
+      Data1: 0
+      Data2: 0
+      Data3: 0
+      Data4: 0
+    Path: 
   onHealthChanged:
     m_PersistentCalls:
       m_Calls:
@@ -606,19 +634,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
---- !u!114 &7600928671570595875
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7708960349671397161}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 562dc37b079533940a37f55bd2507b6b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fps: 144
 --- !u!114 &8216879662143814411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1130,6 +1145,19 @@ ParticleSystemForceField:
         m_RotationOrder: 4
     m_MultiplyDragByParticleSize: 1
     m_MultiplyDragByParticleVelocity: 1
+--- !u!114 &9170046124178779658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7708960349671397161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 562dc37b079533940a37f55bd2507b6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fps: 144
 --- !u!1 &8338605270370426370
 GameObject:
   m_ObjectHideFlags: 0

@@ -142,9 +142,97 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1005374595386622600, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1005374595386622600, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Path
+      value: event:/WarrirorChicken/ChickenJump
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Path
+      value: event:/WarrirorChicken/ChickenAttack
+      objectReference: {fileID: 0}
     - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       propertyPath: <TargetTag>k__BackingField
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Path
+      value: event:/WarrirorChicken/ChickenRun
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Path
+      value: event:/WarrirorChicken/ChickenWalk
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Guid.Data1
+      value: -183572773
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Guid.Data2
+      value: 1297034448
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Guid.Data3
+      value: -1039813457
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: jumpSoundReference.Guid.Data4
+      value: 717151835
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Guid.Data1
+      value: -1568473858
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Guid.Data2
+      value: 1198676707
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Guid.Data3
+      value: -1856360291
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: attackSoundReference.Guid.Data4
+      value: 801484311
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Guid.Data1
+      value: -1012958992
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Guid.Data2
+      value: 1198009349
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Guid.Data3
+      value: -1778650726
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: runningSoundReference.Guid.Data4
+      value: 1952535254
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Guid.Data1
+      value: -295688693
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Guid.Data2
+      value: 1283209466
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Guid.Data3
+      value: -172606833
+      objectReference: {fileID: 0}
+    - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
+      propertyPath: walkingSoundReference.Guid.Data4
+      value: -817288499
       objectReference: {fileID: 0}
     - target: {fileID: 2018388475007777039, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       propertyPath: acceptedTargetTypeList.Array.size
@@ -212,23 +300,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6416735406779651608, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       propertyPath: m_Size.y
-      value: 2.4285715
+      value: 2.428571
       objectReference: {fileID: 0}
     - target: {fileID: 6416735406779651608, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 8392253501027690718, guid: 469734dfcc81a8a4ba3cf6e5bae89c17, type: 3}
     - target: {fileID: 6416735406779651608, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
-      propertyPath: m_Color.b
-      value: 0.76862746
-      objectReference: {fileID: 0}
-    - target: {fileID: 6416735406779651608, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
-      propertyPath: m_Color.g
+      propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6416735406779651608, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
-      propertyPath: m_Color.r
-      value: 0.80673945
+      propertyPath: m_DrawMode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6416735406779651608, guid: 8639fb923a14dd84586fa979e5c2b546, type: 3}
       propertyPath: m_WasSpriteAssigned

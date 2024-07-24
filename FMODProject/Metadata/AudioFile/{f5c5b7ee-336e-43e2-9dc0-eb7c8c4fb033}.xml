@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{f5c5b7ee-336e-43e2-9dc0-eb7c8c4fb033}">
+		<property name="assetPath">
+			<value>Sounds/Footsteps_Sneakers_Underbrush/620339__marb7e__footsteps_sneakers_underbrush_walk05.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>1</value>
+		</property>
+		<property name="length">
+			<value>1.25</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{9436fcca-5420-45bf-8dfa-7ea8c7b14813}</destination>
+		</relationship>
+	</object>
+</objects>

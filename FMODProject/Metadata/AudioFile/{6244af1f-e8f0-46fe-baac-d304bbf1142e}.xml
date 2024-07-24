@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{6244af1f-e8f0-46fe-baac-d304bbf1142e}">
+		<property name="assetPath">
+			<value>Musics/262259__shadydave__snowfall-final.mp3</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>65.488979591836738</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{9436fcca-5420-45bf-8dfa-7ea8c7b14813}</destination>
+		</relationship>
+	</object>
+</objects>

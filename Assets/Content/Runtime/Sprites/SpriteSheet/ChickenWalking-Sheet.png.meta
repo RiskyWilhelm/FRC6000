@@ -3,17 +3,17 @@ guid: 7539314938d893c44b800a9a2a602d92
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3293361894549827291
-    second: ChickenWalking_0
+      213: -8282211526877997845
+    second: ChickenWalking-Sheet_0
   - first:
-      213: -5208396997257380263
-    second: ChickenWalking_1
+      213: 2762496132189814920
+    second: ChickenWalking-Sheet_1
   - first:
-      213: 7471775214214116084
-    second: ChickenWalking_2
+      213: -6569644471682829898
+    second: ChickenWalking-Sheet_2
   - first:
-      213: 323410555617617686
-    second: ChickenWalking_3
+      213: -7298133698883374248
+    second: ChickenWalking-Sheet_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -49,9 +49,9 @@ TextureImporter:
     filterMode: 0
     aniso: 1
     mipBias: 0
-    wrapU: 1
-    wrapV: 1
-    wrapW: 1
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -84,6 +84,19 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Win64
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -106,23 +119,10 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: WindowsStoreApps
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
     buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
+    maxTextureSize: 1024
+    resizeAlgorithm: 1
+    textureFormat: 12
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -135,7 +135,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ChickenWalking_0
+      name: ChickenWalking-Sheet_0
       rect:
         serializedVersion: 2
         x: 0
@@ -150,14 +150,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 521dc8e4ec0ab42d0800000000000000
-      internalID: -3293361894549827291
+      spriteID: be49ac15f7caf0d80800000000000000
+      internalID: -8282211526877997845
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ChickenWalking_1
+      name: ChickenWalking-Sheet_1
       rect:
         serializedVersion: 2
         x: 20
@@ -172,14 +172,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 95e3349b68e08b7b0800000000000000
-      internalID: -5208396997257380263
+      spriteID: 880809c889b565620800000000000000
+      internalID: 2762496132189814920
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ChickenWalking_2
+      name: ChickenWalking-Sheet_2
       rect:
         serializedVersion: 2
         x: 40
@@ -194,14 +194,14 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4f2fccc58f311b760800000000000000
-      internalID: 7471775214214116084
+      spriteID: 6b17cb4192fe3d4a0800000000000000
+      internalID: -6569644471682829898
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ChickenWalking_3
+      name: ChickenWalking-Sheet_3
       rect:
         serializedVersion: 2
         x: 60
@@ -216,8 +216,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6172334df2cfc7400800000000000000
-      internalID: 323410555617617686
+      spriteID: 853bfba6112d7ba90800000000000000
+      internalID: -7298133698883374248
       vertices: []
       indices: 
       edges: []
@@ -234,10 +234,10 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      ChickenWalking_0: -3293361894549827291
-      ChickenWalking_1: -5208396997257380263
-      ChickenWalking_2: 7471775214214116084
-      ChickenWalking_3: 323410555617617686
+      ChickenWalking-Sheet_0: -8282211526877997845
+      ChickenWalking-Sheet_1: 2762496132189814920
+      ChickenWalking-Sheet_2: -6569644471682829898
+      ChickenWalking-Sheet_3: -7298133698883374248
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

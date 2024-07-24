@@ -682,6 +682,27 @@ MonoBehaviour:
     _maxExclusiveTickSeconds: 60
     _currentSecond: 10
   animator: {fileID: 8383518919765994051}
+  walkingSoundReference:
+    Guid:
+      Data1: -1031639532
+      Data2: 1210399385
+      Data3: 1067219115
+      Data4: 570566640
+    Path: event:/BabyFox/BabyFoxWalk
+  runningSoundReference:
+    Guid:
+      Data1: 634614633
+      Data2: 1295165910
+      Data3: 1505447072
+      Data4: -1504422990
+    Path: event:/BabyFox/BabyFoxRun
+  jumpSoundReference:
+    Guid:
+      Data1: 1370050614
+      Data2: 1188507566
+      Data3: -500851018
+      Data4: 2124661354
+    Path: event:/BabyFox/BabyFoxJump
 --- !u!114 &3211547473359802574
 MonoBehaviour:
   m_ObjectHideFlags: 0

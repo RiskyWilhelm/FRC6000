@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{12435f89-ba9a-40ac-bad1-5cd34fe7cbeb}">
+		<property name="assetPath">
+			<value>Sounds/475883__epicsoundeffects__ese-whoosh-quick-tiny-a.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>48</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>0.125</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{9436fcca-5420-45bf-8dfa-7ea8c7b14813}</destination>
+		</relationship>
+	</object>
+</objects>

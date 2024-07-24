@@ -304,6 +304,34 @@ MonoBehaviour:
     _tickSecond: 0.5
     _currentSecond: 0.5
   animator: {fileID: 6017713511743054641}
+  walkingSoundReference:
+    Guid:
+      Data1: 2145780188
+      Data2: 1080588659
+      Data3: -1050581087
+      Data4: -549485735
+    Path: event:/WarrirorFox/FoxWalk
+  runningSoundReference:
+    Guid:
+      Data1: -669186429
+      Data2: 1153582281
+      Data3: -1340143454
+      Data4: 2037459765
+    Path: event:/WarrirorFox/FoxRun
+  jumpSoundReference:
+    Guid:
+      Data1: 1077593550
+      Data2: 1154952807
+      Data3: -191469645
+      Data4: -1407657597
+    Path: event:/WarrirorFox/FoxJump
+  attackSoundReference:
+    Guid:
+      Data1: 350357893
+      Data2: 1263726852
+      Data3: -1889596267
+      Data4: 895297802
+    Path: event:/WarrirorFox/FoxAttack
 --- !u!114 &1427715957872124000
 MonoBehaviour:
   m_ObjectHideFlags: 0

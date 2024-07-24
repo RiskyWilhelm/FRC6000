@@ -1,8 +1,7 @@
+using FMOD.Studio;
+using FMODUnity;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool;
 
 public partial class WarrirorChickenAI : GroundedWarrirorAIBase
 {
@@ -15,6 +14,30 @@ public partial class WarrirorChickenAI : GroundedWarrirorAIBase
 
 	#endregion
 
+	[Header("WarrirorChickenAI Sounds")]
+	#region WarrirorChickenAI Sounds
+
+	[SerializeField]
+	private EventReference walkingSoundReference;
+
+	[SerializeField]
+	private EventReference runningSoundReference;
+
+	[SerializeField]
+	private EventReference jumpSoundReference;
+
+	[SerializeField]
+	private EventReference attackSoundReference;
+
+	[NonSerialized]
+	private EventInstance walkingSoundInstance;
+
+	[NonSerialized]
+	private EventInstance runningSoundInstance;
+
+
+	#endregion
+
 	#region WarrirorFoxAI Other
 
 	[field: NonSerialized]
@@ -22,6 +45,17 @@ public partial class WarrirorChickenAI : GroundedWarrirorAIBase
 
 
 	#endregion
+
+
+	// Initialize
+	private void Start()
+	{
+		walkingSoundInstance = RuntimeManager.CreateInstance(walkingSoundReference);
+		runningSoundInstance = RuntimeManager.CreateInstance(runningSoundReference);
+
+		RuntimeManager.AttachInstanceToGameObject(walkingSoundInstance, this.transform);
+		RuntimeManager.AttachInstanceToGameObject(runningSoundInstance, this.transform);
+	}
 
 
 	// Update
@@ -77,24 +111,30 @@ public partial class WarrirorChickenAI : GroundedWarrirorAIBase
 
 	protected override void OnStateChangedToWalking()
 	{
+		RuntimeManager.AttachInstanceToGameObject(walkingSoundInstance, this.transform);
+		walkingSoundInstance.start();
 		animator.Play("Walking");
 		base.OnStateChangedToWalking();
 	}
 
 	protected override void OnStateChangedToRunning()
 	{
+		RuntimeManager.AttachInstanceToGameObject(runningSoundInstance, this.transform);
+		runningSoundInstance.start();
 		animator.Play("Running");
 		base.OnStateChangedToRunning();
 	}
 
 	protected override void OnStateChangedToJumping()
 	{
+		RuntimeManager.PlayOneShot(jumpSoundReference, this.transform.position);
 		animator.Play("Jumping");
 		base.OnStateChangedToJumping();
 	}
 
 	protected override void OnStateChangedToAttacking()
 	{
+		RuntimeManager.PlayOneShot(attackSoundReference, this.transform.position);
 		animator.Play("Attacking");
 		base.OnStateChangedToAttacking();
 	}
@@ -103,6 +143,14 @@ public partial class WarrirorChickenAI : GroundedWarrirorAIBase
 	{
 		PlayerControllerSingleton.onTargetDeathEventDict[TargetType.WarrirorChicken]?.Invoke();
 		base.OnStateChangedToDead();
+	}
+
+	protected override void OnStateChangedToAny(PlayerStateType newState)
+	{
+		walkingSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+		runningSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+
+		base.OnStateChangedToAny(newState);
 	}
 
 	public override void OnEnteredAIHome(HomeBase home)
@@ -114,9 +162,18 @@ public partial class WarrirorChickenAI : GroundedWarrirorAIBase
 	// Dispose
 	protected override void OnDisable()
 	{
+		walkingSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+		runningSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+
 		DoFrameDependentPhysics();
 		IsForcedToGoHome = false;
 		base.OnDisable();
+	}
+
+	private void OnDestroy()
+	{
+		walkingSoundInstance.release();
+		runningSoundInstance.release();
 	}
 }
 

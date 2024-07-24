@@ -1,3 +1,5 @@
+using FMOD.Studio;
+using FMODUnity;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +24,27 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IFrameDep
 
 	#endregion
 
+	[Header("BabyFoxAI Sounds")]
+	#region BabyFoxAI Sounds
+
+	[SerializeField]
+	private EventReference walkingSoundReference;
+
+	[SerializeField]
+	private EventReference runningSoundReference;
+
+	[SerializeField]
+	private EventReference jumpSoundReference;
+
+	[NonSerialized]
+	private EventInstance walkingSoundInstance;
+
+	[NonSerialized]
+	private EventInstance runningSoundInstance;
+
+
+	#endregion
+
 	#region BabyFoxAI Other
 
 	[field: NonSerialized]
@@ -38,6 +61,15 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IFrameDep
 
 
 	// Initialize
+	private void Start()
+	{
+		walkingSoundInstance = RuntimeManager.CreateInstance(walkingSoundReference);
+		runningSoundInstance = RuntimeManager.CreateInstance(runningSoundReference);
+
+		RuntimeManager.AttachInstanceToGameObject(walkingSoundInstance, this.transform);
+		RuntimeManager.AttachInstanceToGameObject(runningSoundInstance, this.transform);
+	}
+
 	protected override void OnEnable()
 	{
 		PlayerControllerSingleton.onTargetBirthEventDict[TargetType.BabyFox]?.Invoke();
@@ -138,16 +170,21 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IFrameDep
 
 	protected override void OnStateChangedToWalking()
 	{
+		RuntimeManager.AttachInstanceToGameObject(walkingSoundInstance, this.transform);
+		walkingSoundInstance.start();
 		animator.Play("Walking");
 	}
 
 	protected override void OnStateChangedToRunning()
 	{
+		RuntimeManager.AttachInstanceToGameObject(runningSoundInstance, this.transform);
+		runningSoundInstance.start();
 		animator.Play("Running");
 	}
 
 	protected override void OnStateChangedToJumping()
 	{
+		RuntimeManager.PlayOneShot(jumpSoundReference, this.transform.position);
 		animator.Play("Jumping");
 	}
 
@@ -161,6 +198,14 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IFrameDep
 	protected override void OnStateChangedToBlocked()
 	{
 		animator.Play("Sleeping");
+	}
+
+	protected override void OnStateChangedToAny(PlayerStateType newState)
+	{
+		walkingSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+		runningSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+
+		base.OnStateChangedToAny(newState);
 	}
 
 	protected override void OnChangedDestination(Vector2? newDestination)
@@ -194,8 +239,17 @@ public sealed partial class BabyFoxAI : GroundedAIBase, IHomeAccesser, IFrameDep
 	// Dispose
 	protected override void OnDisable()
 	{
+		walkingSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+		runningSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+
 		DoFrameDependentPhysics();
 		base.OnDisable();
+	}
+
+	private void OnDestroy()
+	{
+		walkingSoundInstance.release();
+		runningSoundInstance.release();
 	}
 }
 

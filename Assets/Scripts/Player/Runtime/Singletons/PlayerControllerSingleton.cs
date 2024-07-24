@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using System.Collections;
 
 public sealed partial class PlayerControllerSingleton : MonoBehaviourSingletonBase<PlayerControllerSingleton>
 {
@@ -63,15 +64,15 @@ public sealed partial class PlayerControllerSingleton : MonoBehaviourSingletonBa
 		SceneManager.activeSceneChanged += OnActiveSceneChanged;
 	}
 
-	protected override void Awake()
+	private IEnumerator Start()
 	{
+		yield return null;
+
 		if (differentPlayerObjects.Length != 0)
 		{
 			var randomPlayerObject = differentPlayerObjects[spawnerRandom.Next(differentPlayerObjects.Length)];
 			Instantiate(randomPlayerObject, playerSpawnWorldPosition, Quaternion.identity);
 		}
-
-		base.Awake();
 	}
 
 

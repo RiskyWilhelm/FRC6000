@@ -1,3 +1,5 @@
+using FMOD.Studio;
+using FMODUnity;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -129,6 +131,30 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, ITarget, IFra
 
 	#endregion
 
+	[Header("Player Sounds")]
+	#region Player Sounds
+
+	[SerializeField]
+	private EventReference walkingSoundReference;
+
+	[SerializeField]
+	private EventReference runningSoundReference;
+
+	[SerializeField]
+	private EventReference jumpSoundReference;
+
+	[SerializeField]
+	private EventReference attackSoundReference;
+
+	[NonSerialized]
+	private EventInstance walkingSoundInstance;
+
+	[NonSerialized]
+	private EventInstance runningSoundInstance;
+
+
+	#endregion
+
 	[Header("AIBase Events")]
 	#region AIBase Events
 
@@ -162,6 +188,12 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, ITarget, IFra
 
 	private void Start()
 	{
+		walkingSoundInstance = RuntimeManager.CreateInstance(walkingSoundReference);
+		runningSoundInstance = RuntimeManager.CreateInstance(runningSoundReference);
+
+		RuntimeManager.AttachInstanceToGameObject(walkingSoundInstance, this.transform);
+		RuntimeManager.AttachInstanceToGameObject(runningSoundInstance, this.transform);
+
 		inputActions = new FRC_Default_InputActions();
 		inputActions.Player.Move.performed += OnInputMovePerformed;
 		inputActions.Player.Move.canceled += OnInputMoveCanceled;
@@ -172,8 +204,6 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, ITarget, IFra
 		inputActions.Player.Jump.performed += OnInputJumpPerformed;
 		inputActions.Player.Attack.performed += OnInputAttackPerformed;
 		inputActions.Player.Enable();
-
-		GameControllerPersistentSingleton.Instance.onLostGame.AddListener(DisablePlayerInput);
 	}
 
 
@@ -453,21 +483,27 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, ITarget, IFra
 
 	protected override void OnStateChangedToWalking()
 	{
+		RuntimeManager.AttachInstanceToGameObject(walkingSoundInstance, this.transform);
+		walkingSoundInstance.start();
 		animator.Play("Walking");
 	}
 
 	protected override void OnStateChangedToRunning()
 	{
+		RuntimeManager.AttachInstanceToGameObject(runningSoundInstance, this.transform);
+		runningSoundInstance.start();
 		animator.Play("Running");
 	}
 
 	protected override void OnStateChangedToJumping()
 	{
+		RuntimeManager.PlayOneShot(jumpSoundReference, this.transform.position);
 		animator.Play("Jumping");
 	}
 
 	protected override void OnStateChangedToAttacking()
 	{
+		RuntimeManager.PlayOneShot(attackSoundReference, this.transform.position);
 		animator.Play("Attacking");
 	}
 
@@ -478,6 +514,9 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, ITarget, IFra
 
 	protected override void OnStateChangedToAny(PlayerStateType newState)
 	{
+		walkingSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+		runningSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+
 		if (newState is not PlayerStateType.Attacking)
 			RefreshAttackState();
 	}
@@ -545,9 +584,17 @@ public sealed partial class Player : StateMachineDrivenPlayerBase, ITarget, IFra
 
 
 	// Dispose
+	private void OnDisable()
+	{
+		walkingSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+		runningSoundInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+	}
+
 	private void OnDestroy()
 	{
-		GameControllerPersistentSingleton.Instance?.onLostGame.RemoveListener(DisablePlayerInput);
+		inputActions.Dispose();
+		walkingSoundInstance.release();
+		runningSoundInstance.release();
 	}
 }
 

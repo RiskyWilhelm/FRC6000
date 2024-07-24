@@ -415,6 +415,34 @@ MonoBehaviour:
     _tickSecond: 0.5
     _currentSecond: 0.5
   animator: {fileID: 71091793219444102}
+  walkingSoundReference:
+    Guid:
+      Data1: -295688693
+      Data2: 1283209466
+      Data3: -172606833
+      Data4: -817288499
+    Path: event:/WarrirorChicken/ChickenWalk
+  runningSoundReference:
+    Guid:
+      Data1: -1012958992
+      Data2: 1198009349
+      Data3: -1778650726
+      Data4: 1952535254
+    Path: event:/WarrirorChicken/ChickenRun
+  jumpSoundReference:
+    Guid:
+      Data1: -183572773
+      Data2: 1297034448
+      Data3: -1039813457
+      Data4: 717151835
+    Path: event:/WarrirorChicken/ChickenJump
+  attackSoundReference:
+    Guid:
+      Data1: -1568473858
+      Data2: 1198676707
+      Data3: -1856360291
+      Data4: 801484311
+    Path: event:/WarrirorChicken/ChickenAttack
 --- !u!114 &2679669408379948590
 MonoBehaviour:
   m_ObjectHideFlags: 0

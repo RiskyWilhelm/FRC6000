@@ -15,8 +15,8 @@ public abstract partial class StateMachineDrivenPlayerBase : PlayerBase
 			if (value != _state)
 			{
 				_state = value;
-				OnStateChanged(value);
 				OnStateChangedToAny(value);
+				OnStateChanged(value);
 			}
 		}
 	}

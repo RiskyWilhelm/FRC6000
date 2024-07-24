@@ -2,9 +2,11 @@
     "name": "FRC.Core.Runtime",
     "rootNamespace": "",
     "references": [
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
         "GUID:75469ad4d38634e559750d17036d5f7c",
         "GUID:516a5277b8c3b4f4c8cc86b77b1591ff",
-        "GUID:33661e06c33d31b4c9223810bf503247"
+        "GUID:33661e06c33d31b4c9223810bf503247",
+        "GUID:0c752da273b17c547ae705acf0f2adf2"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
